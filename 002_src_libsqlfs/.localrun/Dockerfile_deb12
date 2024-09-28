@@ -1,0 +1,35 @@
+# syntax=docker/dockerfile:1
+FROM debian:12
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+        apt-get -y --force-yes install \
+        ca-certificates \
+        libconfig-dev \
+        wget \
+        unzip \
+        zip \
+        automake \
+        autotools-dev \
+        build-essential \
+        check \
+        checkinstall \
+        libtool \
+        pkg-config \
+        rsync \
+        git \
+        nano \
+        g++ \
+        cmake \
+        yasm \
+        sdkmanager
+
+RUN yes | sdkmanager --licenses || echo "NO ERR"
+RUN echo y | sdkmanager "ndk;25.1.8937393"
+RUN yes | sdkmanager --licenses || echo "NO ERR"
+
+RUN ls -al /opt/android-sdk/ || echo "NO ERR"
+RUN ls -al /opt/android-sdk/ndk/ || echo "NO ERR"
+
+RUN id -a;pwd
