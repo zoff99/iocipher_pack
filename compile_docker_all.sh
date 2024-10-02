@@ -68,3 +68,7 @@ cd ./003_src_iocipher/ || exit 1
 
 echo "build iocipher for android"
 ./gradlew build >> "$logfile" 2>&1 || exit 1
+./gradlew :libiocipher2-c:assemble >> "$logfile" 2>&1 || exit 1
+
+echo "====== build: OK ======"
+
