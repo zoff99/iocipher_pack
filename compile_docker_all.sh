@@ -7,20 +7,29 @@ export _HOME_
 
 logfile="$_HOME_""/compile.log"
 
-cd "$_HOME_""/"
-cd ./001_src_openssl/.localrun/ || exit 1
+build_only_aar=0
+if [ "$1""x" == "aarx" ]; then
+    build_only_aar=1
+fi
 
+cd "$_HOME_""/"
 rm -f "$logfile"
 
+
+if [ "$build_only_aar""x" == "0x" ]; then
+###################################
+###################################
+###################################
+
+cd ./001_src_openssl/.localrun/ || exit 1
 echo "build/upate docker container"
 ./docker_linux_fast.sh build >> "$logfile" 2>&1 || exit 1
-
 echo "build openssl for android and linux"
 ./docker_linux_fast.sh >> "$logfile" 2>&1 || exit 1
 
 
 cd "$_HOME_""/"
-## rm -Rf ./002_src_libsqlfs/openssl_includes/ >> "$logfile" 2>&1
+## maybe clean, in case a headerfile gets removed in th future? ## rm -Rf ./002_src_libsqlfs/openssl_includes/ >> "$logfile" 2>&1
 mkdir -p ./002_src_libsqlfs/openssl_includes/ >> "$logfile" 2>&1
 echo "install openssl includes"
 cp -av ./001_src_openssl/.localrun/debian_12_linux/artefacts/linux_debian12_x86_64/include/* ./002_src_libsqlfs/openssl_includes/ >> "$logfile" 2>&1 || exit 1
@@ -63,12 +72,22 @@ cd "$_HOME_""/"
 cp -av ./002_src_libsqlfs/sqlfs.h ./003_src_iocipher/libiocipher2-c/src/main/cpp/libsqlfs/ >> "$logfile" 2>&1 || exit 1
 cp -av ./002_src_libsqlfs/sqlfs_internal.h ./003_src_iocipher/libiocipher2-c/src/main/cpp/libsqlfs/ >> "$logfile" 2>&1 || exit 1
 
+###################################
+###################################
+###################################
+fi
+
 cd "$_HOME_""/"
 cd ./003_src_iocipher/ || exit 1
 
 echo "build iocipher for android"
 ./gradlew build >> "$logfile" 2>&1 || exit 1
 ./gradlew :libiocipher2-c:assemble >> "$logfile" 2>&1 || exit 1
+
+cd "$_HOME_""/"
+echo "AAR artefacts"
+ls -1 ./003_src_iocipher/libiocipher2-c/build/outputs/aar/libiocipher2-c-debug.aar || echo "NO ERR" 2>/dev/null
+ls -1 ./003_src_iocipher/libiocipher2-c/build/outputs/aar/libiocipher2-c-release.aar
 
 echo "====== build: OK ======"
 

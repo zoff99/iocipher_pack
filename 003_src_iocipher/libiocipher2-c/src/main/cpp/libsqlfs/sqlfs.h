@@ -32,6 +32,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 extern "C" {
 #endif
 
+#define SQLFS_VERSION   "2.0.0"
+
+
 #ifdef HAVE_LIBFUSE
 # include "fuse.h"
 #else

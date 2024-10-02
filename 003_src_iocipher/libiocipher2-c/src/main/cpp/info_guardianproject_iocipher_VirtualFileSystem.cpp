@@ -13,6 +13,8 @@
 #include <errno.h>
 #include <libgen.h>
 
+#define IOCIPHER_VERSION   "1.0.0"
+
 // yes, dbFileName is a duplicate of default_db_file in sqlfs.c
 char dbFileName[PATH_MAX] = { 0 };
 // store first sqlfs instance as marker for mounted state
@@ -248,6 +250,15 @@ static void VirtualFileSystem_completeTransaction(JNIEnv *env, jobject) {
     return;
 }
 
+static jstring VirtualFileSystem_sqlfsVersion(JNIEnv *env, jobject obj) {
+    return env->NewStringUTF(SQLFS_VERSION);
+}
+
+static jstring VirtualFileSystem_iocipherVersion(JNIEnv *env, jobject obj) {
+    return env->NewStringUTF(IOCIPHER_VERSION);
+}
+
+
 static JNINativeMethod sMethods[] = {
     {"getContainerPath", "()Ljava/lang/String;", (void *)VirtualFileSystem_getContainerPath},
     {"setContainerPath", "(Ljava/lang/String;)V", (void *)VirtualFileSystem_setContainerPath},
@@ -260,6 +271,8 @@ static JNINativeMethod sMethods[] = {
     {"detachThread", "()V", (void *)VirtualFileSystem_detachThread},
     {"beginTransaction", "()V", (void *)VirtualFileSystem_beginTransaction},
     {"completeTransaction", "()V", (void *)VirtualFileSystem_completeTransaction},
+    {"sqlfsVersion", "()Ljava/lang/String;", (void *)VirtualFileSystem_sqlfsVersion},
+    {"iocipherVersion", "()Ljava/lang/String;", (void *)VirtualFileSystem_iocipherVersion},
 };
 int register_info_guardianproject_iocipher_VirtualFileSystem(JNIEnv* env) {
     jclass cls = env->FindClass("info/guardianproject/iocipher/VirtualFileSystem");

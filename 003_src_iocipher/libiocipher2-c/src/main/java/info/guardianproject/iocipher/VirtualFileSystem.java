@@ -1,3 +1,8 @@
+/**
+ * IOCipher
+ * Copyright (C) 2023 Zoff <zoff@zoff.cc>
+ * <p>
+ */
 
 package info.guardianproject.iocipher;
 
@@ -8,6 +13,8 @@ import javax.crypto.SecretKey;
  * container backed by a SQLCipher database for full encrypted file storage.
  */
 public class VirtualFileSystem {
+
+    final public static String IOCIPHER_JNI_VERSION = "1.0.0";
 
     /**
      * Empty dbFile results in an in memory database
@@ -44,6 +51,30 @@ public class VirtualFileSystem {
      *         not exist or is not readable
      */
     public native void setContainerPath(String containerPath) throws IllegalArgumentException;
+
+    /**
+     * Get version of sqlfs used.
+     *
+     * @return version as string
+     */
+    public native String sqlfsVersion();
+
+    /**
+     * Get version of iocipher used.
+     *
+     * @return version as string
+     */
+    public native String iocipherVersion();
+
+    /**
+     * Get version of the JNI part of iocipher used.
+     *
+     * @return version as string
+     */
+    public String iocipherJNIVersion()
+    {
+        return IOCIPHER_JNI_VERSION;
+    }
 
     /**
      * Get the full path to the file used as the virtual file system container.

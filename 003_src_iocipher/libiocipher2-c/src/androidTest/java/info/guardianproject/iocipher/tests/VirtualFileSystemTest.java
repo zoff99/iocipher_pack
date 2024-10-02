@@ -14,7 +14,10 @@ import androidx.test.runner.AndroidJUnit4;
 import info.guardianproject.iocipher.File;
 import info.guardianproject.iocipher.VirtualFileSystem;
 
+import static info.guardianproject.iocipher.VirtualFileSystem.IOCIPHER_JNI_VERSION;
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 
@@ -69,6 +72,24 @@ public class VirtualFileSystemTest {
         if (vfs.isMounted()) {
             vfs.unmount();
         }
+    }
+
+    @Test
+    public void testVersionSqlfs() {
+        Log.i(TAG, "sqlfs version: " + vfs.sqlfsVersion());
+        assertNotNull(vfs.sqlfsVersion());
+    }
+
+    @Test
+    public void testVersionIOcipher() {
+        Log.i(TAG, "iocipher version: " + vfs.iocipherVersion());
+        assertNotNull(vfs.iocipherVersion());
+    }
+
+    @Test
+    public void testVersionIOjnicipher() {
+        Log.i(TAG, "iocipher JNI version: " + vfs.iocipherJNIVersion());
+        assertEquals(vfs.iocipherVersion(), IOCIPHER_JNI_VERSION);
     }
 
     @Test
