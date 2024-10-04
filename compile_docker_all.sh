@@ -29,9 +29,9 @@ rm -f "$logfile"
 if [ "$build_openssl""x" == "1x" ]; then
     cd ./001_src_openssl/.localrun/ || exit 1
     echo "build/upate docker container"
-    ./docker_linux_fast.sh build #>> "$logfile" 2>&1 || exit 1
+    ./docker_linux_fast.sh build >> "$logfile" 2>&1 || exit 1
     echo "build openssl for android and linux"
-    ./docker_linux_fast.sh #>> "$logfile" 2>&1 || exit 1
+    ./docker_linux_fast.sh >> "$logfile" 2>&1 || exit 1
 fi
 
 if [ "$build_sqlfs""x" == "1x" ]; then
