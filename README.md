@@ -45,6 +45,15 @@ For more info on how that works with Java, see:
 
 https://www.gnu.org/licenses/lgpl-java.en.html
 
+Current bugs
+------------
+
+Opening a file with<br>
+`info.guardianproject.iocipher.FileOutputStream(f, true);`<br>
+does currently **NOT** work.<br>
+It will not append but instead open the file `f` for writing at the beginng of the file.
+
+
 Based upon
 ----------
 
