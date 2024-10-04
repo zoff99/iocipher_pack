@@ -33,7 +33,7 @@ chunks.
 * Apache 2.0 (Android Internals): Much of the code here is taken from
   the Android internals, so it has an Apache 2.0 license.
 
-* OpenSSL License: has an Apache 2.0 license.
+* OpenSSL has an Apache 2.0 license.
 
 * LGPL 2.1 (libsqlfs)
 
