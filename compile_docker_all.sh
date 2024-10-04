@@ -82,3 +82,41 @@ ls -1 ./003_src_iocipher/libiocipher2-c/build/outputs/aar/libiocipher2-c-release
 
 echo "====== build: OK ======"
 
+echo "generate maven repository"
+cd "$_HOME_""/"
+cd ./003_src_iocipher/ || exit 1
+
+f1="libiocipher2-c/build.gradle"
+
+cur_num_version=$(cat "$f1" | grep 'versionCode ' | head -1 | \
+	sed -e 's#^.*versionCode ##' ) >> "$logfile" 2>&1
+cur_str_version=$(cat "$f1" | grep 'versionName "' | head -1 | \
+	sed -e 's#^.*versionName "##' | \
+	sed -e 's#".*$##') >> "$logfile" 2>&1
+
+echo "$cur_num_version" >> "$logfile" 2>&1
+echo "$cur_str_version" >> "$logfile" 2>&1
+
+rm -Rf ./stub_work/ >> "$logfile" 2>&1
+cp -a ./stub/ ./stub_work/ >> "$logfile" 2>&1 || exit 1
+cd ./stub_work/root/.m2/repository/info/guardianproject/iocipher/IOCipher2/ >> "$logfile" 2>&1 || exit 1
+sed -i -e 's#0.4.2.104#'"$cur_str_version"'#' maven-metadata-local.xml >> "$logfile" 2>&1 || exit 1
+mv -v 0.4.2.104 "$cur_str_version" >> "$logfile" 2>&1 || exit 1
+cd ./"$cur_str_version"/ >> "$logfile" 2>&1 || exit 1
+mv -v IOCipher2-0.4.2.104.pom IOCipher2-"$cur_str_version".pom >> "$logfile" 2>&1 || exit 1
+sed -i -e 's#0.4.2.104#'"$cur_str_version"'#' IOCipher2-"$cur_str_version".pom >> "$logfile" 2>&1 || exit 1
+
+echo "copy aar file into maven repository"
+cp -av "$_HOME_"/003_src_iocipher/libiocipher2-c/build/outputs/aar/libiocipher2-c-release.aar ./IOCipher2-"$cur_str_version".aar >> "$logfile" 2>&1 || exit 1
+
+cd "$_HOME_""/"
+cd ./003_src_iocipher/ >> "$logfile" 2>&1 || exit 1
+cd ./stub_work/root/ >> "$logfile" 2>&1 || exit 1
+zip -r ../local_maven.zip ./.m2 >> "$logfile" 2>&1 || exit 1
+zip -r ../local_maven_iocipher_"$cur_str_version".zip ./.m2 >> "$logfile" 2>&1 || exit 1
+
+cd "$_HOME_""/"
+ls -1 ./003_src_iocipher/stub_work/local_maven_iocipher_"$cur_str_version".zip
+
+echo "====== maven repository: OK ======"
+
