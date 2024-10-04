@@ -54,11 +54,12 @@ https://github.com/guardianproject/IOCipher
 
 and based on:
 
-https://github.com/guardianproject/libsqlfs
-https://github.com/openssl/openssl/
-https://github.com/sqlite/sqlite
-https://github.com/sqlcipher/sqlcipher
-https://github.com/sqlcipher/sqlcipher-android
+https://github.com/guardianproject/libsqlfs<br>
+https://github.com/openssl/openssl/<br>
+https://github.com/sqlite/sqlite<br>
+https://github.com/sqlcipher/sqlcipher<br>
+https://github.com/sqlcipher/sqlcipher-android<br>
+
 
 
 Any use of this project's code by GitHub Copilot, past or present, is done
