@@ -52,6 +52,20 @@ if [ "$build_sqlfs""x" == "1x" ]; then
     cd ./002_src_libsqlfs/ || exit 1
     echo "build sqlfs and sqlcipher for linux"
     make -j2 >> "$logfile" 2>&1 || exit 1
+
+    if [ "$RUNTESTS""x" == "1x" ]; then
+        cd "$_HOME_""/"
+        cd ./002_src_libsqlfs/ || exit 1
+        echo "run sqlfs ASAN tests for linux"
+        make -j2 testclean >> "$logfile" 2>&1 || exit 1
+        make -j2 test >> "$logfile" 2>&1 || exit 1
+        make -j2 runtest >> "$logfile" 2>&1 || exit 1
+        echo "run sqlfs TSAN tests for linux"
+        make -j2 testclean >> "$logfile" 2>&1 || exit 1
+        make -j2 test_tsan >> "$logfile" 2>&1 || exit 1
+        make -j2 runtest_tsan >> "$logfile" 2>&1 || exit 1
+    fi
+
     cd "$_HOME_""/"
     cd ./002_src_libsqlfs/.localrun/ || exit 1
     echo "build/upate docker container"

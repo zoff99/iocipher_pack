@@ -41,7 +41,7 @@ jobs:
 
     - name: build
       run: |
-        ./compile_docker_all.sh || (cat compile.log; exit 1)
+        export RUNTESTS=1 ; ./compile_docker_all.sh || (cat compile.log; exit 1)
 
     - name: Rename artifact for nightly upload
       run: |
