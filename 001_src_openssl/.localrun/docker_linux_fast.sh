@@ -96,7 +96,7 @@ cd ..
 
 ' > "$_HOME_"/"$system_to_build_for"/script/run.sh
 
-    docker run -ti --rm \
+    docker run --rm \
       -v "$_HOME_"/"$system_to_build_for"/artefacts:/artefacts \
       -v "$_HOME_"/"$system_to_build_for"/script:/script \
       -v "$_HOME_"/"$system_to_build_for"/workspace:/workspace \
