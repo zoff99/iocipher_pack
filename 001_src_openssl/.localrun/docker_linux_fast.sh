@@ -13,8 +13,6 @@ if [ "$1""x" == "buildx" ]; then
     exit 0
 fi
 
-set -x
-
 build_for='debian:12
 '
 
