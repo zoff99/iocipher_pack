@@ -58,15 +58,41 @@ endif
 # ------------------------------
 all: libsqlfs.a
 
-test: libsqlfs.a
-	$(CC) -Itests/ tests/c_api.c -D_GNU_SOURCE=1 $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_api
-	$(CC) -Itests/ tests/c_api_key.c -D_GNU_SOURCE=1 $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_api_key
-	$(CC) -Itests/ tests/c_thread_api.c -D_GNU_SOURCE=1 $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_thread_api
-	$(CC) -Itests/ tests/c_thread_api_key.c -D_GNU_SOURCE=1 $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_thread_api_key
-	$(CC) -Itests/ tests/c_api_password.c -D_GNU_SOURCE=1 $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_api_password
-	$(CC) -Itests/ tests/c_perf.c -D_GNU_SOURCE=1 $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_perf
-	$(CC) -Itests/ tests/c_perf_key.c -D_GNU_SOURCE=1 $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_perf_key
+test: libsqlfs.a sqlite3.a tests/c_*.c
+	$(CC) -Itests/ tests/c_api.c -D_GNU_SOURCE=1 $(ASANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_api
+	$(CC) -Itests/ tests/c_api_key.c -D_GNU_SOURCE=1 $(ASANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_api_key
+	$(CC) -Itests/ tests/c_thread_api.c -D_GNU_SOURCE=1 $(ASANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_thread_api
+	$(CC) -Itests/ tests/c_thread_api_key.c -D_GNU_SOURCE=1 $(ASANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_thread_api_key
+	$(CC) -Itests/ tests/c_api_password.c -D_GNU_SOURCE=1 $(ASANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_api_password
+	$(CC) -Itests/ tests/c_perf.c -D_GNU_SOURCE=1 $(CFLAGS) $(ASANCFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_perf
+	$(CC) -Itests/ tests/c_perf_key.c -D_GNU_SOURCE=1 $(ASANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_perf_key
 
+test_tsan: libsqlfs.a sqlite3.a tests/c_*.c
+	$(CC) -Itests/ tests/c_api.c -D_GNU_SOURCE=1 $(TSANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_api
+	$(CC) -Itests/ tests/c_api_key.c -D_GNU_SOURCE=1 $(TSANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_api_key
+	$(CC) -Itests/ tests/c_thread_api.c -D_GNU_SOURCE=1 $(TSANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_thread_api
+	$(CC) -Itests/ tests/c_thread_api_key.c -D_GNU_SOURCE=1 $(TSANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_thread_api_key
+	$(CC) -Itests/ tests/c_api_password.c -D_GNU_SOURCE=1 $(TSANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_api_password
+	$(CC) -Itests/ tests/c_perf.c -D_GNU_SOURCE=1 $(CFLAGS) $(TSANCFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_perf
+	$(CC) -Itests/ tests/c_perf_key.c -D_GNU_SOURCE=1 $(TSANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_perf_key
+
+runtest: c_api c_api_key c_thread_api c_thread_api_key c_api_password c_perf c_perf_key
+	ASAN_OPTIONS=detect_leaks=0 ./c_api
+	ASAN_OPTIONS=detect_leaks=0 ./c_api_key
+	ASAN_OPTIONS=detect_leaks=0 ./c_thread_api
+	ASAN_OPTIONS=detect_leaks=0 ./c_thread_api_key
+	ASAN_OPTIONS=detect_leaks=0 ./c_api_password
+	ASAN_OPTIONS=detect_leaks=0 ./c_perf
+	ASAN_OPTIONS=detect_leaks=0 ./c_perf_key
+
+runtest_tsan: c_api c_api_key c_thread_api c_thread_api_key c_api_password c_perf c_perf_key
+	./c_api
+	./c_api_key
+	./c_thread_api
+	./c_thread_api_key
+	./c_api_password
+	./c_perf
+	./c_perf_key
 # ------------------------------
 #  sqlfs lib
 # ------------------------------
@@ -95,3 +121,5 @@ clean:
 clean2:
 	rm -f sqlfs.o libsqlfs.a c_*
 
+testclean:
+	rm -f c_*

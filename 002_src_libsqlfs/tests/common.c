@@ -160,7 +160,7 @@ void test_write_n_bytes(sqlfs_t *sqlfs, int testsize)
     printf("Testing writing %d bytes of data...", testsize);
     int i;
     char testfilename[PATH_MAX];
-    char randombuf[testsize];
+    char randombuf[testsize+1];
     char randomdata[testsize];
     struct fuse_file_info fi = { 0 };
     randomfilename(testfilename, PATH_MAX, "write_n_bytes");
@@ -170,6 +170,7 @@ void test_write_n_bytes(sqlfs_t *sqlfs, int testsize)
     sqlfs_proc_write(sqlfs, testfilename, randomdata, testsize, 0, fi.flags);
     sleep(1);
     i = sqlfs_proc_read(sqlfs, testfilename, randombuf, testsize, 0, &fi);
+    printf("testsize=%d i=%d\n", testsize, i);
     randombuf[i] = 0;
     assert(!strcmp(randombuf, randomdata));
     printf("passed\n");
@@ -187,7 +188,7 @@ void test_read_bigger_than_buffer(sqlfs_t *sqlfs)
     randomfilename(testfilename, PATH_MAX, "read_bigger_than_buffer");
     create_test_file(sqlfs, testfilename, filesize);
     assert(sqlfs_proc_read(sqlfs, testfilename, buf, sizeof(buf), bufsize, &fi) == (int)(sizeof(buf)));
-    snprintf(testfilename, PATH_MAX, "%s", buf); // silence cppcheck
+    // snprintf(testfilename, PATH_MAX, "%s", buf); // silence cppcheck
     printf("passed\n");
 }
 
@@ -343,7 +344,7 @@ static void wbb_helper(sqlfs_t *sqlfs, int testsize)
     struct fuse_file_info fi = { 0 };
     fi.flags |= O_RDWR | O_CREAT;
 
-    char *data = calloc(testsize, sizeof(char));
+    char *data = calloc(testsize+1, sizeof(char));
     int i;
     for (i=0; i<testsize; ++i)
         data[i] = (i % 90) + 32;
