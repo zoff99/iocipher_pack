@@ -41,4 +41,4 @@ jobs:
 
     - name: build
       run: |
-        ./compile_docker_all.sh
+        ./compile_docker_all.sh || (cat compile.log; exit 1)
