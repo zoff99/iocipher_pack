@@ -39,7 +39,7 @@ jobs:
       run: |
         docker --version
 
-    - name: build
+    - name: build and test android version
       run: |
         export RUNTESTS=1 ; ./compile_docker_all.sh || (cat compile.log; exit 1)
 
@@ -61,4 +61,8 @@ jobs:
         replacesArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: "local_maven_iocipher_*.zip,libiocipher2-c-release.aar,libiocipher2-c-debug.aar,compile.log"
+
+    - name: build and test linux version
+      run: |
+        cd 003_src_iocipher/linux_jni/c_src && ./compile_linux_c.sh
 
