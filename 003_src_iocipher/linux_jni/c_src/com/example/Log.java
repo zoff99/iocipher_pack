@@ -270,5 +270,17 @@ public final class Log
 
         return 0;
     }
+
+    public static int getLineNumber()
+    {
+        return Thread.currentThread().getStackTrace()[2].getLineNumber();
+    }
+
+    public static String getCaller()
+    {
+        StackTraceElement[] stacktrace = Thread.currentThread().getStackTrace();
+        StackTraceElement e = stacktrace[3];
+        return("F:" + e.getMethodName() + " L:" +e.getLineNumber());
+    }
 }
 

@@ -105,11 +105,11 @@ static void VirtualFileSystem_setContainerPath(JNIEnv *env, jobject obj, jstring
     memset(name2, 0, nameLen + 1);
     memcpy(name2, name, nameLen);
 
-    printf("name=X%sX plen=%d\n", name, (int)nameLen);
+    // printf("name=X%sX plen=%d\n", name, (int)nameLen);
 
     const char *dir = dirname(name2);
 
-    printf("dir=X%sX plen=%d\n", dir, (int)strlen(dir));
+    // printf("dir=X%sX plen=%d\n", dir, (int)strlen(dir));
 
     if (access(dir, R_OK) != 0) {
         validFileName = 0;
@@ -148,7 +148,7 @@ static void VirtualFileSystem_createNewContainer(JNIEnv *env, jobject obj, jstri
     char const *password = (*env)->GetStringUTFChars(env, javaPassword, NULL);
     jsize passwordLen = (*env)->GetStringUTFLength(env, javaPassword);
 
-    printf("pass=X%sX plen=%d\n", password, (int)passwordLen);
+    // printf("pass=X%sX plen=%d\n", password, (int)passwordLen);
 
     /* Attempt to open the database with the password, then immediately close
      * it. If it fails, then the password is likely wrong. */

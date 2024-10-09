@@ -75,7 +75,7 @@ public class iociphertest
 
     public static void testVersionIOjnicipher() {
         System.out.println("iocipher JNI version: " + vfs.iocipherJNIVersion());
-        assertEquals(vfs.iocipherVersion(), IOCIPHER_JNI_VERSION);
+        assertEquals(vfs.iocipherJNIVersion(), IOCIPHER_JNI_VERSION);
     }
 
     public static void testInitMountUnmount() {
@@ -421,62 +421,97 @@ public class iociphertest
         }
 
 
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testExists();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testExists();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testMkdirExists();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testMkdirs();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testSlashIsDirectory();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testCanReadSlash();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testCanWriteSlash();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testSlashIsFile();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testSlashIsAbsolute();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testMkdirRemove();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testRenameToExisting();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testMkdirRename();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testNewFileRename();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testMkdirIsDirectory();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testMkdirList();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testCreateNewFile();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteNewFile();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         // iociphertest_file.setUp();iociphertest_file.testWriteNewFile12GB();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteByteInNewFileThenRead();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteTextInNewFileThenReadByByte();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteTextInNewFileThenReadIntoByteArray();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteTextInNewFileThenReadOneByteByByte();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteTextInNewFileThenCheckSize();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteTextInNewFileThenSkipAndRead();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteRepeat();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteSkipWrite();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteTextInNewFileThenFileInputStream();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteManyLinesInNewFileThenFileInputStream();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteAndReadAfterAlreadyMountedException();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testFileChannelTransferTo();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testFileChannelTransferFrom();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testFileExistingTruncate();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testFileManySizes();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testFileExistingAppend();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testWriteByteInExistingFileThenRead();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
         iociphertest_file.setUp();iociphertest_file.testEqualsAndCompareTo();iociphertest_file.tearDown();
+        Log.i(TAG, "=========================== T2:" + Log.getLineNumber());
 
-
+        Log.i(TAG, "XXX:=== TESTS OK ==:XXX");
     }
 
     static void assertEquals(String a, String b)
     {
-        /*
-        if (a.compareTo(b) == XXXXX)
+        if (!a.equals(b))
         {
-            Log.e(TAG, "ERROR:assertEquals");
+            Log.e(TAG, "ERROR:assertEquals" + " " + Log.getCaller());
             System.exit(1);
         }
-        */
     }
 
     static void assertNotNull(Object a)
     {
         if (a == null)
         {
-            Log.e(TAG, "ERROR:assertNotNull");
+            Log.e(TAG, "ERROR:assertNotNull" + " " + Log.getCaller());
             System.exit(1);
         }
     }
@@ -485,7 +520,7 @@ public class iociphertest
     {
         if (!b)
         {
-            Log.e(TAG, "ERROR:assertTrue");
+            Log.e(TAG, "ERROR:assertTrue" + " " + Log.getCaller());
             System.exit(1);
         }
     }
@@ -494,14 +529,14 @@ public class iociphertest
     {
         if (b)
         {
-            Log.e(TAG, "ERROR:assertFalse");
+            Log.e(TAG, "ERROR:assertFalse" + " " + Log.getCaller());
             System.exit(1);
         }
     }
 
     static void fail()
     {
-        Log.e(TAG, "ERROR:fail");
+        Log.e(TAG, "ERROR:fail" + " " + Log.getCaller());
         System.exit(1);
     }
 }
