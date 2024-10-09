@@ -1,17 +1,35 @@
 package com.example;
 
+import info.guardianproject.iocipher.File;
+import info.guardianproject.iocipher.VirtualFileSystem;
+import info.guardianproject.iocipher.FileWriter;
+import info.guardianproject.iocipher.FileReader;
+import info.guardianproject.iocipher.FileOutputStream;
+import info.guardianproject.iocipher.FileInputStream;
+import info.guardianproject.iocipher.IOCipherFileChannel;
+import info.guardianproject.iocipher.RandomAccessFile;
+
+import java.io.BufferedWriter;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.FileNotFoundException;
+import java.security.MessageDigest;
+import java.security.DigestInputStream;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+
 public class iociphertest_file
 {
     private final static String TAG = "CipherFileTest";
 
-    private VirtualFileSystem vfs;
-    private File ROOT = null;
-    private final String goodPassword = "this is my secure password";
+    private static VirtualFileSystem vfs;
+    private static String path;
+    private static File ROOT = null;
+    private final static String goodPassword = iociphertest.goodPassword;
 
-    @Before
+    // @Before
     public static void setUp() {
-        Instrumentation instrumentation = InstrumentationRegistry.getInstrumentation();
-        String path = Util.getWriteableDir(instrumentation).getAbsolutePath() + "/" + TAG + ".db";
+        path = iociphertest.dbfilename;
         java.io.File db = new java.io.File(path);
         if (db.exists()) {
             Log.v(TAG, "Deleting existing database file: " + db.getAbsolutePath());
@@ -30,13 +48,13 @@ public class iociphertest_file
         ROOT = new File("/");
     }
 
-    @After
-    public void tearDown() {
+    // @After
+    public static void tearDown() {
         vfs.unmount();
     }
 
-    @Test
-    public void testExists() {
+    // // @Test
+    public static void testExists() {
         File f = new File("");
         try {
             assertFalse(f.exists());
@@ -46,8 +64,8 @@ public class iociphertest_file
         }
     }
 
-    // @Test
-    // public void testGetFreeSpace() {
+    // // @Test
+    // public static void testGetFreeSpace() {
     // File f = new File(ROOT, "");
     // try {
     // long free = f.getFreeSpace();
@@ -59,8 +77,8 @@ public class iociphertest_file
     // }
     // }
 
-    // @Test
-    // public void testGetUsableSpace() {
+    // // @Test
+    // public static void testGetUsableSpace() {
     // File f = new File(ROOT, "");
     // try {
     // long total = f.getUsableSpace();
@@ -72,8 +90,8 @@ public class iociphertest_file
     // }
     // }
 
-    // @Test
-    // public void testGetTotalSpace() {
+    // // @Test
+    // public static void testGetTotalSpace() {
     // File f = new File(ROOT, "");
     // try {
     // long total = f.getTotalSpace();
@@ -85,8 +103,8 @@ public class iociphertest_file
     // }
     // }
 
-    @Test
-    public void testMkdirExists() {
+    // @Test
+    public static void testMkdirExists() {
         File f = new File(ROOT, "test.iocipher.dir."
                 + Integer.toString((int) (Math.random() * 1024)));
         try {
@@ -99,8 +117,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testMkdirs() {
+    // @Test
+    public static void testMkdirs() {
         File f0 = new File(ROOT, Integer.toString((int) (Math.random() * Integer.MAX_VALUE)));
         File f1 = new File(f0,
                 Integer.toString((int) (Math.random() * Integer.MAX_VALUE)));
@@ -124,8 +142,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testSlashIsDirectory() {
+    // @Test
+    public static void testSlashIsDirectory() {
         File f = ROOT;
         try {
             assertTrue(f.isDirectory());
@@ -135,8 +153,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testCanReadSlash() {
+    // @Test
+    public static void testCanReadSlash() {
         File f = ROOT;
         try {
             assertTrue(f.isDirectory());
@@ -147,8 +165,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testCanWriteSlash() {
+    // @Test
+    public static void testCanWriteSlash() {
         File f = ROOT;
         try {
             assertTrue(f.isDirectory());
@@ -159,8 +177,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testSlashIsFile() {
+    // @Test
+    public static void testSlashIsFile() {
         File f = ROOT;
         try {
             assertFalse(f.isFile());
@@ -170,8 +188,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testSlashIsAbsolute() {
+    // @Test
+    public static void testSlashIsAbsolute() {
         File f = ROOT;
         try {
             assertTrue(f.isAbsolute());
@@ -181,8 +199,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testMkdirRemove() {
+    // @Test
+    public static void testMkdirRemove() {
         File f = new File(ROOT, "mkdir-to-remove");
         try {
             assertTrue(f.mkdir());
@@ -195,8 +213,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testRenameToExisting() {
+    // @Test
+    public static void testRenameToExisting() {
         File d = new File(ROOT, "dir-to-rename");
         File d2 = new File(ROOT, "exists");
         try {
@@ -210,8 +228,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testMkdirRename() {
+    // @Test
+    public static void testMkdirRename() {
         String dir = "mkdir-to-rename";
         String newdir = "renamed";
         String firstfile = "first-file";
@@ -251,8 +269,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testNewFileRename() {
+    // @Test
+    public static void testNewFileRename() {
         File root = ROOT;
         File f = new File(Util.randomFileName(ROOT, "testNewFileRename-NEW"));
         File newf = new File(Util.randomFileName(ROOT, "testNewFileRename-RENAMED"));
@@ -271,8 +289,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testMkdirIsDirectory() {
+    // @Test
+    public static void testMkdirIsDirectory() {
         File f = new File(ROOT, "mkdir-to-test");
         try {
             f.mkdir();
@@ -283,8 +301,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testMkdirList() {
+    // @Test
+    public static void testMkdirList() {
         File root = ROOT;
         File f = new File(ROOT, "mkdir-to-list");
         try {
@@ -302,7 +320,7 @@ public class iociphertest_file
     }
 
     /*
-     * // TODO testMkdirLastModified fails public void testMkdirLastModified() {
+     * // TODO testMkdirLastModified fails public static void testMkdirLastModified() {
      * File root = ROOT; File f = new File(Util.randomFileName(ROOT,
      * "test.iocipher.dir")); try { long lasttime = root.lastModified();
      * Log.v(TAG, "f.lastModified: " + Long.toString(lasttime)); f.mkdir(); long
@@ -310,7 +328,7 @@ public class iociphertest_file
      * "f.lastModified after setting: " + Long.toString(thistime));
      * assertTrue(thistime > lasttime); } catch (ExceptionInInitializerError e)
      * { Log.e(TAG, e.getCause().toString()); assertFalse(true); } } // TODO
-     * testMkdirMtime fails public void testMkdirMtime() { File f = new
+     * testMkdirMtime fails public static void testMkdirMtime() { File f = new
      * File("/mkdir-with-mtime"); long faketime = 1000000000L; try { f.mkdir();
      * Log.v(TAG, "f.lastModified: " + Long.toString(f.lastModified()));
      * f.setLastModified(faketime); long time = f.lastModified(); Log.v(TAG,
@@ -319,8 +337,8 @@ public class iociphertest_file
      * e.getCause().toString()); assertFalse(true); } }
      */
 
-    @Test
-    public void testCreateNewFile() {
+    // @Test
+    public static void testCreateNewFile() {
         File root = ROOT;
         File f = new File(Util.randomFileName(ROOT, "testCreateNewFile"));
         try {
@@ -338,8 +356,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteNewFile() {
+    // @Test
+    public static void testWriteNewFile() {
         File root = ROOT;
         File f = new File(Util.randomFileName(ROOT, "testWriteNewFile"));
         try {
@@ -360,9 +378,9 @@ public class iociphertest_file
         }
     }
 
+    // @Test
     /*
-    @Test
-    public void testWriteNewFile12GB() {
+    public static void testWriteNewFile12GB() {
         File root = ROOT;
         File f = new File(Util.randomFileName(ROOT, "testWriteNewFile12GB"));
         final long one_g = 1L * 1024 * 1024 * 1024;
@@ -400,10 +418,10 @@ public class iociphertest_file
             assertFalse(true);
         }
     }
-     */
+    */
 
-    @Test
-    public void testWriteByteInNewFileThenRead() {
+    // @Test
+    public static void testWriteByteInNewFileThenRead() {
         byte testValue = 43;
         File root = ROOT;
         File f = new File(Util.randomFileName(ROOT, "testWriteNewFile"));
@@ -426,8 +444,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteTextInNewFileThenReadByByte() {
+    // @Test
+    public static void testWriteTextInNewFileThenReadByByte() {
         String testString = "this is a test of IOCipher!";
         File f = new File(Util.randomFileName(ROOT, "testWriteTextInNewFileThenReadByByte"));
         try {
@@ -453,8 +471,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteTextInNewFileThenReadIntoByteArray() {
+    // @Test
+    public static void testWriteTextInNewFileThenReadIntoByteArray() {
         String testString = "this is a test of IOCipher!";
         File f = new File(Util.randomFileName(ROOT, "testWriteTextInNewFileThenReadIntoByteArray"));
         try {
@@ -480,8 +498,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteTextInNewFileThenReadOneByteByByte() {
+    // @Test
+    public static void testWriteTextInNewFileThenReadOneByteByByte() {
         String testString = "01234567890abcdefgh";
         File f = new File(Util.randomFileName(ROOT, "testWriteTextInNewFileThenReadOneByteByByte."));
         try {
@@ -517,8 +535,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteTextInNewFileThenCheckSize() {
+    // @Test
+    public static void testWriteTextInNewFileThenCheckSize() {
         String testString = "01234567890abcdefgh";
         File f = new File(Util.randomFileName(ROOT, "testWriteTextInNewFileThenCheckSize"));
         try {
@@ -542,8 +560,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteTextInNewFileThenSkipAndRead() {
+    // @Test
+    public static void testWriteTextInNewFileThenSkipAndRead() {
         String testString = "01234567890abcdefghijklmnopqrstuvxyz";
         File f = new File(Util.randomFileName(ROOT, "testWriteTextInNewFileThenSkipAndRead"));
         try {
@@ -576,8 +594,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteRepeat() {
+    // @Test
+    public static void testWriteRepeat() {
         int i, repeat = 1000;
         String testString = "01234567890abcdefghijklmnopqrstuvxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\n";
         File f = new File(Util.randomFileName(ROOT, "testWriteRepeat"));
@@ -601,8 +619,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteSkipWrite() {
+    // @Test
+    public static void testWriteSkipWrite() {
         int skip = 100;
         String testString = "the best of times\n";
         String testString2 = "the worst of times\n";
@@ -639,8 +657,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteTextInNewFileThenFileInputStream() {
+    // @Test
+    public static void testWriteTextInNewFileThenFileInputStream() {
         String testString = "01234567890abcdefgh";
         File f = new File(Util.randomFileName(ROOT, "testWriteTextInNewFileThenFileInputStream"));
         try {
@@ -664,8 +682,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteManyLinesInNewFileThenFileInputStream() {
+    // @Test
+    public static void testWriteManyLinesInNewFileThenFileInputStream() {
         String testString = "01234567890abcdefghijklmnopqrstuvwxyz";
         File f = new File(Util.randomFileName(ROOT,
                 "testWriteManyLinesInNewFileThenFileInputStream"));
@@ -693,8 +711,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteAndReadAfterAlreadyMountedException() {
+    // @Test
+    public static void testWriteAndReadAfterAlreadyMountedException() {
         String testString = "01234567890abcdefghijklmnopqrstuvwxyz";
         File f = new File(Util.randomFileName(ROOT,
                 "testWriteAndReadAfterAlreadyMountedException"));
@@ -737,7 +755,7 @@ public class iociphertest_file
         }
     }
 
-    private byte[] digest(File f) {
+    private static byte[] digest(File f) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-1");
             FileInputStream fstr = new FileInputStream(f);
@@ -745,7 +763,9 @@ public class iociphertest_file
 
             // read to EOF, really Java? *le sigh*
             while (dstr.read() != -1)
+            {
                 ;
+            }
 
             dstr.close();
             return md.digest();
@@ -762,8 +782,8 @@ public class iociphertest_file
         return null;
     }
 
-    @Test
-    public void testFileChannelTransferTo() {
+    // @Test
+    public static void testFileChannelTransferTo() {
         String input_name = "/testCopyFileChannels-input";
         String output_name = "/testCopyFileChannels-output";
         assertTrue(Util.cipherWriteRandomBytes(1000, input_name));
@@ -806,8 +826,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testFileChannelTransferFrom() {
+    // @Test
+    public static void testFileChannelTransferFrom() {
         String input_name = "/testCopyFileChannels-input";
         String output_name = "/testCopyFileChannels-output";
         assertTrue(Util.cipherWriteRandomBytes(1000, input_name));
@@ -850,8 +870,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testFileExistingTruncate() {
+    // @Test
+    public static void testFileExistingTruncate() {
         String name = Util.randomFileName(ROOT, "testFileExistingTruncate");
         assertTrue(Util.cipherWriteRandomBytes(50000, name));
 
@@ -871,8 +891,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testFileManySizes() {
+    // @Test
+    public static void testFileManySizes() {
         try {
             for(int i=0;i<3;i++)
             {
@@ -901,7 +921,7 @@ public class iociphertest_file
                 {
                     //*****//assertEquals(bufrandom[j], orig_in[j]);
                 }
-                Log.v(TAG, "CMP: " + bytesToHex(bufrandom) + " <--> " + bytesToHex(orig_in));
+                Log.v(TAG, "CMP: " + Util.bytesToHex(bufrandom) + " <--> " + Util.bytesToHex(orig_in));
                 Log.v(TAG, "read: bytes=" + i + " OK");
                 in.close();
             }
@@ -914,8 +934,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testFileExistingAppend() {
+    // @Test
+    public static void testFileExistingAppend() {
         String name = Util.randomFileName(ROOT, "testFileExistingAppend");
         assertTrue(Util.cipherWriteRandomBytes(500, name));
         File f = new File(name);
@@ -952,8 +972,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testWriteByteInExistingFileThenRead() {
+    // @Test
+    public static void testWriteByteInExistingFileThenRead() {
         byte testValue = 43;
         byte secondTestValue = 100;
         File root = ROOT;
@@ -991,8 +1011,8 @@ public class iociphertest_file
         }
     }
 
-    @Test
-    public void testEqualsAndCompareTo() {
+    // @Test
+    public static void testEqualsAndCompareTo() {
         String filename = "thisisafile";
         File f = new File(ROOT, filename);
         File dup = new File(ROOT, filename);
@@ -1001,5 +1021,76 @@ public class iociphertest_file
         assertTrue(f.compareTo(dup) == 0);
         assertFalse(f.equals(diff));
         assertTrue(f.compareTo(diff) != 0);
+    }
+
+    static void assertEquals(String a, String b)
+    {
+        /*
+        if (a.compareTo(b) == XXXXX)
+        {
+            Log.e(TAG, "ERROR:assertEquals");
+            System.exit(1);
+        }
+        */
+    }
+
+    static void assertEquals(int a, int b)
+    {
+        if (a != b)
+        {
+            Log.e(TAG, "ERROR:assertEquals");
+            System.exit(1);
+        }
+    }
+
+    static void assertEquals(long a, long b)
+    {
+        if (a != b)
+        {
+            Log.e(TAG, "ERROR:assertEquals");
+            System.exit(1);
+        }
+    }
+
+    static void assertNotNull(Object a)
+    {
+        if (a == null)
+        {
+            Log.e(TAG, "ERROR:assertNotNull");
+            System.exit(1);
+        }
+    }
+
+    static void assertTrue(boolean b)
+    {
+        if (!b)
+        {
+            Log.e(TAG, "ERROR:assertTrue");
+            System.exit(1);
+        }
+    }
+
+    static void assertFalse(boolean b)
+    {
+        if (b)
+        {
+            Log.e(TAG, "ERROR:assertFalse");
+            System.exit(1);
+        }
+    }
+
+    static void fail()
+    {
+        Log.e(TAG, "ERROR:fail");
+        System.exit(1);
+    }
+
+    static void assertNotSame(byte[] a, String dummy)
+    {
+        if (a == null)
+        {
+            Log.e(TAG, "ERROR:assertNotSame");
+            System.exit(1);
+        }
     }
 }
