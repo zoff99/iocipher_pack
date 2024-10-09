@@ -47,10 +47,8 @@ public class VirtualFileSystem {
      */
     public static VirtualFileSystem get()
     {
-        System.out.println("VirtualFileSystem:get()");
         if (vfs == null)
         {
-            System.out.println("VirtualFileSystem:new VirtualFileSystem()");
             vfs = new VirtualFileSystem();
         }
         return vfs;

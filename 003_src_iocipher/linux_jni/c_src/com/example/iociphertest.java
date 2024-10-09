@@ -12,8 +12,8 @@ public class iociphertest
     private static VirtualFileSystem vfs;
     private static String path;
     private static String goodPassword = "this is the right password";
-    private String badPassword = "this soooo not the right password, its wrong";
-    private byte[] goodKey = {
+    private static String badPassword = "this soooo not the right password, its wrong";
+    private static byte[] goodKey = {
             (byte) 0x2a, (byte) 0xfc, (byte) 0x69, (byte) 0xa1, (byte) 0x16, (byte) 0x40,
             (byte) 0x4f, (byte) 0x7d, (byte) 0x7f, (byte) 0x1b, (byte) 0x1d, (byte) 0xb9,
             (byte) 0x5e, (byte) 0x18, (byte) 0x11, (byte) 0x2e, (byte) 0x6b, (byte) 0x3c,
@@ -21,7 +21,7 @@ public class iociphertest
             (byte) 0xb1, (byte) 0x90, (byte) 0x51, (byte) 0x15, (byte) 0xbf, (byte) 0xc3,
             (byte) 0xb2, (byte) 0x8d,
     };
-    private byte[] tooLongKey = {
+    private static byte[] tooLongKey = {
             (byte) 0x2a, (byte) 0xfc, (byte) 0x69, (byte) 0xa1, (byte) 0x16, (byte) 0x40,
             (byte) 0x4f, (byte) 0x7d, (byte) 0x7f, (byte) 0x1b, (byte) 0x1d, (byte) 0xb9,
             (byte) 0x5e, (byte) 0x18, (byte) 0x11, (byte) 0x2e, (byte) 0x6b, (byte) 0x3c,
@@ -29,14 +29,14 @@ public class iociphertest
             (byte) 0xb1, (byte) 0x90, (byte) 0x51, (byte) 0x15, (byte) 0xbf, (byte) 0xc3,
             (byte) 0xb2, (byte) 0x8d, (byte) 0x00
     };
-    private byte[] tooShortKey = {
+    private static byte[] tooShortKey = {
             (byte) 0x2a, (byte) 0xfc, (byte) 0x69, (byte) 0xa1, (byte) 0x16, (byte) 0x40,
             (byte) 0x4f, (byte) 0x7d, (byte) 0x7f, (byte) 0x1b, (byte) 0x1d, (byte) 0xb9,
             (byte) 0x5e, (byte) 0x18, (byte) 0x11, (byte) 0x2e, (byte) 0x6b, (byte) 0x3c,
             (byte) 0xf7, (byte) 0x1e, (byte) 0x78, (byte) 0xaf, (byte) 0x88, (byte) 0x3c,
             (byte) 0xb1, (byte) 0x90, (byte) 0x51, (byte) 0x15, (byte) 0xbf, (byte) 0xc3,
     };
-    private byte[] badKey = {
+    private static byte[] badKey = {
             'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
             'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B', 'B',
     };
@@ -50,9 +50,16 @@ public class iociphertest
     }
 
     public static void tearDown() {
-        if (vfs.isMounted()) {
-            vfs.unmount();
+        try
+        {
+            if (vfs.isMounted()) {
+                vfs.unmount();
+            }
         }
+        catch(Exception e)
+        {
+        }
+
     }
 
     public static void testVersionSqlfs() {
@@ -83,22 +90,338 @@ public class iociphertest
         vfs.unmount();
     }
 
+    public static void testInitMountMkdirUnmount() {
+        vfs.setContainerPath(path);
+        vfs.createNewContainer(goodPassword);
+        vfs.mount(goodPassword);
+        if (vfs.isMounted()) {
+            Log.i(TAG, "vfs is mounted");
+        } else {
+            Log.i(TAG, "vfs is NOT mounted");
+        }
+        File d = new File("/test");
+        assertTrue(d.mkdir());
+        vfs.unmount();
+    }
+
+    public static void testCreateMountUnmountMountExists() {
+        vfs.setContainerPath(path);
+        vfs.createNewContainer(goodPassword);
+        vfs.mount(goodPassword);
+        File f = new File("/testCreateMountUnmountMountExists."
+                + Integer.toString((int) (Math.random() * 1024)));
+        try {
+            f.createNewFile();
+        } catch (Exception e) {
+            Log.e(TAG, "cannot create " + f.getPath());
+            assertFalse(true);
+        }
+        vfs.unmount();
+        vfs.mount(goodPassword);
+        assertTrue(f.exists());
+        vfs.unmount();
+    }
+
+    public static void testMountPasswordWithBadPassword() {
+        vfs.createNewContainer(path, goodPassword);
+        vfs.mount(goodPassword);
+        File d = new File("/");
+        for (String f : d.list()) {
+            Log.v(TAG, "file: " + f);
+        }
+        vfs.unmount();
+        vfs.mount(badPassword);
+    }
+
+    public static void testMountKeyWithBadKey() {
+        vfs.setContainerPath(path);
+        vfs.createNewContainer(goodKey);
+        Log.i(TAG, "goodKey length: " + goodKey.length);
+        Log.i(TAG, "badKey length: " + badKey.length);
+        vfs.mount(goodKey);
+        File d = new File("/");
+        for (String f : d.list()) {
+            Log.v(TAG, "file: " + f);
+        }
+        vfs.unmount();
+        vfs.mount(badKey);
+    }
+
+    public static void testMountKeyWithTooLongKey() {
+        vfs.createNewContainer(path, goodKey);
+        Log.i(TAG, "goodKey length: " + goodKey.length);
+        Log.i(TAG, "tooLongKey length: " + tooLongKey.length);
+        vfs.mount(goodKey);
+        File d = new File("/");
+        for (String f : d.list()) {
+            Log.v(TAG, "file: " + f);
+        }
+        vfs.unmount();
+        try {
+            vfs.mount(tooLongKey);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        } finally {
+            try {
+                vfs.unmount();
+            } catch (IllegalStateException e) {
+                // was not mounted, ignore
+            }
+        }
+        fail();
+    }
+
+    public static void testMountKeyWithTooShortKey() {
+        vfs.createNewContainer(path, goodKey);
+        Log.i(TAG, "goodKey length: " + goodKey.length);
+        Log.i(TAG, "tooShortKey length: " + tooShortKey.length);
+        vfs.mount(goodKey);
+        File d = new File("/");
+        for (String f : d.list()) {
+            Log.v(TAG, "file: " + f);
+        }
+        vfs.unmount();
+        try {
+            vfs.mount(tooShortKey);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        } finally {
+            try {
+                vfs.unmount();
+            } catch (IllegalStateException e) {
+                // was not mounted, ignore
+            }
+        }
+        fail();
+    }
+
+    public static void testMountKeyWithZeroedKey() {
+        vfs.setContainerPath(path);
+        byte[] keyCopy = new byte[goodKey.length];
+        for (int i = 0; i < goodKey.length; i++)
+            keyCopy[i] = goodKey[i];
+        vfs.createNewContainer(keyCopy);
+        vfs.mount(keyCopy);
+        File d = new File("/");
+        for (String f : d.list()) {
+            Log.v(TAG, "file: " + f);
+        }
+        vfs.unmount();
+        for (int i = 0; i < keyCopy.length; i++)
+            keyCopy[i] = 0;
+        try {
+            vfs.mount(keyCopy);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        } finally {
+            try {
+                vfs.unmount();
+            } catch (IllegalStateException e) {
+                // was not mounted, ignore
+            }
+        }
+        fail();
+    }
+
+    public static void testNoWritePermsInDir() {
+        vfs.setContainerPath("/file-to-create-here");
+    }
+
+    public static void testMountKeyNonExistentFile() {
+        vfs.setContainerPath("/foo/bar/this/does/not/exist");
+    }
+
+    public static void testSetGetContainerPath() {
+        vfs.setContainerPath(path);
+        assertTrue(path.equals(vfs.getContainerPath()));
+    }
+
+    public static void testMountAfterFileDeleted() {
+        vfs.setContainerPath(path);
+        vfs.createNewContainer(goodKey);
+        vfs.mount(goodKey);
+        File d = new File("/testMountAfterFileDeleted");
+        assertTrue(d.mkdir());
+        vfs.unmount();
+        java.io.File containerFile = new java.io.File(vfs.getContainerPath());
+        assertTrue(containerFile.exists());
+        containerFile.delete();
+        assertFalse(containerFile.exists());
+        vfs.mount(goodKey);
+    }
+
+    public static void testMountWithoutCreate() {
+        vfs.setContainerPath(path);
+        vfs.mount(goodKey);
+    }
+
+    public static void testMountWithoutCreateSeparat() {
+        vfs.setContainerPath(path);
+        vfs.mount(goodKey);
+    }
+
+    public static void testMountWithoutCreateAtOnce() {
+        vfs.mount(path, goodKey);
+    }
+
+
+    // ==============================================
+
+
     public static void main(String[] args)
     {
         // -------------------
         System.out.println("-test-");
         // -------------------
         setUp();
-        // -------------------
         testVersionSqlfs();
         testVersionIOcipher();
         testVersionIOjnicipher();
-        // -------------------
-        testInitMountUnmount();
-
-        // -------------------
         tearDown();
         // -------------------
+        Log.i(TAG, "001");
+        setUp();
+        testInitMountUnmount();
+        tearDown();
+
+        Log.i(TAG, "002");
+        setUp();
+        testInitMountMkdirUnmount();
+        tearDown();
+
+        Log.i(TAG, "004");
+        setUp();
+        try
+        {
+            testMountPasswordWithBadPassword();
+            fail();
+        }
+        catch(IllegalArgumentException e)
+        {
+        }
+        tearDown();
+
+        Log.i(TAG, "005");
+        setUp();
+        try
+        {
+            testMountKeyWithBadKey();
+            fail();
+        }
+        catch(IllegalArgumentException e)
+        {
+        }
+        tearDown();
+
+        Log.i(TAG, "006");
+        setUp();
+        testMountKeyWithTooLongKey();
+        tearDown();
+
+        Log.i(TAG, "007");
+        setUp();
+        testMountKeyWithTooShortKey();
+        tearDown();
+
+        Log.i(TAG, "008");
+        setUp();
+        testMountKeyWithZeroedKey();
+        tearDown();
+
+        Log.i(TAG, "009");
+        setUp();
+        try
+        {
+            testNoWritePermsInDir();
+            fail();
+        }
+        catch(IllegalArgumentException e)
+        {
+        }
+        tearDown();
+
+        Log.i(TAG, "010");
+        setUp();
+        try
+        {
+            testMountKeyNonExistentFile();
+            fail();
+        }
+        catch(IllegalArgumentException e)
+        {
+        }
+        tearDown();
+
+        Log.i(TAG, "011");
+        setUp();
+        testSetGetContainerPath();
+        tearDown();
+
+        Log.i(TAG, "012");
+        setUp();
+        try
+        {
+            testMountAfterFileDeleted();
+            fail();
+        }
+        catch(IllegalArgumentException e)
+        {
+        }
+        tearDown();
+
+        Log.i(TAG, "013");
+        setUp();
+        try
+        {
+            testMountWithoutCreate();
+            fail();
+        }
+        catch(IllegalArgumentException e)
+        {
+        }
+        tearDown();
+
+        Log.i(TAG, "014");
+        setUp();
+        try
+        {
+            testMountWithoutCreateSeparat();
+            fail();
+        }
+        catch(IllegalArgumentException e)
+        {
+        }
+        tearDown();
+
+        Log.i(TAG, "015");
+        setUp();
+        try
+        {
+            testMountWithoutCreateAtOnce();
+            fail();
+        }
+        catch(IllegalArgumentException e)
+        {
+        }
+        tearDown();
+
+        Log.i(TAG, "003");
+        setUp();
+        testCreateMountUnmountMountExists();
+        tearDown();
+        // -------------------
+
+
+
+
+
+        iociphertest_file.setUp();
+
+
+
     }
 
     static void assertEquals(String a, String b)
@@ -128,6 +451,21 @@ public class iociphertest
             Log.e(TAG, "ERROR:assertTrue");
             System.exit(1);
         }
+    }
+
+    static void assertFalse(boolean b)
+    {
+        if (b)
+        {
+            Log.e(TAG, "ERROR:assertFalse");
+            System.exit(1);
+        }
+    }
+
+    static void fail()
+    {
+        Log.e(TAG, "ERROR:fail");
+        System.exit(1);
     }
 }
 

@@ -14,12 +14,15 @@
  * limitations under the License.
  */
 
+#define _GNU_SOURCE
+
 #define LOG_TAG "Posix"
 
 #include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <pwd.h>
+#include <linux/limits.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
@@ -38,8 +41,6 @@
 
 #include "JNIHelp.h"
 #include "JniConstants.h"
-
-#define PATH_MAX 4096
 
 /* right now, we use a single global virtual file system so we don't
  * have to map the structs sqlfs_t and sqlite3 to Java code */
@@ -218,6 +219,12 @@ static void Posix_link(JNIEnv* env, jobject, jstring javaFrom, jstring javaTo) {
     const char* from = (*env)->GetStringUTFChars(env, javaFrom, NULL);
     const char* to = (*env)->GetStringUTFChars(env, javaTo, NULL);
     if (from == NULL || to == NULL) {
+        if (from != NULL) {
+            (*env)->ReleaseStringUTFChars(env, javaFrom, from);
+        }
+        if (to != NULL) {
+            (*env)->ReleaseStringUTFChars(env, javaTo, to);
+        }
         return;
     }
     throwIfNegative(env, "link", TEMP_FAILURE_RETRY(sqlfs_proc_link(0, from, to)));
@@ -264,13 +271,15 @@ static jobject Posix_open(JNIEnv* env, jobject, jstring javaPath, jint flags, ji
     } else {
         result = sqlfs_proc_open(0, path, &ffi);
     }
-    (*env)->ReleaseStringUTFChars(env, javaPath, path);
     if (result < 0) {
         throwErrnoException(env, "open", result);
+        (*env)->ReleaseStringUTFChars(env, javaPath, path);
         return NULL;
     } else {
         sqlfs_proc_chmod(0, path, mode);
-        return jniCreateFileDescriptor(env, javaPath);
+        jobject ret_obj = jniCreateFileDescriptor(env, javaPath);
+        (*env)->ReleaseStringUTFChars(env, javaPath, path);
+        return ret_obj;
     }
 }
 
@@ -281,6 +290,10 @@ static jint Posix_preadBytes(JNIEnv* env, jobject, jobject javaFd, jobject javaB
     }
     jstring javaPath = jniGetPathFromFileDescriptor(env, javaFd);
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
+    if (path == NULL) {
+        (*env)->ReleaseByteArrayElements(env, javaBytes, bytes, 0);
+        return -1;
+    }
     int result = sqlfs_proc_read(0, path, (char*)(bytes + byteOffset), byteCount, (off_t)offset, NULL);
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
     (*env)->ReleaseByteArrayElements(env, javaBytes, bytes, 0);
@@ -301,6 +314,10 @@ static jint Posix_pwriteBytes(JNIEnv* env, jobject, jobject javaFd, jobject java
     }
     jstring javaPath = jniGetPathFromFileDescriptor(env, javaFd);
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
+    if (path == NULL) {
+        (*env)->ReleaseByteArrayElements(env, javaBytes, bytes, 0);
+        return -1;
+    }
     int modeFlagsNow = modeFlags;
     int result = sqlfs_proc_write(0,
                                   path,
@@ -338,6 +355,7 @@ static void Posix_rename(JNIEnv* env, jobject, jstring javaOldPath, jstring java
     }
     const char* newPath = (*env)->GetStringUTFChars(env, javaNewPath, NULL);
     if (newPath == NULL) {
+        (*env)->ReleaseStringUTFChars(env, javaOldPath, oldPath);
         return;
     }
     throwIfNegative(env, "rename", TEMP_FAILURE_RETRY(sqlfs_proc_rename(0, oldPath, newPath)));
@@ -369,7 +387,7 @@ static jobject Posix_statfs(JNIEnv* env, jobject, jstring javaPath) {
         return NULL;
     }
     /* some guesses at how things should be represented */
-    sb.f_bsize = 4096; // libsqlfs uses 4k page sizes in sqlite (I think)
+    sb.f_bsize = 4096; // libsqlfs uses 4k page sizes in sqlite (I think) // Zoff: isn't it using 8k blocks in sqlcipher? hmmm. not sure what's the correct value here.
 
     struct stat st;
     stat(dbFileName, &st);
@@ -390,6 +408,7 @@ static void Posix_symlink(JNIEnv* env, jobject, jstring javaOldPath, jstring jav
     }
     const char* newPath = (*env)->GetStringUTFChars(env, javaNewPath, NULL);
     if (newPath == NULL) {
+        (*env)->ReleaseStringUTFChars(env, javaOldPath, oldPath);
         return;
     }
     throwIfNegative(env, "symlink", TEMP_FAILURE_RETRY(sqlfs_proc_symlink(0, oldPath, newPath)));

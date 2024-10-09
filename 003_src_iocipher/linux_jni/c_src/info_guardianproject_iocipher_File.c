@@ -15,6 +15,8 @@
  *  limitations under the License.
  */
 
+#define _GNU_SOURCE
+
 #define LOG_TAG "File"
 
 #include <jni.h>
@@ -56,7 +58,7 @@ static jstring File_readlink(JNIEnv* env, jclass cls, jstring javaPath) {
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 
     if (len == -1) {
-        // jniThrowIOException(env, errno);
+        jniThrowIOException(env, errno);
         return NULL;
     }
 
@@ -75,7 +77,7 @@ static jstring File_realpath(JNIEnv* env, jclass cls, jstring javaPath) {
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 
     if (result == NULL) {
-        // jniThrowIOException(env, errno);
+        jniThrowIOException(env, errno);
         return NULL;
     }
 
@@ -85,7 +87,7 @@ static jstring File_realpath(JNIEnv* env, jclass cls, jstring javaPath) {
 static jlong File_lastModifiedImpl(JNIEnv* env, jclass cls, jstring javaPath) {
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     if (path == NULL) {
-        return 0;
+        return JNI_FALSE;
     }
 
     key_attr attr;
@@ -108,7 +110,11 @@ static jboolean File_setLastModifiedImpl(JNIEnv* env, jclass cls, jstring javaPa
     // TODO: we could get microsecond resolution with utimes(3), "legacy" though it is.
     key_attr mtime;
     mtime.mtime = (time_t)(ms / 1000);
-    int result = sqlfs_set_attr(0, "mtime", &mtime) && sqlfs_set_attr(0, "atime", &atime);
+
+    int result = sqlfs_set_attr(0, "mtime", &mtime);
+    if (result) {
+        result = sqlfs_set_attr(0, "atime", &atime);
+    }
 
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 
@@ -121,6 +127,9 @@ typedef struct {
     int capacity;
 } DirEntries;
 
+/* FUSE filler() function for use with the FUSE style readdir() that
+ * libsqlfs provides.  Note: this function only ever expects statp to
+ * be NULL and off to be 0.  buf is DirEntries */
 static int fill_dir(void *buf, const char *name, const struct stat *statp, off_t off) {
     DirEntries *entries = (DirEntries*) buf;
     if(statp != NULL)
@@ -140,7 +149,7 @@ static int fill_dir(void *buf, const char *name, const struct stat *statp, off_t
 
     entries->entries[entries->count] = strdup(name);
     if (entries->entries[entries->count] == NULL) {
-        return 1;  // Error
+        return 0;  // Error (HINT: in the original it always return 0, even on error. so we keep this behaviour)
     }
     entries->count++;
 
@@ -167,6 +176,7 @@ static jobjectArray File_listImpl(JNIEnv* env, jclass cls, jstring javaPath) {
     }
 
     DirEntries entries = {NULL, 0, 16};
+    // using FUSE readdir in old getdir() style which gives us the whole thing at once
     entries.entries = malloc(entries.capacity * sizeof(char*));
     if (entries.entries == NULL) {
         (*env)->ReleaseStringUTFChars(env, javaPath, path);
@@ -177,7 +187,8 @@ static jobjectArray File_listImpl(JNIEnv* env, jclass cls, jstring javaPath) {
 
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 
-    // Filter "." and ".." from list of entries
+    // filter "." and ".." from list of entries
+    // Translate the intermediate form into a Java String[].
     int filtered_count = 0;
     for (int i = 0; i < entries.count; i++) {
         if (strcmp(entries.entries[i], ".") != 0 && strcmp(entries.entries[i], "..") != 0) {
