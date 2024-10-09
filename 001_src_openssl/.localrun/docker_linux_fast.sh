@@ -9,7 +9,8 @@ echo "$_HOME_"
 cd "$_HOME_" || exit
 
 if [ "$1""x" == "buildx" ]; then
-    docker build -f Dockerfile_deb12 -t openssl_android_deb12_001 .
+    cp ../../000_deps/openssl-3.3.2.tar.gz . && docker build -f Dockerfile_deb12 -t openssl_android_deb12_001 .
+    rm -f openssl-3.3.2.tar.gz
     exit 0
 fi
 
