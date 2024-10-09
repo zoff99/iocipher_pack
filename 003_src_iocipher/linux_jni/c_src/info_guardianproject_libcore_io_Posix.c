@@ -104,7 +104,7 @@ static jobject makeStructPasswd(JNIEnv* env, const struct passwd* pw) {
 static jobject makeStructStat(JNIEnv* env, const struct stat* sb) {
     jclass cls = (*env)->FindClass(env, "info/guardianproject/libcore/io/StructStat");
     jmethodID ctor = (*env)->GetMethodID(env, cls, "<init>",
-                            "(JJIJIIJJJJJJ)V");
+                            "(JJIJIIJJJJJJJ)V");
     return (*env)->NewObject(env, cls, ctor,
                           (jlong)sb->st_dev, (jlong)sb->st_ino,
                           (jint)sb->st_mode, (jlong)sb->st_nlink,
