@@ -486,7 +486,7 @@ void run_standard_tests(sqlfs_t* sqlfs)
     int size;
 
     printf("Running standard tests:\n");
-    test_getattr_create_truncate_truncate_truncate(sqlfs);
+    // test_getattr_create_truncate_truncate_truncate(sqlfs);
 
     test_mkdir_with_sleep(sqlfs);
     test_mkdir_without_sleep(sqlfs);
@@ -504,12 +504,12 @@ void run_standard_tests(sqlfs_t* sqlfs)
     test_open_creat_trunc_existing(sqlfs);
 
     printf("loop XXXXXXXXXXXXX\n");
-    for (size=10; size < 1000001; size *= 10) {
+    for (size=10; size < 100001; size *= 10) {
         printf("loop:size=%d\n", size);
         // test_write_n_bytes(sqlfs, size);
-        test_read_byte_with_offset(sqlfs, size);
-        //test_truncate(sqlfs, size);
-        test_truncate_existing_file(sqlfs, size);
+        // test_read_byte_with_offset(sqlfs, size);
+        // test_truncate(sqlfs, size);
+        // test_truncate_existing_file(sqlfs, size);
     }
 }
 

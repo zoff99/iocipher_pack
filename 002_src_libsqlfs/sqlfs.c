@@ -132,11 +132,11 @@ static __inline__ sqlfs_t *get_sqlfs(sqlfs_t *p)
     sqlfs = (sqlfs_t *) (pthread_getspecific(pthread_key));
     if (sqlfs)
     {
-        printf("get_sqlfs:==> cached sqlfs");
+        printf("get_sqlfs:==> cached sqlfs\n");
         return sqlfs;
     }
 
-    printf("get_sqlfs:--> sqlfs_t_init");
+    printf("get_sqlfs:--> sqlfs_t_init\n");
     sqlfs = (sqlfs_t*) sqlfs_t_init(default_db_file, cached_password);
     return sqlfs;
 }
