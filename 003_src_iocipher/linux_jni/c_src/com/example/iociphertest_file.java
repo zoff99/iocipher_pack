@@ -918,10 +918,10 @@ public class iociphertest_file
                 byte[] orig_in = new byte[i];
                 FileInputStream in = new FileInputStream(f);
                 in.read(orig_in, 0, i);
-                //*****//assertEquals(i + 2, f.length());
+                assertEquals(i + 2, f.length());
                 for(int j=0;j<i;j++)
                 {
-                    //*****//assertEquals(bufrandom[j], orig_in[j]);
+                    assertEquals(bufrandom[j], orig_in[j]);
                 }
                 Log.v(TAG, "CMP: " + Util.bytesToHex(bufrandom) + " <--> " + Util.bytesToHex(orig_in));
                 Log.v(TAG, "read: bytes=" + i + " OK");
@@ -955,14 +955,14 @@ public class iociphertest_file
             out.write(13);
             out.write(42);
             out.close();
-            //********//assertEquals(502, f.length());
+            assertEquals(502, f.length());
 
             FileInputStream in2 = new FileInputStream(f);
             byte[] test_buf = new byte[500];
             in2.read(test_buf, 0, 500);
-            //********//assertTrue(Arrays.equals(orig_buf, test_buf));
-            //********//assertEquals(13, in2.read());
-            //********//assertEquals(42, in2.read());
+            assertTrue(Arrays.equals(orig_buf, test_buf));
+            assertEquals(13, in2.read());
+            assertEquals(42, in2.read());
             in.close();
             in2.close();
         } catch (FileNotFoundException e) {
