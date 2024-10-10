@@ -3268,7 +3268,11 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
     if (r != SQLITE_OK)
     {
         show_msg(stderr, "Cannot open the database file %s\n", db_file);
-        free(sql_fs);
+        if (sql_fs)
+        {
+            printf("uuuuuuu:002_______finalize\n");
+            sqlfs_t_finalize(sql_fs);
+        }
         printf("uuuuuuu:002\n");
         return 0;
     }
@@ -3463,7 +3467,9 @@ int sqlfs_open_password(const char *db_file, const char *password, sqlfs_t **psq
     *psqlfs = sqlfs_t_init(db_file, password);
 
     if (*psqlfs == 0)
+    {
         return 0;
+    }
     return 1;
 }
 
