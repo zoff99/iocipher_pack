@@ -3358,6 +3358,7 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
 
 static void sqlfs_t_finalize(void *arg)
 {
+    printf("sqlfs_t_init:sqlfs_t_finalize\n");
     sqlfs_t *sql_fs = (sqlfs_t *) arg;
     if (sql_fs)
     {
