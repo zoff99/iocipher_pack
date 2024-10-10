@@ -22,7 +22,7 @@ ASANCFLAGS = -fsanitize=address -fno-omit-frame-pointer -static-libasan
 TSANCFLAGS = -fsanitize=thread -fno-omit-frame-pointer -static-libasan
 UBSANCFLAGS = -fno-sanitize-recover=all -fsanitize=undefined,float-divide-by-zero
 
-CFLAGS += -g -O3 -fPIC -Wall -Wextra -Werror=maybe-uninitialized -Wdouble-promotion -Wno-unknown-warning-option -std=c99 -pedantic -pthread -I./
+CFLAGS += -g -O3 -fPIC -Wall -Wextra -pedantic -Werror=maybe-uninitialized -Wdouble-promotion -Wno-unknown-warning-option -std=c99 -pedantic -pthread -I./
 
 ifdef ENCRYPT_CS
 CFLAGS += -DSQLITE_HAS_CODEC -DHAVE_LIBSQLCIPHER -Isqlcipher/ -Iopenssl_includes
@@ -77,13 +77,13 @@ test_tsan: libsqlfs.a sqlite3.a tests/c_*.c
 	$(CC) -Itests/ tests/c_perf_key.c -D_GNU_SOURCE=1 $(TSANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_perf_key
 
 runtest: c_api c_api_key c_thread_api c_thread_api_key c_api_password c_perf c_perf_key
-	ASAN_OPTIONS=detect_leaks=0 ./c_api
-	ASAN_OPTIONS=detect_leaks=0 ./c_api_key
-	ASAN_OPTIONS=detect_leaks=0 ./c_thread_api
-	ASAN_OPTIONS=detect_leaks=0 ./c_thread_api_key
-	ASAN_OPTIONS=detect_leaks=0 ./c_api_password
-	ASAN_OPTIONS=detect_leaks=0 ./c_perf
-	ASAN_OPTIONS=detect_leaks=0 ./c_perf_key
+	./c_api
+	./c_api_key
+	./c_thread_api
+	./c_thread_api_key
+	./c_api_password
+	./c_perf
+	./c_perf_key
 
 runtest_tsan: c_api c_api_key c_thread_api c_thread_api_key c_api_password c_perf c_perf_key
 	./c_api
