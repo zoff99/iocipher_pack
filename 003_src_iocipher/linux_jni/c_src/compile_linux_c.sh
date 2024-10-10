@@ -100,7 +100,8 @@ echo "***  test   ***"
 #        --verbose \
 #        --log-file=valgrind-out.txt \
 
-export ASAN_OPTIONS="halt_on_error=true:detect_leaks=0:handle_segv=0"
+# export ASAN_OPTIONS="halt_on_error=true:detect_leaks=1:handle_segv=0"
+export ASAN_OPTIONS="halt_on_error=true:detect_leaks=0"
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8.0.0 \
 java -cp . -Djava.library.path=$(pwd) com.example.iociphertest
 
