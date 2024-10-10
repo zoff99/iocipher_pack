@@ -132,7 +132,6 @@ static __inline__ sqlfs_t *get_sqlfs(sqlfs_t *p)
     sqlfs = (sqlfs_t *) (pthread_getspecific(pthread_key));
     if (sqlfs)
     {
-        printf("get_sqlfs:==> cached sqlfs\n");
         return sqlfs;
     }
 
