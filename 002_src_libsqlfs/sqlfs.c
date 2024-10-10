@@ -141,13 +141,10 @@ static __inline__ int get_new_inode(void)
 
 static __inline__ void remove_tail_slash(char *str)
 {
-    char *s = str + strlen(str) - 1;
-    while (s != str - 1)
+    int len = strlen(str);
+    if (len > 0 && str[len - 1] == '/')
     {
-        if (*s != '/')
-            break;
-        *s = 0;
-        s--;
+        str[len - 1] = '\0';
     }
 }
 
@@ -2293,10 +2290,13 @@ static int rename_dir_children(sqlfs_t *sqlfs, const char *old, const char *new)
                     continue;
 
                 char new_path[PATH_MAX];
-                strncpy(new_path, rpath, PATH_MAX);
-                new_path[PATH_MAX-2] = 0; // make sure there is a terminating null and room for "/"
-                strncat(new_path, "/", 1);
+                memset(new_path, 0, PATH_MAX);
+
+                // TODO: need to check that this does not overlow and create some random path string ---------------
+                strncpy(new_path, rpath, PATH_MAX - 2);
+                strcat(new_path, "/");
                 strncat(new_path, child_filename, PATH_MAX - strlen(new_path) - 1);
+                // TODO: need to check that this does not overlow and create some random path string ---------------
 
                 i = key_exists(get_sqlfs(sqlfs), new_path, 0);
                 if (i == 1)
@@ -3638,8 +3638,10 @@ int sqlfs_init(const char *db_file_name)
 */
 #endif
 
-    if (db_file_name)
-        strncpy(default_db_file, db_file_name, sizeof(default_db_file));
+    if (db_file_name) {
+       strncpy(default_db_file, db_file_name, (sizeof(default_db_file) - 1));
+       default_db_file[sizeof(default_db_file) - 1] = '\0';
+    }
     pthread_key_create(&pthread_key, sqlfs_t_finalize);
     return 0;
 }
