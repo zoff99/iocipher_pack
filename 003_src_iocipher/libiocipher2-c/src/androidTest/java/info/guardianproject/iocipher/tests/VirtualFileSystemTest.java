@@ -89,7 +89,7 @@ public class VirtualFileSystemTest {
     @Test
     public void testVersionIOjnicipher() {
         Log.i(TAG, "iocipher JNI version: " + vfs.iocipherJNIVersion());
-        assertEquals(vfs.iocipherVersion(), IOCIPHER_JNI_VERSION);
+        assertEquals(vfs.iocipherJNIVersion(), IOCIPHER_JNI_VERSION);
     }
 
     @Test

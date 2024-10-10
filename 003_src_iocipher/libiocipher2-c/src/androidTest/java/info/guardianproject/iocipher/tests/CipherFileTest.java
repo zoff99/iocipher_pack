@@ -932,10 +932,10 @@ public class CipherFileTest {
                 byte[] orig_in = new byte[i];
                 FileInputStream in = new FileInputStream(f);
                 in.read(orig_in, 0, i);
-                //*****//assertEquals(i + 2, f.length());
+                assertEquals(i + 2, f.length());
                 for(int j=0;j<i;j++)
                 {
-                    //*****//assertEquals(bufrandom[j], orig_in[j]);
+                    assertEquals(bufrandom[j], orig_in[j]);
                 }
                 Log.v(TAG, "CMP: " + bytesToHex(bufrandom) + " <--> " + bytesToHex(orig_in));
                 Log.v(TAG, "read: bytes=" + i + " OK");
