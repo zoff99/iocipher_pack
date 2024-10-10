@@ -1,5 +1,5 @@
-IOCipher: Encrypted Virtual Disk (for Android)
-----------------------------------------------
+IOCipher: Encrypted Virtual Disk (for Android and Linux)
+--------------------------------------------------------
 
 IOCipher is a virtual encrypted disk for apps without requiring the device to
 be rooted. It uses a clone of the standard java.io API for working with
