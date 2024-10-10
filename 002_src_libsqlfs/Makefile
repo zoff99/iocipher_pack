@@ -76,7 +76,7 @@ test_tsan: libsqlfs.a sqlite3.a tests/c_*.c
 	$(CC) -Itests/ tests/c_perf.c -D_GNU_SOURCE=1 $(CFLAGS) $(TSANCFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_perf
 	$(CC) -Itests/ tests/c_perf_key.c -D_GNU_SOURCE=1 $(TSANCFLAGS) $(CFLAGS) $(LIBS) libsqlfs.a sqlite3.a $(LBSQLCIPHER) -o c_perf_key
 
-runtest: testdbclean c_api c_api_key c_thread_api c_thread_api_key c_api_password c_perf c_perf_key
+runtest: testdbclean test
 	./c_api
 	./c_api_key
 	./c_thread_api
@@ -85,7 +85,7 @@ runtest: testdbclean c_api c_api_key c_thread_api c_thread_api_key c_api_passwor
 	./c_perf
 	./c_perf_key
 
-runtest_tsan: testdbclean c_api c_api_key c_thread_api c_thread_api_key c_api_password c_perf c_perf_key
+runtest_tsan: testdbclean test_tsan
 	./c_api
 	./c_api_key
 	./c_thread_api
