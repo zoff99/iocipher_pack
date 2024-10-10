@@ -503,9 +503,9 @@ void run_standard_tests(sqlfs_t* sqlfs)
     test_open_creat_trunc(sqlfs);
     test_open_creat_trunc_existing(sqlfs);
 
-    printf("loop XXXXXXXXXXXXX\n");
+    // printf("loop XXXXXXXXXXXXX\n");
     for (size=10; size < 100001; size *= 10) {
-        printf("loop:size=%d\n", size);
+        // printf("loop:size=%d\n", size);
         test_write_n_bytes(sqlfs, size);
         test_read_byte_with_offset(sqlfs, size);
         test_truncate(sqlfs, size);
