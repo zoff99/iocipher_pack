@@ -48,10 +48,8 @@ https://www.gnu.org/licenses/lgpl-java.en.html
 Current bugs
 ------------
 
-Opening a file with<br>
-`info.guardianproject.iocipher.FileOutputStream(f, true);`<br>
-does currently **NOT** work.<br>
-It will not append but instead open the file `f` for writing at the beginng of the file.
+ASAN shows some memory leaks in the JNI code. sadly ASAN does not really show them, but crashes.
+any hints welcome how to debug this.
 
 
 Based upon
