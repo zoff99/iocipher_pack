@@ -125,7 +125,6 @@ static __inline__ sqlfs_t *get_sqlfs(sqlfs_t *p)
 
     if (p)
     {
-        // printf("get_sqlfs:**> P\n");
         return p;
     }
 
@@ -135,7 +134,7 @@ static __inline__ sqlfs_t *get_sqlfs(sqlfs_t *p)
         return sqlfs;
     }
 
-    printf("get_sqlfs:--> sqlfs_t_init\n");
+    // printf("get_sqlfs:--> sqlfs_t_init\n");
     sqlfs = (sqlfs_t*) sqlfs_t_init(default_db_file, cached_password);
     return sqlfs;
 }
@@ -2659,7 +2658,9 @@ int sqlfs_proc_open(sqlfs_t *sqlfs, const char *path, struct fuse_file_info *fi)
     key_attr attr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
     if (fi->direct_io)
+    {
         return  -EACCES;
+    }
     begin_transaction(get_sqlfs(sqlfs));
 
     if ((fi->flags & O_CREAT) )
@@ -2681,16 +2682,26 @@ int sqlfs_proc_open(sqlfs_t *sqlfs, const char *path, struct fuse_file_info *fi)
     {
         exists = 1;
         if ((fi->flags & O_EXCL) && (fi->flags & O_CREAT) )
+        {
             result = -EEXIST;
+        }
         else if (!strcmp(attr.type, TYPE_DIR) && (fi->flags & (O_WRONLY | O_RDWR)))
+        {
             result = -EISDIR;
+        }
     }
     else if (r == SQLITE_BUSY)
+    {
         result = -EBUSY;
+    }
     else
+    {
         /* does not exist */
         if ((fi->flags & O_CREAT) == 0)
+        {
             result = - ENOENT ;
+        }
+    }
 
     /* truncate file if called for */
     if (exists && (fi->flags & O_TRUNC) && (fi->flags & (O_WRONLY | O_RDWR))) {
@@ -3252,7 +3263,7 @@ static int create_db_table(sqlfs_t *sqlfs)
 
 static void * sqlfs_t_init(const char *db_file, const char *password)
 {
-    printf("sqlfs_t_init:uuuuuuu:001\n");
+    // printf("sqlfs_t_init:uuuuuuu:001\n");
     int i, r;
     sqlfs_t *sql_fs = calloc(1, sizeof(*sql_fs));
     assert(sql_fs);
@@ -3264,16 +3275,17 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
     if (db_file && db_file[0] == 0)
         show_msg(stderr, "WARNING: blank db file name! Creating temporary database.\n");
     r = sqlite3_open(db_file, &(sql_fs->db));
-    printf("sqlfs_t_init:sqlite3_open ************************* %p\n", sql_fs->db);
+    // printf("sqlfs_t_init:sqlite3_open ************************* %p\n", sql_fs->db);
     if (r != SQLITE_OK)
     {
         show_msg(stderr, "Cannot open the database file %s\n", db_file);
         if (sql_fs)
         {
-            printf("uuuuuuu:002_______finalize\n");
-            sqlfs_t_finalize(sql_fs);
+            // HINT: not sure if we need this here or not.
+            // printf("uuuuuuu:002_______finalize\n");
+            // sqlfs_t_finalize(sql_fs);
         }
-        printf("uuuuuuu:002\n");
+        // printf("uuuuuuu:002\n");
         return 0;
     }
 
@@ -3285,7 +3297,7 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
         {
             show_msg(stderr, "Opening the database with provided key/password failed!\n");
             sqlfs_t_finalize(sql_fs);
-            printf("uuuuuuu:003\n");
+            // printf("uuuuuuu:003\n");
             return 0;
         }
         sqlite3_exec(sql_fs->db, "PRAGMA cipher_page_size = 8192;", NULL, NULL, NULL);
@@ -3350,19 +3362,19 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
     if (!r)
     {
         sqlfs_t_finalize(sql_fs);
-        printf("uuuuuuu:004\n");
+        // printf("uuuuuuu:004\n");
         return 0;
     }
-    printf("pthread_setspecific:*****==> SET\n");
+    // printf("pthread_setspecific:*****==> SET\n");
     pthread_setspecific(pthread_key, sql_fs);
     instance_count++;
-    printf("uuuuuuu:005\n");
+    // printf("uuuuuuu:005\n");
     return (void *) sql_fs;
 }
 
 static void sqlfs_t_finalize(void *arg)
 {
-    printf("sqlfs_t_init:sqlfs_t_finalize\n");
+    // printf("sqlfs_t_init:sqlfs_t_finalize\n");
     sqlfs_t *sql_fs = (sqlfs_t *) arg;
     if (sql_fs)
     {
@@ -3371,7 +3383,7 @@ static void sqlfs_t_finalize(void *arg)
             if (sql_fs->stmts[i])
                 sqlite3_finalize(sql_fs->stmts[i]);
 
-        printf("sqlfs_t_init:sqlite3_close ######################## %p\n", sql_fs->db);
+        // printf("sqlfs_t_init:sqlite3_close ######################## %p\n", sql_fs->db);
         sqlite3_close(sql_fs->db);
         free(sql_fs);
         if (instance_count > 0)
@@ -3425,14 +3437,14 @@ static int generate_sqlcipher_raw_key(const uint8_t *bytes, size_t byteslen,
 
 int sqlfs_open_key(const char *db_file, const uint8_t *key, size_t keylen, sqlfs_t **psqlfs)
 {
-    printf("XXXXXXXXXXXXXX:000\n");
+    // printf("XXXXXXXXXXXXXX:000\n");
     sqlfs_init_key(db_file, key, keylen);
     *psqlfs = sqlfs_t_init(db_file, cached_password);
 
-    printf("XXXXXXXXXXXXXX:001\n");
+    // printf("XXXXXXXXXXXXXX:001\n");
     if (*psqlfs == 0)
     {
-        printf("XXXXXXXXXXXXXX:002\n");
+        // printf("XXXXXXXXXXXXXX:002\n");
         return 0;
     }
     return 1;
