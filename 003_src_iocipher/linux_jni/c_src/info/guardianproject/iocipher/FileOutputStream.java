@@ -192,7 +192,7 @@ public class FileOutputStream extends OutputStream implements Closeable {
     @Override
     public void write(byte[] buffer, int byteOffset, int byteCount) throws IOException {
 
-        IoBridge.write(fd, buffer, byteOffset, byteCount, append ? 1 : 0);
+        IoBridge.write(fd, buffer, byteOffset, byteCount, this.mode);
     }
 
     @Override
