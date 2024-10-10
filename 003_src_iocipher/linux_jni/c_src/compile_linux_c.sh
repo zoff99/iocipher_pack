@@ -10,83 +10,97 @@ incdir="../../libiocipher2-c/src/main/cpp/libsqlfs/"
 libsdir1="../../../002_src_libsqlfs/openssl_libs/"
 libsdir2="../../../002_src_libsqlfs/"
 
-echo "*** compile ***"
+if [ "$1""x" != "testx" ]; then
 
-#echo "JAVADIR1------------------"
-#find /usr -name "jni.h"
-#echo "JAVADIR1------------------"
+    echo "*** compile ***"
 
-#echo "JAVADIR2------------------"
-#find /usr -name "jni_md.h"
-#echo "JAVADIR2------------------"
+    #echo "JAVADIR1------------------"
+    #find /usr -name "jni.h"
+    #echo "JAVADIR1------------------"
+
+    #echo "JAVADIR2------------------"
+    #find /usr -name "jni_md.h"
+    #echo "JAVADIR2------------------"
 
 
-dirname $(find /usr -name "jni.h" 2>/dev/null|grep -v "android"|grep -v "libavcodec"|head -1) > /tmp/xx1
-dirname $(find /usr -name "jni_md.h" 2>/dev/null|grep -v "android"|head -1) > /tmp/xx2
-export JAVADIR1=$(cat /tmp/xx1)
-export JAVADIR2=$(cat /tmp/xx2)
-echo "JAVADIR1:""$JAVADIR1"
-echo "JAVADIR2:""$JAVADIR2"
+    dirname $(find /usr -name "jni.h" 2>/dev/null|grep -v "android"|grep -v "libavcodec"|head -1) > /tmp/xx1
+    dirname $(find /usr -name "jni_md.h" 2>/dev/null|grep -v "android"|head -1) > /tmp/xx2
+    export JAVADIR1=$(cat /tmp/xx1)
+    export JAVADIR2=$(cat /tmp/xx2)
+    echo "JAVADIR1:""$JAVADIR1"
+    echo "JAVADIR2:""$JAVADIR2"
 
-export CFLAGS=" -DHAVE_LIBSQLCIPHER -fPIC -O3 -g -std=gnu99 -fstack-protector-all -D_FORTIFY_SOURCE=2 "
-export CXXFLAGS=" -DHAVE_LIBSQLCIPHER -fPIC -O3 -g -fstack-protector-all -D_FORTIFY_SOURCE=2 "
+    export CFLAGS=" -DHAVE_LIBSQLCIPHER -fPIC -O2 -ggdb3 -std=gnu99 -fstack-protector-all -D_FORTIFY_SOURCE=2 "
+    export CXXFLAGS=" -DHAVE_LIBSQLCIPHER -fPIC -O2 -ggdb3 -fstack-protector-all -D_FORTIFY_SOURCE=2 "
+    export ASAN_FLAGS="-fsanitize=address -fno-omit-frame-pointer -fsanitize-recover=address -static-libasan"
 
-# -fsanitize=address -fno-omit-frame-pointer -fsanitize-recover=address \
+    # -fsanitize=address -fno-omit-frame-pointer -fsanitize-recover=address \
 
-gcc -c $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/readlink.c -o readlink.o || exit 1
-gcc -c $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/realpath.c -o realpath.o || exit 1
-gcc -c $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/JNIHelp.c -o JNIHelp.o || exit 1
-gcc -c $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/JNI_OnLoad.c -o JNI_OnLoad.o || exit 1
+    gcc -c $ASAN_FLAGS $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/readlink.c -o readlink.o || exit 1
+    gcc -c $ASAN_FLAGS $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/realpath.c -o realpath.o || exit 1
+    gcc -c $ASAN_FLAGS $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/JNIHelp.c -o JNIHelp.o || exit 1
+    gcc -c $ASAN_FLAGS $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/JNI_OnLoad.c -o JNI_OnLoad.o || exit 1
 
-gcc -c $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/info_guardianproject_libcore_io_OsConstants.c -o info_guardianproject_libcore_io_OsConstants.o || exit 1
-gcc -c $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/info_guardianproject_iocipher_VirtualFileSystem.c -o info_guardianproject_iocipher_VirtualFileSystem.o || exit 1
-gcc -c $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/info_guardianproject_iocipher_File.c -o info_guardianproject_iocipher_File.o || exit 1
-gcc -c $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/info_guardianproject_libcore_io_Posix.c -o info_guardianproject_libcore_io_Posix.o || exit 1
-gcc -c $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/info_guardianproject_libcore_io_Memory.c -o info_guardianproject_libcore_io_Memory.o || exit 1
+    gcc -c $ASAN_FLAGS $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/info_guardianproject_libcore_io_OsConstants.c -o info_guardianproject_libcore_io_OsConstants.o || exit 1
+    gcc -c $ASAN_FLAGS $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/info_guardianproject_iocipher_VirtualFileSystem.c -o info_guardianproject_iocipher_VirtualFileSystem.o || exit 1
+    gcc -c $ASAN_FLAGS $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/info_guardianproject_iocipher_File.c -o info_guardianproject_iocipher_File.o || exit 1
+    gcc -c $ASAN_FLAGS $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/info_guardianproject_libcore_io_Posix.c -o info_guardianproject_libcore_io_Posix.o || exit 1
+    gcc -c $ASAN_FLAGS $CFLAGS -DJAVA_LINUX -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 -I"$JAVADIR1"/ -I"$JAVADIR2"/ -I./ -I"$incdir"/ "$srcdir"/info_guardianproject_libcore_io_Memory.c -o info_guardianproject_libcore_io_Memory.o || exit 1
 
-# -fsanitize=address -fno-omit-frame-pointer -fsanitize-recover=address -static-libasan \
+    # -fsanitize=address -fno-omit-frame-pointer -fsanitize-recover=address -static-libasan \
+    # rm -fv libiocipher2.so
 
-gcc $CFLAGS \
--D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 \
--fsanitize=address -fno-omit-frame-pointer -fsanitize-recover=address -static-libasan \
--I$JAVADIR1/ \
--I$JAVADIR2/ \
-readlink.o \
-realpath.o \
-JNIHelp.o \
-JNI_OnLoad.o \
-info_guardianproject_libcore_io_OsConstants.o \
-info_guardianproject_iocipher_VirtualFileSystem.o \
-info_guardianproject_iocipher_File.o \
-info_guardianproject_libcore_io_Posix.o \
-info_guardianproject_libcore_io_Memory.o \
-"$libsdir2"/libsqlfs.a \
-"$libsdir2"/sqlite3.a \
-"$libsdir1"/libcrypto.a \
-"$libsdir1"/libssl.a \
--shared \
--Wl,-soname,libiocipher2.so -o libiocipher2.so || exit 1
+    gcc $CFLAGS \
+    -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 \
+    $ASAN_FLAGS \
+    -I$JAVADIR1/ \
+    -I$JAVADIR2/ \
+    readlink.o \
+    realpath.o \
+    JNIHelp.o \
+    JNI_OnLoad.o \
+    info_guardianproject_libcore_io_OsConstants.o \
+    info_guardianproject_iocipher_VirtualFileSystem.o \
+    info_guardianproject_iocipher_File.o \
+    info_guardianproject_libcore_io_Posix.o \
+    info_guardianproject_libcore_io_Memory.o \
+    "$libsdir2"/libsqlfs.a \
+    "$libsdir2"/sqlite3.a \
+    "$libsdir1"/libcrypto.a \
+    "$libsdir1"/libssl.a \
+    -lm \
+    -shared \
+    -Wl,-soname,libiocipher2.so -o libiocipher2.so || exit 1
 
-ld libiocipher2.so || echo "!!linker missing some symbols!!"
+    ld libiocipher2.so || echo "!!linker missing some symbols!!"
 
-ls -al libiocipher2.so || exit 1
-pwd
-file libiocipher2.so
+    ls -al libiocipher2.so || exit 1
+    pwd
+    file libiocipher2.so
 
-## java part ##
+    ## java part ##
 
-javacomp=javac
+    javacomp=javac
 
-"$javacomp" -cp ./ ./info/guardianproject/iocipher/FilenameFilter.java ./info/guardianproject/iocipher/VirtualFileSystem.java ./info/guardianproject/iocipher/File.java ./info/guardianproject/iocipher/RandomAccessFile.java ./info/guardianproject/iocipher/IOCipherFileChannel.java ./info/guardianproject/iocipher/FileReader.java ./info/guardianproject/iocipher/FileInputStream.java ./info/guardianproject/iocipher/FileOutputStream.java ./info/guardianproject/iocipher/FileWriter.java ./info/guardianproject/iocipher/FileFilter.java ./info/guardianproject/iocipher/FileDescriptor.java ./info/guardianproject/libcore/io/StructStat.java ./info/guardianproject/libcore/io/ErrnoException.java ./info/guardianproject/libcore/io/SizeOf.java ./info/guardianproject/libcore/io/StructStatFs.java ./info/guardianproject/libcore/io/Memory.java ./info/guardianproject/libcore/io/StructPasswd.java ./info/guardianproject/libcore/io/Libcore.java ./info/guardianproject/libcore/io/StructUtsname.java ./info/guardianproject/libcore/io/StructAddrinfo.java ./info/guardianproject/libcore/io/StructPollfd.java ./info/guardianproject/libcore/io/StructTimeval.java ./info/guardianproject/libcore/io/OsConstants.java ./info/guardianproject/libcore/io/StructLinger.java ./info/guardianproject/libcore/io/StructGroupReq.java ./info/guardianproject/libcore/io/Posix.java ./info/guardianproject/libcore/io/IoUtils.java ./info/guardianproject/libcore/io/StructFlock.java ./info/guardianproject/libcore/io/IoBridge.java ./info/guardianproject/libcore/io/Os.java || exit 1
+    "$javacomp" -cp ./ ./info/guardianproject/iocipher/FilenameFilter.java ./info/guardianproject/iocipher/VirtualFileSystem.java ./info/guardianproject/iocipher/File.java ./info/guardianproject/iocipher/RandomAccessFile.java ./info/guardianproject/iocipher/IOCipherFileChannel.java ./info/guardianproject/iocipher/FileReader.java ./info/guardianproject/iocipher/FileInputStream.java ./info/guardianproject/iocipher/FileOutputStream.java ./info/guardianproject/iocipher/FileWriter.java ./info/guardianproject/iocipher/FileFilter.java ./info/guardianproject/iocipher/FileDescriptor.java ./info/guardianproject/libcore/io/StructStat.java ./info/guardianproject/libcore/io/ErrnoException.java ./info/guardianproject/libcore/io/SizeOf.java ./info/guardianproject/libcore/io/StructStatFs.java ./info/guardianproject/libcore/io/Memory.java ./info/guardianproject/libcore/io/StructPasswd.java ./info/guardianproject/libcore/io/Libcore.java ./info/guardianproject/libcore/io/StructUtsname.java ./info/guardianproject/libcore/io/StructAddrinfo.java ./info/guardianproject/libcore/io/StructPollfd.java ./info/guardianproject/libcore/io/StructTimeval.java ./info/guardianproject/libcore/io/OsConstants.java ./info/guardianproject/libcore/io/StructLinger.java ./info/guardianproject/libcore/io/StructGroupReq.java ./info/guardianproject/libcore/io/Posix.java ./info/guardianproject/libcore/io/IoUtils.java ./info/guardianproject/libcore/io/StructFlock.java ./info/guardianproject/libcore/io/IoBridge.java ./info/guardianproject/libcore/io/Os.java || exit 1
 
-## test program ##
+    ## test program ##
 
-"$javacomp" -cp ./ com/example/Log.java com/example/Util.java com/example/iociphertest.java com/example/iociphertest_file.java|| exit 1
+    "$javacomp" -cp ./ com/example/Log.java com/example/Util.java com/example/iociphertest.java com/example/iociphertest_file.java|| exit 1
+
+fi
 
 ## run the test program ##
+echo "***  test   ***"
 
-export ASAN_OPTIONS="halt_on_error=true:detect_leaks=0"
-# export ASAN_OPTIONS="halt_on_error=true"
+#valgrind \
+#        --leak-check=full --show-leak-kinds=all \
+#        --show-leak-kinds=all \
+#        --track-origins=yes \
+#        --verbose \
+#        --log-file=valgrind-out.txt \
+
+export ASAN_OPTIONS="halt_on_error=true:detect_leaks=0:handle_segv=0"
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8.0.0 \
 java -cp . -Djava.library.path=$(pwd) com.example.iociphertest
 
