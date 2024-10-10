@@ -910,7 +910,7 @@ public class CipherFileTest {
     @Test
     public void testFileManySizes() {
         try {
-            for(int i=0;i<3;i++)
+            for(int i=0;i<10000;i++)
             {
                 String name = Util.randomFileName(ROOT, "testFileManySizes");
                 File f = new File(name);
