@@ -33,11 +33,19 @@ jobs:
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '17'
+        java-version: '1.8'
 
     - name: test docker
       run: |
         docker --version
+
+    - name: list java class files
+      run: |
+        find . -name '*.class'
+
+    - name: delete java class files
+      run: |
+        find . -name '*.class'|xargs rm -v
 
     - name: build and test android version
       run: |
