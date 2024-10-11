@@ -6,6 +6,7 @@ export _HOME_
 cd "$_HOME_"
 
 logfile="$_HOME_""/compile.log"
+rm -f "$logfile"
 
 srcdir="./"
 incdir="../../libiocipher2-c/src/main/cpp/libsqlfs/"
@@ -92,6 +93,11 @@ if [ "$1""x" != "testx" ]; then
 
 fi
 
+echo "*** add JAR ***"
+jar -cvf iocipher_linux-ASAN-2.0.0.jar jnilibs com info >> "$logfile" 2>&1 || exit 1
+
+ls -al iocipher_linux-ASAN-2.0.0.jar || exit 1
+
 ## run the test program ##
 echo "***  test   ***"
 
@@ -105,11 +111,6 @@ echo "***  test   ***"
 # export ASAN_OPTIONS="halt_on_error=true:detect_leaks=1:handle_segv=0"
 export ASAN_OPTIONS="halt_on_error=true:detect_leaks=0"
 LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8.0.0 \
-java -cp . -Djava.library.path=$(pwd) com.example.iociphertest >> "$logfile" 2>&1 || exit 1
-
-echo "*** add JAR ***"
-jar -cvf iocipher_linux-ASAN-2.0.0.jar jnilibs com info >> "$logfile" 2>&1 || exit 1
-
-ls -al iocipher_linux-ASAN-2.0.0.jar || exit 1
+java -classpath "iocipher_linux-ASAN-2.0.0.jar" com.example.iociphertest >> "$logfile" 2>&1 || exit 1
 
 

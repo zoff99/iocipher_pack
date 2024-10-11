@@ -1,6 +1,6 @@
 /**
  * IOCipher
- * Copyright (C) 2023 Zoff <zoff@zoff.cc>
+ * Copyright (C) 2023-2024 Zoff <zoff@zoff.cc>
  * <p>
  */
 
@@ -25,7 +25,8 @@ public class VirtualFileSystem {
         try
         {
             System.out.println("loading JNI lib iocipher2 ...");
-            System.loadLibrary("iocipher2");
+            // call our JNI lib loader. it extracts the file from the JAR, checks if the contents match, then loads it
+            NativeLibLoader.initialize();
             System.out.println("JNI lib loaded OK");
         }
         catch(Exception e)
