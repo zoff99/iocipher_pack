@@ -115,4 +115,5 @@ echo "***  test   ***"
 
 java -classpath "iocipher_linux-2.0.0.jar" com.example.iociphertest >> "$logfile" 2>&1 || exit 1
 
+echo "***   OK    ***"
 
