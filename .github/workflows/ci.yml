@@ -64,5 +64,5 @@ jobs:
 
     - name: build and test linux version
       run: |
-        cd 003_src_iocipher/linux_jni/c_src && ./compile_linux_c.sh
+        cd 003_src_iocipher/linux_jni/c_src && ./compile_linux_c.sh || (cat compile.log; exit 1)
 
