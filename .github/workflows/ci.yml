@@ -30,10 +30,11 @@ jobs:
       contents: write
     steps:
     - uses: actions/checkout@v4
+
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '8'
+        java-version: '17'
 
     - name: test docker
       run: |
@@ -69,6 +70,11 @@ jobs:
         replacesArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: "local_maven_iocipher_*.zip,libiocipher2-c-release.aar,libiocipher2-c-debug.aar,compile.log"
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '8'
 
     - name: build and test linux version
       run: |
