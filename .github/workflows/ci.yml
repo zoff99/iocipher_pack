@@ -74,3 +74,23 @@ jobs:
       run: |
         cd 003_src_iocipher/linux_jni/c_src && ./compile_linux_c.sh || (cat compile.log; exit 1)
 
+    - name: rename linux c_src compile.log
+      run: |
+        cp -v 003_src_iocipher/linux_jni/c_src/compile.log ./compile_linux_c_src.log
+
+    - name: move linux c_src jar
+      run: |
+        cp -v 003_src_iocipher/linux_jni/c_src/iocipher_linux-*.jar ./
+
+    - name: Upload to nightly release
+      uses: ncipollo/release-action@v1
+      if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+      with:
+        allowUpdates: true
+        tag: nightly
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
+        prerelease: true
+        replacesArtifacts: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: "iocipher_linux-*.jar,compile_linux_c_src.log"
