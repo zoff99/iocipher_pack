@@ -10,16 +10,30 @@ and SQLCipher.
 If you are using this in your app, we'd love to hear about it!
 
 
-Building
---------
+Building for Android
+--------------------
 
 This app relies on OpenSSL libcrypto, sqlcipher, and libsqlfs, which
-are all "native" C code that needs to be built before working with the
+are all "native" C code that needs to be built before working the
 Java.
 
 ```
 ./compile_docker_all.sh
 ```
+
+Building for Linux (not fully ready yet)
+----------------------------------------
+
+This app relies on OpenSSL libcrypto, sqlcipher, and libsqlfs, which
+are all "native" C code that needs to be built before working the
+Java.
+
+```
+./compile_docker_all.sh
+cd ./003_src_iocipher/linux_jni/c_src
+./compile_linux_c.sh
+```
+
 
 License
 -------
