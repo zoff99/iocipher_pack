@@ -94,10 +94,15 @@ if [ "$1""x" != "testx" ]; then
 
 fi
 
-echo "*** add JAR ***"
-jar -cvf iocipher_linux-2.0.0.jar jnilibs com info >> "$logfile" 2>&1 || exit 1
+echo "*** version ***"
+cur_str_version=$(cat ./info/guardianproject/iocipher/VirtualFileSystem.java|grep 'static String IOCIPHER_JNI_VERSION'|sed -e 's#^.*static String IOCIPHER_JNI_VERSION = "##'|sed -e 's#".*$##')
 
-ls -al iocipher_linux-2.0.0.jar || exit 1
+echo "*** rm old  ***"
+rm -fv iocipher_linux-*.jar
+
+echo "*** add JAR ***"
+jar -cvf iocipher_linux-"$cur_str_version".jar jnilibs com info >> "$logfile" 2>&1 || exit 1
+ls -al iocipher_linux-"$cur_str_version".jar || exit 1
 
 ## run the test program ##
 echo "***  test   ***"
@@ -113,7 +118,7 @@ echo "***  test   ***"
 # export ASAN_OPTIONS="halt_on_error=true:detect_leaks=0"
 # LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8.0.0 \
 
-java -classpath "iocipher_linux-2.0.0.jar" com.example.iociphertest >> "$logfile" 2>&1 || exit 1
+java -classpath "iocipher_linux-1.0.1.jar" com.example.iociphertest >> "$logfile" 2>&1 || exit 1
 
 echo "***   OK    ***"
 
