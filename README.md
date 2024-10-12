@@ -17,7 +17,7 @@ This app relies on OpenSSL libcrypto, sqlcipher, and libsqlfs, which
 are all "native" C code that need to be built.
 
 ```
-# you need jdk 8 or higher installed
+# you need jdk 11 or higher installed
 ./compile_docker_all.sh
 ```
 
@@ -28,7 +28,7 @@ This app relies on OpenSSL libcrypto, sqlcipher, and libsqlfs, which
 are all "native" C code that need to be built.
 
 ```
-# you need jdk 8 or higher installed
+# you need jdk 11 or higher installed
 ./compile_docker_all.sh
 cd ./003_src_iocipher/linux_jni/c_src
 ./compile_linux_c.sh
