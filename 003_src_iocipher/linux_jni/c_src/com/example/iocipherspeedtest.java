@@ -67,13 +67,14 @@ public class iocipherspeedtest
         // -------------------
         try
         {
+            final boolean calc_hash = false; // set to "false" for maximum speed
             final String filename = "/speedtest01";
             final long one_kb = 1024;
             final long one_mb = 1024 * one_kb;
             final long one_gb = 1024 * one_mb;
             // --------------------------------------
             final int bytes = (int)(8 * one_kb * 120);
-            final long full_filesize = one_gb * 8;
+            final long full_filesize = one_gb * 5;
             // --------------------------------------
             final int loops = (int)(full_filesize / (long)bytes);
             info.guardianproject.iocipher.File f = new info.guardianproject.iocipher.File(filename);
@@ -88,7 +89,7 @@ public class iocipherspeedtest
             for (i=0;i<loops;i++)
             {
                 out.write(random_buf);
-                //HASH slows down//md_write.update(random_buf);
+                if(calc_hash) md_write.update(random_buf);
                 if ((i % 500) == 0)
                 {
                     try
@@ -124,7 +125,7 @@ public class iocipherspeedtest
                 if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
-            //HASH slows down//System.out.println("Hash: " + hexString.toString());
+            if(calc_hash) System.out.println("Hash: " + hexString.toString());
 
 
             System.out.println("" + ((System.nanoTime() - startTime) / 1000000000) + " seconds write");
@@ -143,7 +144,7 @@ public class iocipherspeedtest
             while ((nRead = in.read(bytebuf_in, 0, bytebuf_in.length)) != -1)
             {
                 i2++;
-                //HASH slows down//md_read.update(bytebuf_in);
+                if(calc_hash) md_read.update(bytebuf_in);
                 bytescount = bytescount + (long)nRead;
                 if ((i2 % 500) == 0)
                 {
@@ -173,7 +174,7 @@ public class iocipherspeedtest
                 if (hex.length() == 1) hexString2.append('0');
                 hexString2.append(hex);
             }
-            //HASH slows down//System.out.println("Hash: " + hexString2.toString());
+            if(calc_hash) System.out.println("Hash: " + hexString2.toString());
 
 
             System.out.println("" + ((System.nanoTime() - startTime2) / 1000000000) + " seconds read");

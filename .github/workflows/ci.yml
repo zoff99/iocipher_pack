@@ -100,3 +100,7 @@ jobs:
         replacesArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: "iocipher_linux-*.jar,compile_linux_c_src.log"
+
+    - name: raw speed test on linux
+      run: |
+        cd 003_src_iocipher/linux_jni/c_src && ./speedtest_linux_c.sh || exit 1
