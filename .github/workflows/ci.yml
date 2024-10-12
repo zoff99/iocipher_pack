@@ -61,7 +61,7 @@ jobs:
       run: |
         cp -av ./003_src_iocipher/libiocipher2-c/build/outputs/aar/libiocipher2-c-release.aar ./
         cp -av ./003_src_iocipher/libiocipher2-c/build/outputs/aar/libiocipher2-c-debug.aar ./
-        cp -av ./003_src_iocipher/stub_work/local_maven_iocipher_1.0.1.zip ./
+        cp -av ./003_src_iocipher/stub_work/local_maven_iocipher_*.zip ./
 
     - name: Upload to nightly release
       uses: ncipollo/release-action@v1
