@@ -91,7 +91,7 @@ if [ "$1""x" != "testx" ]; then
 
     ## test program ##
 
-    "$javacomp" -cp ./ com/example/Log.java com/example/Util.java com/example/iociphertest.java com/example/iociphertest_file.java >> "$logfile" 2>&1 || exit 1
+    "$javacomp" -cp ./ com/example/Log.java com/example/Util.java com/example/iocipherspeedtest.java com/example/iociphertest.java com/example/iociphertest_file.java >> "$logfile" 2>&1 || exit 1
 
 fi
 
@@ -119,7 +119,7 @@ echo "***  test   ***"
 # export ASAN_OPTIONS="halt_on_error=true:detect_leaks=0"
 # LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8.0.0 \
 
-java -classpath "iocipher_linux-1.0.1.jar" com.example.iociphertest >> "$logfile" 2>&1 || exit 1
+java -classpath "iocipher_linux-""$cur_str_version"".jar" com.example.iociphertest >> "$logfile" 2>&1 || exit 1
 
 echo "***   OK    ***"
 
