@@ -76,7 +76,8 @@ if [ "$1""x" != "testx" ]; then
     -shared \
     -Wl,-soname,libiocipher2.so -o libiocipher2.so >> "$logfile" 2>&1 || exit 1
 
-    ld libiocipher2.so >> "$logfile" 2>&1 || echo "WARNING: linker missing some symbols"
+    echo "** checking for missing SYMBOLS **"
+    ld libiocipher2.so >> "$logfile" 2>&1 || (echo "ERROR: linker missing some symbols" ; exit 1)
 
     ls -al libiocipher2.so >> "$logfile" 2>&1 || exit 1
     pwd
