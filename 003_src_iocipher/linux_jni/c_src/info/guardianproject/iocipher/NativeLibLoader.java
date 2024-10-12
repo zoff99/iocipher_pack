@@ -164,7 +164,7 @@ public class NativeLibLoader
         // when multiple JVMs with different architectures running at the same time
         String uuid = UUID.randomUUID().toString();
         String extractedLibFileName =
-                String.format("iocipher-%s-%s", uuid, libraryFileName);
+                String.format("iocipher-%s-%s-%s", VirtualFileSystem.IOCIPHER_JNI_VERSION, uuid, libraryFileName);
         String extractedLckFileName = extractedLibFileName + LOCK_EXT;
 
         Path extractedLibFile = Paths.get(targetFolder, extractedLibFileName);
