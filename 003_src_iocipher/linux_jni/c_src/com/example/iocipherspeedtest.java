@@ -1,6 +1,9 @@
 package com.example;
 
+import java.util.Arrays;
 import java.util.Random;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 import info.guardianproject.iocipher.File;
 import info.guardianproject.iocipher.VirtualFileSystem;
@@ -34,7 +37,6 @@ public class iocipherspeedtest
         catch(Exception e)
         {
         }
-
     }
 
     public static void testVersionSqlfs() {
@@ -66,15 +68,17 @@ public class iocipherspeedtest
         try
         {
             final String filename = "/speedtest01";
-            final int bytes = 8 * 1024;
             final long one_kb = 1024;
             final long one_mb = 1024 * one_kb;
             final long one_gb = 1024 * one_mb;
+            // --------------------------------------
+            final int bytes = (int)(8 * one_kb * 120);
             final long full_filesize = one_gb * 8;
+            // --------------------------------------
             final int loops = (int)(full_filesize / (long)bytes);
             info.guardianproject.iocipher.File f = new info.guardianproject.iocipher.File(filename);
             info.guardianproject.iocipher.FileOutputStream out = new info.guardianproject.iocipher.FileOutputStream(f);
-
+            MessageDigest md_write = MessageDigest.getInstance("MD5");
             Random prng = new Random();
             byte[] random_buf = new byte[bytes];
             prng.nextBytes(random_buf);
@@ -84,7 +88,8 @@ public class iocipherspeedtest
             for (i=0;i<loops;i++)
             {
                 out.write(random_buf);
-                if ((i % 5000) == 0)
+                //HASH slows down//md_write.update(random_buf);
+                if ((i % 500) == 0)
                 {
                     try
                     {
@@ -93,6 +98,9 @@ public class iocipherspeedtest
                         float bytesPerSec = bytescount / ((System.nanoTime() - startTime) / 1000000000);
                         float kbPerSec = bytesPerSec / one_kb;
                         System.out.println(String.format("%.1f", kbPerSec) + " KBps : size MB=" + (float)(bytescount / one_mb));
+                        // HINT: update random bytes only a few times. otherwise it slows down write speed
+                        //       and we want to measure the max speed possible.
+                        prng.nextBytes(random_buf);
                     }
                     catch(Exception e)
                     {
@@ -107,6 +115,18 @@ public class iocipherspeedtest
             float kbPerSec = bytesPerSec / one_kb;
             System.out.println(String.format("%.1f", kbPerSec) + " KBps : size MB=" + (float)(bytescount / one_mb));
 
+
+            byte[] digest = md_write.digest();
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : digest)
+            {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            //HASH slows down//System.out.println("Hash: " + hexString.toString());
+
+
             System.out.println("" + ((System.nanoTime() - startTime) / 1000000000) + " seconds write");
 
 
@@ -114,6 +134,7 @@ public class iocipherspeedtest
 
             info.guardianproject.iocipher.File fin = new info.guardianproject.iocipher.File(filename);
             info.guardianproject.iocipher.FileInputStream in = new info.guardianproject.iocipher.FileInputStream(fin);
+            MessageDigest md_read = MessageDigest.getInstance("MD5");
             byte[] bytebuf_in = new byte[bytes];
             long startTime2 = System.nanoTime();
             int i2 = 0;
@@ -122,14 +143,15 @@ public class iocipherspeedtest
             while ((nRead = in.read(bytebuf_in, 0, bytebuf_in.length)) != -1)
             {
                 i2++;
+                //HASH slows down//md_read.update(bytebuf_in);
                 bytescount = bytescount + (long)nRead;
-                if ((i2 % 5000) == 0)
+                if ((i2 % 500) == 0)
                 {
                     try
                     {
                         // System.out.println("bc="+bytescount);
                         endTime = System.nanoTime();
-                        bytesPerSec = bytescount / (1 + ((System.nanoTime() - startTime) / 1000000000));
+                        bytesPerSec = bytescount / (1 + ((System.nanoTime() - startTime2) / 1000000000));
                         kbPerSec = bytesPerSec / one_kb;
                         System.out.println(String.format("%.1f", kbPerSec) + " KBps : size MB=" + (float)(bytescount / one_mb));
                     }
@@ -141,6 +163,18 @@ public class iocipherspeedtest
             }
 
             in.close();
+
+
+            byte[] digest2 = md_read.digest();
+            StringBuilder hexString2 = new StringBuilder();
+            for (byte b : digest2)
+            {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString2.append('0');
+                hexString2.append(hex);
+            }
+            //HASH slows down//System.out.println("Hash: " + hexString2.toString());
+
 
             System.out.println("" + ((System.nanoTime() - startTime2) / 1000000000) + " seconds read");
         }
