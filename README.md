@@ -14,19 +14,17 @@ Building for Android
 --------------------
 
 This app relies on OpenSSL libcrypto, sqlcipher, and libsqlfs, which
-are all "native" C code that needs to be built before working the
-Java.
+are all "native" C code that need to be built.
 
 ```
 ./compile_docker_all.sh
 ```
 
-Building for Linux (not fully ready yet)
-----------------------------------------
+Building for Linux
+------------------
 
 This app relies on OpenSSL libcrypto, sqlcipher, and libsqlfs, which
-are all "native" C code that needs to be built before working the
-Java.
+are all "native" C code that need to be built.
 
 ```
 ./compile_docker_all.sh
@@ -62,8 +60,9 @@ https://www.gnu.org/licenses/lgpl-java.en.html
 Current bugs
 ------------
 
-ASAN shows some memory leaks in the JNI code. sadly ASAN does not really show them, but crashes.
-any hints welcome how to debug this.
+ASAN shows that there are some memory leaks in the JNI code.
+Sadly ASAN (on JVM) does not really show them, but crashes.
+Any hints welcome how to debug this.
 
 
 Based upon
