@@ -26,6 +26,11 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    needs: [update-nightly-tag]
+    if: |
+      always() &&
+      (needs.update-nightly-tag.result == 'success' ||
+        needs.update-nightly-tag.result == 'skipped')
     permissions:
       contents: write
     steps:
@@ -71,6 +76,17 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: "local_maven_iocipher_*.zip,libiocipher2-c-release.aar,libiocipher2-c-debug.aar,compile.log"
 
+
+    - name: Upload to versioned release
+      if: contains(github.ref, 'refs/tags/v')
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        draft: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: "local_maven_iocipher_*.zip,libiocipher2-c-release.aar,libiocipher2-c-debug.aar,compile.log"
+
+
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
@@ -100,6 +116,16 @@ jobs:
         replacesArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: "iocipher_linux-*.jar,compile_linux_c_src.log"
+
+    - name: Upload to versioned release
+      if: contains(github.ref, 'refs/tags/v')
+      uses: ncipollo/release-action@v1
+      with:
+        allowUpdates: true
+        draft: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: "iocipher_linux-*.jar,compile_linux_c_src.log"
+
 
     - name: raw speed test on linux
       run: |
