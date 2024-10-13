@@ -87,10 +87,15 @@ if [ "$1""x" != "testx" ]; then
 
     javacomp=javac
 
+    echo "***  clean classes  ***"
+    find . -name '*.class'|xargs rm -v  >> "$logfile" 2>&1
+
+    echo "*** compile classes ***"
     "$javacomp" -cp ./ ./info/guardianproject/iocipher/FilenameFilter.java ./info/guardianproject/iocipher/VirtualFileSystem.java ./info/guardianproject/iocipher/File.java ./info/guardianproject/iocipher/RandomAccessFile.java ./info/guardianproject/iocipher/IOCipherFileChannel.java ./info/guardianproject/iocipher/FileReader.java ./info/guardianproject/iocipher/FileInputStream.java ./info/guardianproject/iocipher/FileOutputStream.java ./info/guardianproject/iocipher/FileWriter.java ./info/guardianproject/iocipher/FileFilter.java ./info/guardianproject/iocipher/FileDescriptor.java ./info/guardianproject/libcore/io/StructStat.java ./info/guardianproject/libcore/io/ErrnoException.java ./info/guardianproject/libcore/io/SizeOf.java ./info/guardianproject/libcore/io/StructStatFs.java ./info/guardianproject/libcore/io/Memory.java ./info/guardianproject/libcore/io/StructPasswd.java ./info/guardianproject/libcore/io/Libcore.java ./info/guardianproject/libcore/io/StructUtsname.java ./info/guardianproject/libcore/io/StructAddrinfo.java ./info/guardianproject/libcore/io/StructPollfd.java ./info/guardianproject/libcore/io/StructTimeval.java ./info/guardianproject/libcore/io/OsConstants.java ./info/guardianproject/libcore/io/StructLinger.java ./info/guardianproject/libcore/io/StructGroupReq.java ./info/guardianproject/libcore/io/Posix.java ./info/guardianproject/libcore/io/IoUtils.java ./info/guardianproject/libcore/io/StructFlock.java ./info/guardianproject/libcore/io/IoBridge.java ./info/guardianproject/libcore/io/Os.java >> "$logfile" 2>&1 || exit 1
 
     ## test program ##
 
+    echo "***  compile tests  ***"
     "$javacomp" -cp ./ com/example/Log.java com/example/Util.java com/example/iocipherspeedtest.java com/example/iociphertest.java com/example/iociphertest_file.java >> "$logfile" 2>&1 || exit 1
 
 fi
