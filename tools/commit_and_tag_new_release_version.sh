@@ -58,9 +58,17 @@ if [ ! -e "$fjar" ]; then
     exit 1
 fi
 
-exit 1
+file ./003_src_iocipher/linux_jni/c_src/info/guardianproject/iocipher/VirtualFileSystem.class 2>/dev/null|grep 'version 52.0' >/dev/null 2>/dev/null
+jdk_ver_used=$?
 
-git commit -m "$commit_message" "$f1" "$f2" "$f3"
+if [ "$jdk_ver_used""x" != "0x" ]; then
+    echo "================================="
+    file ./003_src_iocipher/linux_jni/c_src/info/guardianproject/iocipher/VirtualFileSystem.class
+    echo ""
+    echo "java classes seem to be compiled by higher jdk version than 1.8, please compile with 1.8"
+    echo "================================="
+    exit 1
+fi
+
+git commit -a -m "$commit_message"
 git tag -a "$tag_name" -m "$tag_name"
-
-
