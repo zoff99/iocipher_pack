@@ -10,9 +10,8 @@ basedir="$_HOME_""/../"
 cd "$basedir"
 
 if [[ $(git status --porcelain --untracked-files=no) ]]; then
-	echo "ERROR: git repo has changes."
+	echo "WARNING: git repo has changes."
 	echo "please commit or cleanup the git repo."
-	# exit 1
 else
 	echo "git repo clean."
 fi
