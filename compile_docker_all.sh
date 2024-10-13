@@ -84,6 +84,9 @@ if [ "$build_sqlfs""x" == "1x" ]; then
     cp -av ./002_src_libsqlfs/sqlfs_internal.h ./003_src_iocipher/libiocipher2-c/src/main/cpp/libsqlfs/ >> "$logfile" 2>&1 || exit 1
 fi
 
+echo "deleting all *.class files"
+find . -name '*.class'|xargs rm -v  >> "$logfile" 2>&1
+
 cd "$_HOME_""/"
 cd ./003_src_iocipher/ || exit 1
 echo "build iocipher for android"
