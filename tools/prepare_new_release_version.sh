@@ -52,16 +52,8 @@ sed -i -e 's#public static String IOCIPHER_JNI_VERSION = ".*$#public static Stri
 
 
 commit_message="new version ""$next_m_version"
-tag_name="$next_m_version"
+tag_name="v""$next_m_version"
 
 echo "$commit_message"
-echo "v""$tag_name"
-
-exit 0
-
-# HINT: !!first build it all again. then commit and tag!!
-
-# git commit -m "$commit_message" "$f1" "$f2" "$f3"
-# git tag -a "$next_m_version" -m "$next_m_version"
-
+echo "$tag_name"
 
