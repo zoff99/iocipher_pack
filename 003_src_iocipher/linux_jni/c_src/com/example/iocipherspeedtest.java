@@ -54,7 +54,108 @@ public class iocipherspeedtest
         assertEquals(vfs.iocipherJNIVersion(), IOCIPHER_JNI_VERSION);
     }
 
-    public static void testSpeed() {
+    public static void testSmallFiles(final int filesize_in_bytes) {
+        vfs.setContainerPath(path);
+        vfs.createNewContainer(goodPassword);
+        vfs.mount(goodPassword);
+        if (vfs.isMounted()) {
+            Log.i(TAG, "vfs is mounted");
+        } else {
+            Log.i(TAG, "vfs is NOT mounted");
+        }
+        assertTrue(vfs.isMounted());
+        // -------------------
+        try
+        {
+            String filename = "/speedtest02";
+            final long one_kb = 1024;
+            final long one_mb = 1024 * one_kb;
+            final long one_gb = 1024 * one_mb;
+            // --------------------------------------
+            final int bytes = filesize_in_bytes;
+            final byte[] random_buf = new byte[bytes];
+            final int numfiles = 80 * 1000;
+            // --------------------------------------
+
+            Random prng = new Random();
+            prng.nextBytes(random_buf);
+
+            long startTime = System.nanoTime(); 
+            for(int i=0;i<numfiles;i++)
+            {
+                info.guardianproject.iocipher.File f = new info.guardianproject.iocipher.File(filename + "_" + i);
+                info.guardianproject.iocipher.FileOutputStream out = new info.guardianproject.iocipher.FileOutputStream(f);
+                out.write(random_buf);
+                out.close();
+
+                if ((i % 5000) == 0)
+                {
+                    try
+                    {
+                        long bytescount = (long)i * (long)bytes;
+                        long endTime = System.nanoTime();
+                        float bytesPerSec = bytescount / ((System.nanoTime() - startTime) / 1000000000);
+                        float kbPerSec = bytesPerSec / one_kb;
+                        float filesPerSec = i / ((System.nanoTime() - startTime) / 1000000000);
+                        System.out.println("write: " + String.format("%.1f", kbPerSec) + " KBps : files=" + (i + 1) + " : size MB=" + (float)(bytescount / one_mb));
+                        System.out.println("write: " + String.format("%.1f", filesPerSec) + " files per second");
+                    }
+                    catch(Exception e)
+                    {
+                    }
+                }
+            }
+
+            System.out.println("===================\n\n");
+
+            info.guardianproject.iocipher.File directory = new info.guardianproject.iocipher.File("/");
+            info.guardianproject.iocipher.File[] files = directory.listFiles();
+            if (files != null)
+            {
+                startTime = System.nanoTime(); 
+                int i=0;
+                int nRead = 0;
+                for (info.guardianproject.iocipher.File fin : files)
+                {
+                    info.guardianproject.iocipher.FileInputStream in = new info.guardianproject.iocipher.FileInputStream(fin);
+                    byte[] bytebuf_in = new byte[bytes];
+                    while ((nRead = in.read(bytebuf_in, 0, bytebuf_in.length)) != -1)
+                    {
+                        // read file contents
+                    }
+                    i++;
+                    in.close();
+
+                    if ((i % 5000) == 0)
+                    {
+                        try
+                        {
+                            long bytescount = (long)i * (long)bytes;
+                            long endTime = System.nanoTime();
+                            float bytesPerSec = bytescount / ((System.nanoTime() - startTime) / 1000000000);
+                            float kbPerSec = bytesPerSec / one_kb;
+                            float filesPerSec = i / ((System.nanoTime() - startTime) / 1000000000);
+                            System.out.println("read: " + String.format("%.1f", kbPerSec) + " KBps : files=" + (i + 1) + " : size MB=" + (float)(bytescount / one_mb));
+                            System.out.println("read: " + String.format("%.1f", filesPerSec) + " files per second");
+                        }
+                        catch(Exception e)
+                        {
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+            Log.e(TAG, e.getCause().toString());
+            fail();
+        }
+        // -------------------
+        vfs.unmount();
+    }
+
+    public static void testSpeedLargfileSeqRW() {
         vfs.setContainerPath(path);
         vfs.createNewContainer(goodPassword);
         vfs.mount(goodPassword);
@@ -200,7 +301,15 @@ public class iocipherspeedtest
         testVersionIOcipher();
         testVersionIOjnicipher();
         // -------------------
-        testSpeed();
+        Log.i(TAG, "1 byte files:");
+        testSmallFiles(1);
+        Log.i(TAG, "1000 byte files:");
+        testSmallFiles(1000);
+        Log.i(TAG, "8192 byte files:");
+        testSmallFiles(8192);
+        Log.i(TAG, "20000 byte files:");
+        testSmallFiles(20000);
+        testSpeedLargfileSeqRW();
         // -------------------
         tearDown();
         // -------------------
