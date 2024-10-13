@@ -1,6 +1,8 @@
 #! /bin/bash
 
-_HOME_="$(pwd)"
+_HOME2_=$(dirname "$0")
+export _HOME2_
+_HOME_=$(cd "$_HOME2_" || exit;pwd)
 export _HOME_
 
 cd "$_HOME_"
