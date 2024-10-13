@@ -70,5 +70,7 @@ if [ "$jdk_ver_used""x" != "0x" ]; then
     exit 1
 fi
 
+git add "$fjar"
+
 git commit -a -m "$commit_message"
 git tag -a "$tag_name" -m "$tag_name"
