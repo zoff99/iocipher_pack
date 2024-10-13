@@ -37,8 +37,13 @@ if [ "$1""x" != "testx" ]; then
 
     export CFLAGS=" -DHAVE_LIBSQLCIPHER -fPIC -O2 -ggdb3 -std=gnu99 -fstack-protector-all -D_FORTIFY_SOURCE=2 "
     export CXXFLAGS=" -DHAVE_LIBSQLCIPHER -fPIC -O2 -ggdb3 -fstack-protector-all -D_FORTIFY_SOURCE=2 "
-    # export ASAN_FLAGS="-fsanitize=address -fno-omit-frame-pointer -fsanitize-recover=address -static-libasan"
-    export ASAN_FLAGS=""
+
+    if [ "$2""x" != "asanx" ]; then
+        export ASAN_FLAGS=""
+    else
+        export ASAN_FLAGS="-fsanitize=address -fno-omit-frame-pointer -fsanitize-recover=address -static-libasan"
+        echo "*** ASAN compile ***"
+    fi
 
     # -fsanitize=address -fno-omit-frame-pointer -fsanitize-recover=address \
 
@@ -79,7 +84,13 @@ if [ "$1""x" != "testx" ]; then
     -Wl,-soname,libiocipher2.so -o libiocipher2.so >> "$logfile" 2>&1 || exit 1
 
     echo "** checking for missing SYMBOLS **"
-    ld libiocipher2.so >> "$logfile" 2>&1 || (echo "ERROR: linker missing some symbols" ; exit 1)
+    ld libiocipher2.so >> "$logfile" 2>&1 || (ld libiocipher2.so;echo "ERROR: linker missing some symbols";exit 91)
+    res=$?
+    if [ "$2""x" != "asanx" ]; then
+        if [ "$res""x" == "91x" ]; then
+            exit 1
+        fi
+    fi
 
     ls -al libiocipher2.so >> "$logfile" 2>&1 || exit 1
     pwd
@@ -124,9 +135,16 @@ echo "***  test   ***"
 
 # export ASAN_OPTIONS="halt_on_error=true:detect_leaks=1:handle_segv=0"
 # export ASAN_OPTIONS="halt_on_error=true:detect_leaks=0"
-# LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.8.0.0 \
+# LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.6.0.0 \
 
-java -classpath "iocipher_linux-""$cur_str_version"".jar" com.example.iociphertest >> "$logfile" 2>&1 || exit 1
+if [ "$2""x" != "asanx" ]; then
+    java -classpath "iocipher_linux-""$cur_str_version"".jar" com.example.iociphertest >> "$logfile" 2>&1 || exit 1
+else
+    echo "***  ASAN   ***"
+    export ASAN_OPTIONS="halt_on_error=true:detect_leaks=0:handle_segv=0"
+    LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.6.0.0 \
+    java -classpath "iocipher_linux-""$cur_str_version"".jar" com.example.iociphertest >> "$logfile" 2>&1 || exit 1
+fi
 
 echo "***   OK    ***"
 
