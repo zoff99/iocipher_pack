@@ -296,17 +296,55 @@ public class iocipherspeedtest
         System.out.println("-test-");
 
         // -------------------
-        setUp();
+        final Thread t2 = new Thread()
+        {
+            public void run()
+            {
+                try
+                {
+                    Log.i(TAG, "============= different thread here =============");
+                    setUp();
+                }
+                catch(Exception e)
+                {
+                    e.printStackTrace();
+                }
+            }  
+        };
+        t2.start();
+        try
+        {
+            t2.join();
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+
         testVersionSqlfs();
         testVersionIOcipher();
         testVersionIOjnicipher();
         // -------------------
-        Log.i(TAG, "1 byte files:");
-        testSmallFiles(1);
-        Log.i(TAG, "1000 byte files:");
-        testSmallFiles(1000);
-        Log.i(TAG, "8192 byte files:");
-        testSmallFiles(8192);
+        vfs.setContainerPath(path);
+        vfs.createNewContainer(goodPassword);
+        vfs.mount(goodPassword);
+        if (vfs.isMounted()) {
+            Log.i(TAG, "vfs is mounted");
+        } else {
+            Log.i(TAG, "vfs is NOT mounted");
+        }
+        assertTrue(vfs.isMounted());
+        info.guardianproject.iocipher.File f = new info.guardianproject.iocipher.File("/");
+        Log.i(TAG, "trying ...");
+        f.isDirectory();
+        f.lastModified();
+        f.exists();
+        Log.i(TAG, "isDirectory done");
+        String[] x = f.list();
+        Log.i(TAG, "listFiles done");
+        vfs.unmount();
+        // -------------------
+
         Log.i(TAG, "20000 byte files:");
         testSmallFiles(20000);
         testSpeedLargfileSeqRW();

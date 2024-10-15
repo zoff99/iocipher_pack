@@ -481,12 +481,85 @@ void test_open_creat_trunc_existing(sqlfs_t *sqlfs)
     printf("passed\n");
 }
 
+typedef struct {
+    char** entries;
+    int count;
+    int capacity;
+} DirEntries;
+
+static int fill_dir(void *buf, const char *name, const struct stat *statp, off_t off) {
+    DirEntries *entries = (DirEntries*) buf;
+
+    printf("fill_dir:entry:%s\n", name);
+
+    if (entries->count >= entries->capacity) {
+        int new_capacity = entries->capacity * 2;
+        char** new_entries = realloc(entries->entries, new_capacity * sizeof(char*));
+        if (new_entries == NULL) {
+            return 1;  // Error
+        }
+        entries->entries = new_entries;
+        entries->capacity = new_capacity;
+    }
+
+    entries->entries[entries->count] = strdup(name);
+    if (entries->entries[entries->count] == NULL) {
+        return 0;  // Error (HINT: in the original it always return 0, even on error. so we keep this behaviour)
+    }
+    entries->count++;
+
+    return 0;
+}
+
+void test_readdir(sqlfs_t *sqlfs)
+{
+    int i;
+    char buf[200];
+    struct fuse_file_info fi = { 0 };
+    fi.flags |= ~0;
+    sqlfs_proc_write(sqlfs, "/XXXXXXXYYYYYYY123", data, strlen(data), 0, fi.flags);
+
+    // printf("=========> 001:\n");
+    DirEntries entries = {NULL, 0, 16};
+    // using FUSE readdir in old getdir() style which gives us the whole thing at once
+    entries.entries = malloc(entries.capacity * sizeof(char*));
+    if (entries.entries == NULL) {
+        return NULL;
+    }
+
+    // printf("=========> 002:\n");
+    sqlfs_proc_readdir(0, "/", (void *)&entries, (fuse_fill_dir_t)fill_dir, 0, NULL);
+    // printf("=========> 003:\n");
+
+    int filtered_count = 0;
+    for (int i = 0; i < entries.count; i++) {
+        if (strcmp(entries.entries[i], ".") != 0 && strcmp(entries.entries[i], "..") != 0) {
+            entries.entries[filtered_count++] = entries.entries[i];
+        } else {
+            free(entries.entries[i]);
+        }
+    }
+    entries.count = filtered_count;
+
+    for (int i = 0; i < entries.count; i++) {
+        printf("test_readdir:entry:%d %s\n", i , entries.entries[i]);
+        free(entries.entries[i]);
+    }
+
+    free(entries.entries);
+
+}
+
 void run_standard_tests(sqlfs_t* sqlfs)
 {
     int size;
 
     printf("Running standard tests:\n");
     test_getattr_create_truncate_truncate_truncate(sqlfs);
+
+    // --------------------------------------------
+    test_readdir(sqlfs);
+    // --------------------------------------------
 
     test_mkdir_with_sleep(sqlfs);
     test_mkdir_without_sleep(sqlfs);
