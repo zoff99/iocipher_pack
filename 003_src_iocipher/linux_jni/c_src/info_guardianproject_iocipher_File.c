@@ -103,17 +103,23 @@ static jboolean File_setLastModifiedImpl(JNIEnv* env, jclass cls, jstring javaPa
     }
 
     // We want to preserve the access time.
+    struct stat sb;
+    sqlfs_proc_getattr(0, path, &sb);
     key_attr atime;
-    sqlfs_get_attr(0, "atime", &atime);
+    atime.atime = (long)sb.st_atime;
 
     // TODO: we could get microsecond resolution with utimes(3), "legacy" though it is.
     key_attr mtime;
     mtime.mtime = (time_t)(ms / 1000);
 
+    // TODO: this is not correct. fix me!!
+    int result = JNI_FALSE;
+    /*
     int result = sqlfs_set_attr(0, "mtime", &mtime);
     if (result) {
         result = sqlfs_set_attr(0, "atime", &atime);
     }
+    */
 
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 
