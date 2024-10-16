@@ -89,12 +89,11 @@ static jlong File_lastModifiedImpl(JNIEnv* env, jclass cls, jstring javaPath) {
     if (path == NULL) {
         return JNI_FALSE;
     }
-
-    key_attr attr;
-    sqlfs_get_attr(0, "mtime", &attr);
+    struct stat sb;
+    sqlfs_proc_getattr(0, path, &sb);
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 
-    return (jlong)attr.mtime * 1000L;
+    return (jlong)((long)sb.st_mtime * 1000L);
 }
 
 static jboolean File_setLastModifiedImpl(JNIEnv* env, jclass cls, jstring javaPath, jlong ms) {
