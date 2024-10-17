@@ -1,5 +1,13 @@
 #! /bin/bash
 
+_HOME2_=$(dirname "$0")
+export _HOME2_
+_HOME_=$(cd "$_HOME2_" || exit;pwd)
+export _HOME_
+
+cd "$_HOME_"
+
+
 # copy the current JNI linux jar to this subdir
 if [ -e ../003_src_iocipher/linux_jni/c_src/iocipher_linux-1.0.3.jar ]; then
   cp -v ../003_src_iocipher/linux_jni/c_src/iocipher_linux-1.0.3.jar ./iocipher_linux-1.0.3.jar
