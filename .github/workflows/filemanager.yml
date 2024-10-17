@@ -64,6 +64,58 @@ jobs:
            sudo apt-get install lwm fvwm
            sudo apt-get install xvfb
 
+    - name: show installed font packages
+      run: |
+           dpkg -l|grep font
+
+    - name: install fonts
+      run: |
+           sudo apt-get install xfonts-utils xfonts-scalable xfonts-encodings xfonts-base xfonts-75dpi xfonts-100dpi
+           sudo apt-get install fonts-noto-color-emoji
+           sudo apt-get install fonts-dejavu fonts-dejavu-core fonts-freefont-ttf
+           sudo apt-get install xfonts-wqy \
+           xfonts-efont-unicode xfonts-efont-unicode-ib xfonts-intl-chinese xfonts-intl-chinese-big \
+           xfonts-intl-asian xfonts-intl-arabic xfonts-intl-european xfonts-unifont \
+            fonts-dejavu-core \
+            fonts-dejavu-extra \
+            fonts-droid-fallback \
+            fonts-guru \
+            fonts-guru-extra \
+            fonts-horai-umefont \
+            fonts-kacst \
+            fonts-kacst-one \
+            fonts-khmeros-core \
+            fonts-lao \
+            fonts-liberation \
+            fonts-lklug-sinhala \
+            fonts-lohit-guru \
+            fonts-nanum \
+            fonts-noto-cjk \
+            fonts-opensymbol \
+            fonts-roboto \
+            fonts-roboto-hinted \
+            fonts-sil-abyssinica \
+            fonts-sil-padauk \
+            fonts-stix \
+            fonts-symbola \
+            fonts-takao-pgothic \
+            fonts-thai-tlwg \
+            fonts-tibetan-machine \
+            fonts-tlwg-garuda \
+            fonts-tlwg-kinnari \
+            fonts-tlwg-laksaman \
+            fonts-tlwg-loma \
+            fonts-tlwg-mono \
+            fonts-tlwg-norasi \
+            fonts-tlwg-purisa \
+            fonts-tlwg-sawasdee \
+            fonts-tlwg-typewriter \
+            fonts-tlwg-typist \
+            fonts-tlwg-typo \
+            fonts-tlwg-umpush \
+            fonts-tlwg-waree \
+            fonts-unfonts-core
+
     - name: create runscript
       run: |
            printf '#!/bin/bash\n' > /tmp/a.sh
