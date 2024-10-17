@@ -70,9 +70,8 @@ https://www.gnu.org/licenses/lgpl-java.en.html
 Current bugs
 ------------
 
-ASAN shows that there are some memory leaks in the JNI code.
-Sadly ASAN (on JVM) does not really show them, but crashes.
-Any hints welcome how to debug this.
+There are still some "int" values used for sizes.
+mtime and atime is not fully working the same as posix files.
 
 
 Based upon
