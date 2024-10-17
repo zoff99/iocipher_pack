@@ -123,6 +123,7 @@ class FileManager {
     private static String goodPassword = "super secure password 1$%_?:!";
     private static boolean loaded = false;
     private static String curdir = "/";
+    private static boolean showcase_mode = false;
 
     public static void setUp() {
         vfs = VirtualFileSystem.get();
@@ -144,6 +145,40 @@ class FileManager {
                 System.out.println("vfs is unmounted");
             }
         } catch (Exception e) {
+        }
+    }
+
+    public static void create_dummies()
+    {
+        try
+        {
+            info.guardianproject.iocipher.File f1 = new info.guardianproject.iocipher.File("/Images");
+            f1.mkdirs();
+            f1 = new info.guardianproject.iocipher.File("/Documents");
+            f1.mkdirs();
+            f1 = new info.guardianproject.iocipher.File("/Music");
+            f1.mkdirs();
+            f1 = new info.guardianproject.iocipher.File("/เอกสารสำคัญ");
+            f1.mkdirs();
+            f1 = new info.guardianproject.iocipher.File("/listy zakupów");
+            f1.mkdirs();
+            f1 = new info.guardianproject.iocipher.File("/My Shopping.docx");
+            f1.createNewFile();
+            info.guardianproject.iocipher.RandomAccessFile fra = new info.guardianproject.iocipher.RandomAccessFile(f1, "rw");
+            fra.write(new byte[45847]);
+            fra.close();
+
+            for (int i=0;i<30;i++)
+            {
+                f1 = new info.guardianproject.iocipher.File("/Photo_" + i + ".png");
+                f1.createNewFile();
+                fra = new info.guardianproject.iocipher.RandomAccessFile(f1, "rw");
+                fra.write(new byte[25841 + (int) (Math.random() * 4096)]);
+                fra.close();
+            }
+        }
+        catch(Exception e)
+        {
         }
     }
 
@@ -1050,6 +1085,7 @@ class FileManager {
     public static void main(String[] args) {
 
         // System.out.println("number of args: " + args.length);
+        showcase_mode = false;
         if (args.length == 1) {
             System.out.println("db file: " + args[0]);
             dbfilename = args[0];
@@ -1058,12 +1094,25 @@ class FileManager {
             dbfilename = args[0];
             System.out.println("password: *******************");
             goodPassword = args[1];
+        } else if (args.length == 3) {
+            System.out.println("db file : " + args[0]);
+            dbfilename = args[0];
+            System.out.println("password: *******************");
+            goodPassword = args[1];
+            if (args[1].compareTo("showcase") != 0) {
+                // HINT: showcase mode. so lets create some files and directories
+                showcase_mode = true;
+                System.out.println("== SHOWCASE MODE ==");
+            }
         }
         System.out.println("setup db ...");
         setUp();
         System.out.println("setup db ... OK");
         System.out.println("sqlfs version: " + vfs.sqlfsVersion());
-
+        if (showcase_mode)
+        {
+            create_dummies();
+        }
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 try {
