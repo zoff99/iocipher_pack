@@ -119,7 +119,7 @@ jobs:
     - name: create runscript
       run: |
            printf '#!/bin/bash\n' > /tmp/a.sh
-           printf 'xclock -digital -geometry 300x45+100+688 &\n' >> /tmp/a.sh
+           printf 'xclock -digital -geometry 600x90+150+910 &\n' >> /tmp/a.sh
            printf 'cd /home/runner/work/iocipher_pack/iocipher_pack/004_example_jvm/\n' >> /tmp/a.sh
            printf './do_compile_and_run.sh vfsmanager.db "" showcase &\n' >> /tmp/a.sh
            printf 'sleep 20\n' >> /tmp/a.sh
