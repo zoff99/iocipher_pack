@@ -236,7 +236,7 @@ class FileManager {
             table.getSelectionModel().addListSelectionListener(listSelectionListener);
             JScrollPane tableScroll = new JScrollPane(table);
             Dimension d = tableScroll.getPreferredSize();
-            tableScroll.setPreferredSize(new Dimension((int) d.getWidth() * 3, (int) d.getHeight() * 2));
+            tableScroll.setPreferredSize(new Dimension((int) d.getWidth() * 3, (int) ((float)d.getHeight() * 1.7f)));
             detailView.add(tableScroll, BorderLayout.CENTER);
 
             // the File tree
