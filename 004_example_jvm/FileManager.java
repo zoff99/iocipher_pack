@@ -236,7 +236,7 @@ class FileManager {
             table.getSelectionModel().addListSelectionListener(listSelectionListener);
             JScrollPane tableScroll = new JScrollPane(table);
             Dimension d = tableScroll.getPreferredSize();
-            tableScroll.setPreferredSize(new Dimension((int) d.getWidth(), (int) d.getHeight() / 2));
+            tableScroll.setPreferredSize(new Dimension((int) d.getWidth() * 3, (int) d.getHeight() * 2));
             detailView.add(tableScroll, BorderLayout.CENTER);
 
             // the File tree
@@ -276,8 +276,8 @@ class FileManager {
 
             Dimension preferredSize = treeScroll.getPreferredSize();
             Dimension widePreferred = new Dimension(
-                    200,
-                    (int) preferredSize.getHeight());
+                    240,
+                    (int)preferredSize.getHeight());
             treeScroll.setPreferredSize(widePreferred);
 
             // details for a File
@@ -776,15 +776,25 @@ class FileManager {
                     // TODO: 30 is just a random value. calculate this better somehow
                     table.setRowHeight(30 + rowIconPadding);
 
-                    setColumnWidth(0, 0);
-                    setColumnWidth(3, 60);
-                    table.getColumnModel().getColumn(3).setMaxWidth(120);
-                    setColumnWidth(4, -1);
-                    setColumnWidth(5, -1);
-                    setColumnWidth(6, -1);
-                    setColumnWidth(7, -1);
-                    setColumnWidth(8, -1);
-                    setColumnWidth(9, -1);
+                    setColumnWidth(0, 0); // icon -> unused with VFS, or does anybody know how to get system icons without a real system file?
+
+                    setColumnWidth(1, 350); // File(name)
+                    table.getColumnModel().getColumn(1).setMaxWidth(5000);
+
+                    setColumnWidth(2, 8); // Path/name
+                    table.getColumnModel().getColumn(2).setMaxWidth(1500);
+
+                    setColumnWidth(3, 160); // size
+                    table.getColumnModel().getColumn(3).setMaxWidth(450);
+
+                    setColumnWidth(4, 200); // last modified
+                    table.getColumnModel().getColumn(4).setMaxWidth(450);
+
+                    setColumnWidth(5, -1); // R
+                    setColumnWidth(6, -1); // W
+                    setColumnWidth(7, -1); // E
+                    setColumnWidth(8, -1); // D
+                    setColumnWidth(9, -1); // File or Directory
 
                     cellSizesSet = true;
                 }
