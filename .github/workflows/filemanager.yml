@@ -15,11 +15,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    needs: [update-nightly-tag]
-    if: |
-      always() &&
-      (needs.update-nightly-tag.result == 'success' ||
-        needs.update-nightly-tag.result == 'skipped')
     permissions:
       contents: write
     steps:
