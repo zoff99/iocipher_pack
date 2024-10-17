@@ -85,9 +85,9 @@ static jlong File_lastModifiedImpl(JNIEnv* env, jclass, jstring javaPath) {
         return JNI_FALSE;
     }
 
-    key_attr attr;
-    sqlfs_get_attr(0, "mtime", &attr);
-    return static_cast<jlong>(attr.mtime) * 1000L;
+    struct stat sb;
+    sqlfs_proc_getattr(0, path, &sb);
+    return static_cast<jlong>(sb.st_mtime) * 1000L;
 }
 
 static jboolean File_setLastModifiedImpl(JNIEnv* env, jclass, jstring javaPath, jlong ms) {
@@ -98,10 +98,13 @@ static jboolean File_setLastModifiedImpl(JNIEnv* env, jclass, jstring javaPath, 
     }
 
     // We want to preserve the access time.
-    key_attr atime;
-    sqlfs_get_attr(0, "atime", &atime);
+    struct stat sb;
+    sqlfs_proc_getattr(0, path, &sb);
+    // key_attr atime;
+    // atime.atime = static_cast<time_t>sb.st_atime;
 
     // TODO: we could get microsecond resolution with utimes(3), "legacy" though it is.
+    /*
     utimbuf times;
     key_attr mtime;
     mtime.mtime = static_cast<time_t>(ms / 1000);
@@ -109,7 +112,11 @@ static jboolean File_setLastModifiedImpl(JNIEnv* env, jclass, jstring javaPath, 
         return 0;
     if(!sqlfs_set_attr(0, "atime", &atime))
         return 0;
-    return 1;
+    */
+
+    // TODO: this is not correct. fix me!!
+    int result = JNI_FALSE;
+    return result;
 }
 
 typedef std::vector<std::string> DirEntries;
