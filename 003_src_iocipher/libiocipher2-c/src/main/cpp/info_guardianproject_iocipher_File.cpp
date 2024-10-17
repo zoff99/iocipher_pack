@@ -86,7 +86,7 @@ static jlong File_lastModifiedImpl(JNIEnv* env, jclass, jstring javaPath) {
     }
 
     struct stat sb;
-    sqlfs_proc_getattr(0, path, &sb);
+    sqlfs_proc_getattr(0, path.c_str(), &sb);
     return static_cast<jlong>(sb.st_mtime) * 1000L;
 }
 
@@ -99,7 +99,7 @@ static jboolean File_setLastModifiedImpl(JNIEnv* env, jclass, jstring javaPath, 
 
     // We want to preserve the access time.
     struct stat sb;
-    sqlfs_proc_getattr(0, path, &sb);
+    sqlfs_proc_getattr(0, path.c_str(), &sb);
     // key_attr atime;
     // atime.atime = static_cast<time_t>sb.st_atime;
 
