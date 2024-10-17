@@ -215,6 +215,7 @@ class FileManager {
             root.add(node);
             //
             File[] files = fileSystemRoot.listFiles();
+            // System.out.println("listfiles:001");
             for (File file : files) {
                 if (file.isDirectory()) {
                     node.add(new DefaultMutableTreeNode(file));
@@ -494,9 +495,12 @@ class FileManager {
                         treeModel.removeNodeFromParent(currentNode);
 
                         // add a new node..
+                        showChildren(parentNode);
+                    } else {
+                        parentPath = findTreePath(current_vfs_dir);
+                        parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+                        showChildren(parentNode);
                     }
-
-                    showChildren(parentNode);
                 } else {
                     String msg = "The file '" +
                             currentFile +
@@ -597,9 +601,12 @@ class FileManager {
                                 .getLastPathComponent();
 
                         treeModel.removeNodeFromParent(currentNode);
+                        showChildren(parentNode);
+                    } else {
+                        parentPath = findTreePath(current_vfs_dir);
+                        parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+                        showChildren(parentNode);
                     }
-
-                    showChildren(parentNode);
                 } else {
                     String msg = "The file '" +
                             currentFile +
@@ -670,9 +677,13 @@ class FileManager {
                                 .getLastPathComponent();
 
                         treeModel.insertNodeInto(newNode, parentNode, parentNode.getChildCount());
+                        // System.out.println("insertNodeInto:005");
+                        showChildren(parentNode);
+                    } else {
+                        parentPath = findTreePath(current_vfs_dir);
+                        parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+                        showChildren(parentNode);
                     }
-
-                    showChildren(parentNode);
                 } else {
                     String msg = "The file '" +
                             file +
@@ -944,9 +955,11 @@ class FileManager {
                 File file = (File) node.getUserObject();
                 if (file.isDirectory()) {
                     File[] files = file.listFiles(); // !!
+                    // System.out.println("listfiles:002");
                     if (node.isLeaf()) {
                         for (File child : files) {
                             if (child.isDirectory()) {
+                                // System.out.println("listfiles:003");
                                 publish(child);
                             }
                         }
@@ -958,8 +971,9 @@ class FileManager {
 
             @Override
             protected void process(List<File> chunks) {
-                for (File child : chunks) {
+                for (java.io.File child : chunks) {
                     node.add(new DefaultMutableTreeNode(child));
+                    // System.out.println("node.add:003:" + child.getAbsolutePath());
                 }
             }
 
