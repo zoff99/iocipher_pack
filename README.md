@@ -30,6 +30,8 @@ are all "native" C code that need to be built.
 Building for Linux
 ------------------
 
+<img src="https://github.com/zoff99/iocipher_pack/releases/download/nightly/package-screenshot-linux-deb.png" height="600"></a>
+
 This app relies on OpenSSL libcrypto, sqlcipher, and libsqlfs, which
 are all "native" C code that need to be built.
 
