@@ -1,0 +1,109 @@
+name: filemanager
+on:
+  push:
+    paths-ignore:
+     - 'README.md'
+  pull_request:
+    paths-ignore:
+     - 'README.md'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: dummy
+        default: dummy
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    needs: [update-nightly-tag]
+    if: |
+      always() &&
+      (needs.update-nightly-tag.result == 'success' ||
+        needs.update-nightly-tag.result == 'skipped')
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '8'
+
+    - name: list java class files
+      run: |
+        find . -name '*.class'
+
+    - name: delete java class files
+      run: |
+        find . -name '*.class'|xargs rm -v
+
+    - name: build and test android version
+      run: |
+        export RUNTESTS=1 ; ./compile_docker_all.sh || (cat compile.log; exit 1)
+
+    - name: build and test linux version
+      run: |
+        cd 003_src_iocipher/linux_jni/c_src && ./compile_linux_c.sh || (cat compile.log; exit 1)
+
+    - name: filemanager build
+      run: |
+        cd 004_example_jvm/
+        pwd
+        cp -v ../003_src_iocipher/linux_jni/c_src/iocipher_linux-1.0.3.jar ./iocipher_linux-1.0.3.jar
+        javac -classpath ".:iocipher_linux-1.0.3.jar" FileManager.java FileDrop.java
+
+    - name: install deps
+      run: |
+           sudo apt-get update
+           sudo apt-get install curl wget ca-certificates
+           sudo apt-get install imagemagick
+           sudo apt-get install xdotool xclip
+           sudo apt-get install x11-apps x11-utils
+           sudo apt-get install lwm fvwm
+           sudo apt-get install xvfb
+
+    - name: create runscript
+      run: |
+           printf '#!/bin/bash\n' > /tmp/a.sh
+           printf 'xclock -digital -geometry 300x45+100+688 &\n' >> /tmp/a.sh
+           printf '/opt/trifa-material/bin/trifa_material &\n' >> /tmp/a.sh
+           printf 'sleep 20\n' >> /tmp/a.sh
+           printf 'xwininfo -id $(xdotool getactivewindow)\n' >> /tmp/a.sh
+           printf 'xdotool mousemove --sync 80 74 click 1\n' >> /tmp/a.sh
+           printf 'sleep 2\n' >> /tmp/a.sh
+           printf 'xdotool mousemove --sync 140 74 click 1\n' >> /tmp/a.sh
+           printf 'pwd\n' >> /tmp/a.sh
+           printf 'sleep 5\n' >> /tmp/a.sh
+           printf 'fvwm2 &' >> /tmp/a.sh
+           printf 'sleep 20\n' >> /tmp/a.sh
+           printf 'import -window root /tmp/package-screenshot-linux-deb.png\n' >> /tmp/a.sh
+           cat /tmp/a.sh
+           chmod a+rx /tmp/a.sh
+
+    - name: startup-app
+      run: |
+           pwd
+           ls -al
+           xvfb-run --server-args="-screen 0 1024x768x24" --auto-servernum /tmp/a.sh
+           cp -av /tmp/package-screenshot-linux-deb.png package-screenshot-linux-deb.png
+
+    - name: upload-screenshots
+      uses: actions/upload-artifact@v4
+      with:
+        name: screenshot-linux
+        path: /tmp/package-screenshot-linux-deb.png
+
+    - name: Upload to nightly release
+      uses: ncipollo/release-action@v1
+      if: github.ref == 'refs/heads/master'
+      with:
+        allowUpdates: true
+        tag: nightly
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
+        prerelease: true
+        replacesArtifacts: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: "package-screenshot-linux-deb.png"
+
