@@ -1,3 +1,10 @@
+/*
+ *
+ * IOCipher Linux Java example
+ * (C) Zoff in 2024
+ *
+ */
+
 package com.example;
 
 import info.guardianproject.iocipher.File;

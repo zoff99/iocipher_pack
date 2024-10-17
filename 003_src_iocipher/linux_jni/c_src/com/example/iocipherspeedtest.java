@@ -1,3 +1,10 @@
+/*
+ *
+ * IOCipher Linux C example
+ * (C) Zoff in 2024
+ *
+ */
+
 package com.example;
 
 import java.util.Arrays;

@@ -1,11 +1,19 @@
+/*
+ *
+ * IOCipher Linux C example
+ * (C) Zoff in 2024
+ *
+ */
 
 #include <assert.h>
+#include <bits/time.h>
 #include <errno.h>
 #include <linux/limits.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #include "sqlfs.h"
 
@@ -175,13 +183,22 @@ int vfs_close(struct vfs_file *fd)
 // ======= VFS helper functions =======
 
 
-
+// gives a counter value that increaes every millisecond
+static uint64_t current_time_monotonic_default()
+{
+    uint64_t time = 0;
+    struct timespec clock_mono;
+    clock_gettime(CLOCK_MONOTONIC, &clock_mono);
+    time = 1000ULL * clock_mono.tv_sec + (clock_mono.tv_nsec / 1000000ULL);
+    return time;
+}
 
 int main(int argc, char *argv[])
 {
     setup_vfs();
 
 #define FILENAME "example.txt"
+#define LARGEFILENAME "large_data.dat"
 #define DIRNAME "example_dir"
 #define BUFFER_SIZE 100
 
@@ -271,6 +288,72 @@ int main(int argc, char *argv[])
     long size4 = vfs_get_file_size(fd);
     printf("check file size:%ld %ld\n", size4, (long)(strlen(write_buf) + seek_bytes_end + write_bytes));
     assert((size_t)size4 == (size_t)(strlen(write_buf) + seek_bytes_end + write_bytes));
+
+    // to silence warnings
+    current_time_monotonic_default();
+
+#if RUN_LARGE_FILETEST
+    // Open very large file and write ---------------------
+    printf("open large file\n");
+    fd = vfs_open(LARGEFILENAME, O_WRONLY | O_CREAT | O_TRUNC);
+    assert(fd);
+    const int kbuf_size = 8192 * 1000;
+    const long wanted_file_size = 16L * 1024 * 1024 * 1024; // 16 GBytes
+    const long loops = wanted_file_size / kbuf_size;
+    uint8_t kbuf[kbuf_size];
+    memset(kbuf, 16, kbuf_size);
+    printf("write to large file\n");
+    uint64_t t1 = current_time_monotonic_default();
+    for(long i=0;i<loops;i++) {
+        vfs_write(fd, kbuf, kbuf_size);
+        const long cur_size = i * kbuf_size;
+        const long cur_size_mb = cur_size / (1024*1024);
+        if ((cur_size % (10*1024*1024)) == 0)
+        {
+            const uint64_t t2 = current_time_monotonic_default();
+            float delta_t = (float)((t2 - t1)) / 1000.0f;
+            float mbs = ((float)cur_size / (1024*1024)) / delta_t;
+            printf("WRITE: size:%.2f MiB/sec %ld MiBytes\n", (float)mbs, cur_size_mb);
+        }
+    }
+
+    long size_l1 = vfs_get_file_size(fd);
+    printf("check file size:%ld %ld\n", size_l1, (long)(loops * kbuf_size));
+    assert((size_t)size_l1 == (size_t)(loops * kbuf_size));
+
+    printf("close file\n");
+    vfs_close(fd);
+    // -----------------------------------------------------
+
+
+    // Read from very large file ---------------------
+    printf("open file\n");
+    fd = vfs_open(LARGEFILENAME, O_RDONLY);
+    printf("read from file\n");
+
+    memset(kbuf, 16, kbuf_size);
+    t1 = current_time_monotonic_default();
+    for(long i=0;i<loops;i++) {
+        vfs_read(fd, kbuf, kbuf_size);
+        const long cur_size = i * kbuf_size;
+        const long cur_size_mb = cur_size / (1024*1024);
+        if ((cur_size % (10*1024*1024)) == 0)
+        {
+            const uint64_t t2 = current_time_monotonic_default();
+            float delta_t = (float)((t2 - t1)) / 1000.0f;
+            float mbs = ((float)cur_size / (1024*1024)) / delta_t;
+            printf("READ : size:%.2f MiB/sec %ld MiBytes\n", (float)mbs, cur_size_mb);
+        }
+    }
+
+    size_l1 = vfs_get_file_size(fd);
+    printf("check file size:%ld %ld\n", size_l1, (long)(loops * kbuf_size));
+    assert((size_t)size_l1 == (size_t)(loops * kbuf_size));
+
+    printf("close file\n");
+    vfs_close(fd);
+    // -----------------------------------------------------
+#endif
 
     close_vfs();
 

@@ -1,3 +1,10 @@
+/*
+ *
+ * IOCipher Linux Java example
+ * (C) Zoff in 2024
+ *
+ */
+
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
