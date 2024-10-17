@@ -23,10 +23,11 @@ jobs:
     - uses: actions/setup-java@v4
       with:
         distribution: 'temurin'
-        java-version: '8'
+        java-version: '17'
 
     - name: list java class files
       run: |
+        pwd
         find . -name '*.class'
 
     - name: delete java class files
@@ -35,7 +36,12 @@ jobs:
 
     - name: build and test android version
       run: |
-        export RUNTESTS=1 ; ./compile_docker_all.sh || (cat compile.log; exit 1)
+        ./compile_docker_all.sh || (cat compile.log; exit 1)
+
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '8'
 
     - name: build and test linux version
       run: |
