@@ -69,7 +69,7 @@ jobs:
            printf '#!/bin/bash\n' > /tmp/a.sh
            printf 'xclock -digital -geometry 300x45+100+688 &\n' >> /tmp/a.sh
            printf 'cd /home/runner/work/iocipher_pack/iocipher_pack/004_example_jvm/\n' >> /tmp/a.sh
-           printf './do_compile_and_run.sh &\n' >> /tmp/a.sh
+           printf './do_compile_and_run.sh vfsmanager.db "" showcase &\n' >> /tmp/a.sh
            printf 'sleep 20\n' >> /tmp/a.sh
            printf 'xwininfo -id $(xdotool getactivewindow)\n' >> /tmp/a.sh
            printf 'xdotool mousemove --sync 80 74 click 1\n' >> /tmp/a.sh
