@@ -132,11 +132,16 @@ jobs:
            cat /tmp/a.sh
            chmod a+rx /tmp/a.sh
 
+    - uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
     - name: startup-app
       run: |
            pwd
            ls -al
-           xvfb-run --server-args="-screen 0 1024x768x24" --auto-servernum /tmp/a.sh
+           xvfb-run --server-args="-screen 0 1920x1080x24" --auto-servernum /tmp/a.sh
            cp -av /tmp/package-screenshot-linux-deb.png package-screenshot-linux-deb.png
 
     - name: upload-screenshots
