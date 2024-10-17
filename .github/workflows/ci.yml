@@ -130,3 +130,7 @@ jobs:
     - name: raw speed test on linux
       run: |
         cd 003_src_iocipher/linux_jni/c_src && ./speedtest_linux_c.sh || exit 1
+
+    - name: check that all java classes are for java 1.8
+      run: |
+        tools/check_java_classes_version.sh
