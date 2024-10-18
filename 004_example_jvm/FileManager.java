@@ -80,9 +80,9 @@ class FileManager {
     private FileSystemView fileSystemView;
 
     /** currently selected File. */
-    private info.guardianproject.iocipher.File currentFile;
+    private info.guardianproject.iocipher.File currentFile = null;
     /** current Directory inside the VFS. */
-    private info.guardianproject.iocipher.File current_vfs_dir;
+    private static info.guardianproject.iocipher.File current_vfs_dir = null;
 
     /** Main GUI container */
     private JPanel gui;
@@ -246,7 +246,7 @@ class FileManager {
             TreeSelectionListener treeSelectionListener = new TreeSelectionListener() {
                 public void valueChanged(TreeSelectionEvent tse) {
                     DefaultMutableTreeNode node = (DefaultMutableTreeNode) tse.getPath().getLastPathComponent();
-                    showChildren(node);
+                    showChildren(node, true);
                     setFileDetails((File) node.getUserObject(), true);
                 }
             };
@@ -391,7 +391,6 @@ class FileManager {
 
             toolBar.addSeparator();
 
-            /*
             newFile = new JButton("New");
             newFile.setMnemonic('n');
             newFile.addActionListener(new ActionListener() {
@@ -400,7 +399,6 @@ class FileManager {
                 }
             });
             toolBar.add(newFile);
-            */
 
             /*
              * copyFile = new JButton("Copy");
@@ -489,14 +487,19 @@ class FileManager {
         tree.setSelectionInterval(0, 0);
     }
 
-    private TreePath findTreePath(File find) {
-        for (int ii = 0; ii < tree.getRowCount(); ii++) {
+    private TreePath findTreePath(java.io.File find)
+    {
+        for (int ii = 0; ii < tree.getRowCount(); ii++)
+        {
             TreePath treePath = tree.getPathForRow(ii);
+            // System.out.println("findTreePath:path="+treePath+" ii=" + ii);
             Object object = treePath.getLastPathComponent();
             DefaultMutableTreeNode node = (DefaultMutableTreeNode) object;
-            File nodeFile = (File) node.getUserObject();
+            java.io.File nodeFile = (File) node.getUserObject();
+            // System.out.println("findTreePath:want="+find.getAbsolutePath()+" ii=" + ii + " " + nodeFile.getAbsolutePath());
 
-            if (nodeFile == find) {
+            if (nodeFile.getAbsolutePath().compareTo(find.getAbsolutePath()) == 0)
+            {
                 return treePath;
             }
         }
@@ -521,6 +524,12 @@ class FileManager {
                 } catch (Exception e) {
                 }
 
+                if (currentFile.getAbsolutePath().compareTo("/") == 0)
+                {
+                    System.out.println("trying to rename ROOT directory");
+                    return;
+                }
+
                 boolean renamed = currentFile.renameTo(new File(
                         currentFile.getParentFile(), renameTo));
                 if (renamed) {
@@ -540,11 +549,11 @@ class FileManager {
                         treeModel.removeNodeFromParent(currentNode);
 
                         // add a new node..
-                        showChildren(parentNode);
+                        showChildren(parentNode, true);
                     } else {
                         parentPath = findTreePath(current_vfs_dir);
                         parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
-                        showChildren(parentNode);
+                        showChildren(parentNode, true);
                     }
                 } else {
                     String msg = "The file '" +
@@ -556,6 +565,8 @@ class FileManager {
                 showThrowable(t);
             }
         }
+        currentFile = null;
+        setFileDetails(new File(""), false);
         gui.repaint();
     }
 
@@ -618,55 +629,126 @@ class FileManager {
 
         int result = JOptionPane.showConfirmDialog(
                 gui,
-                "Are you sure you want to delete this file?",
-                "Delete File",
+                "Are you sure you want to delete the selected Files?",
+                "Delete Files",
                 JOptionPane.ERROR_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
             try {
                 // System.out.println("currentFile: " + currentFile);
-                TreePath parentPath = findTreePath(currentFile.getParentFile());
+                TreePath parentPath = findTreePath(current_vfs_dir);
                 // System.out.println("parentPath: " + parentPath);
 
                 DefaultMutableTreeNode parentNode = null;
                 try {
                     parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
                 } catch (Exception e) {
+                    e.printStackTrace();
                 }
 
                 // System.out.println("parentNode: " + parentNode);
 
                 boolean directory = currentFile.isDirectory();
-                boolean deleted = currentFile.delete();
-                if (deleted) {
-                    if (directory) {
-                        // delete the node..
-                        TreePath currentPath = findTreePath(currentFile);
-                        // System.out.println(currentPath);
-                        DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) currentPath
-                                .getLastPathComponent();
 
-                        treeModel.removeNodeFromParent(currentNode);
-                        showChildren(parentNode);
-                    } else {
-                        parentPath = findTreePath(current_vfs_dir);
-                        parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
-                        showChildren(parentNode);
+
+
+
+
+
+                // delete files first
+                FileTableModel model = (FileTableModel) table.getModel();
+                if (table.getRowCount() > 0) {
+                    if (table.getSelectedRowCount() > 0) {
+                        int selectedRow[] = table.getSelectedRows();
+                        for (int i : selectedRow) {
+                            info.guardianproject.iocipher.File f_iter = model.getFile(i);
+                            if (!f_iter.isDirectory())
+                            {
+                                // System.out.println("selected " + i + " " + f_iter.getAbsolutePath());
+                                // System.out.println("deleting " + f_iter.getAbsolutePath());
+
+                                if (f_iter.getAbsolutePath().compareTo("/") == 0)
+                                {
+                                    System.out.println("trying to delete ROOT directory");
+                                    continue;
+                                }
+                                boolean deleted = f_iter.delete();
+                                if (deleted) {
+                                    if (directory) {
+                                        // delete the node..
+                                        TreePath currentPath = findTreePath(f_iter);
+                                        // System.out.println(currentPath);
+                                        DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) currentPath
+                                                .getLastPathComponent();
+                
+                                        treeModel.removeNodeFromParent(currentNode);
+                                        showChildren(parentNode, true);
+                                    } else {
+                                        parentPath = findTreePath(current_vfs_dir);
+                                        parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+                                        showChildren(parentNode, true);
+                                    }
+                                } else {
+                                    System.out.println("The file could not be deleted.");
+                                }
+                
+                            }
+                        }
                     }
-                } else {
-                    String msg = "The file '" +
-                            currentFile +
-                            "' could not be deleted.";
-                    showErrorMessage(msg, "Delete Failed");
                 }
+
+
+
+
+                // delete directories after all files have been deleted
+                if (table.getRowCount() > 0) {
+                    if (table.getSelectedRowCount() > 0) {
+                        int selectedRow[] = table.getSelectedRows();
+                        for (int i : selectedRow) {
+                            info.guardianproject.iocipher.File f_iter = model.getFile(i);
+                            if (f_iter.isDirectory())
+                            {
+                                // System.out.println("selected " + i + " " + f_iter.getAbsolutePath());
+                                // System.out.println("deleting " + f_iter.getAbsolutePath());
+
+                                boolean deleted = f_iter.delete();
+                                if (deleted) {
+                                    if (directory) {
+                                        // delete the node..
+                                        TreePath currentPath = findTreePath(f_iter);
+                                        // System.out.println(currentPath);
+                                        DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) currentPath
+                                                .getLastPathComponent();
+                
+                                        treeModel.removeNodeFromParent(currentNode);
+                                        showChildren(parentNode, true);
+                                    } else {
+                                        parentPath = findTreePath(current_vfs_dir);
+                                        parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+                                        showChildren(parentNode, true);
+                                    }
+                                } else {
+                                    System.out.println("The file could not be deleted.");
+                                }
+                
+                            }
+                        }
+                    }
+                }
+
+
+
             } catch (Throwable t) {
-                showThrowable(t);
+                t.printStackTrace();
+                // showThrowable(t);
             }
         }
+        currentFile = null;
+        setFileDetails(new File(""), false);
         gui.repaint();
     }
 
     private void newFile() {
-        if (currentFile == null) {
+        if (current_vfs_dir == null) {
             showErrorMessage("No location selected for new file.", "Select Location");
             return;
         }
@@ -698,10 +780,7 @@ class FileManager {
         if (result == JOptionPane.OK_OPTION) {
             try {
                 boolean created;
-                File parentFile = currentFile;
-                if (!parentFile.isDirectory()) {
-                    parentFile = parentFile.getParentFile();
-                }
+                File parentFile = current_vfs_dir;
                 File file = new File(parentFile, name.getText());
                 if (newTypeFile.isSelected()) {
                     created = file.createNewFile();
@@ -717,17 +796,19 @@ class FileManager {
                         // add the new node..
                         DefaultMutableTreeNode newNode = new DefaultMutableTreeNode(file);
 
+                        /*
                         TreePath currentPath = findTreePath(currentFile);
                         DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) currentPath
                                 .getLastPathComponent();
+                        */
 
                         treeModel.insertNodeInto(newNode, parentNode, parentNode.getChildCount());
                         // System.out.println("insertNodeInto:005");
-                        showChildren(parentNode);
+                        showChildren(parentNode, true);
                     } else {
                         parentPath = findTreePath(current_vfs_dir);
                         parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
-                        showChildren(parentNode);
+                        showChildren(parentNode, true);
                     }
                 } else {
                     String msg = "The file '" +
@@ -736,7 +817,8 @@ class FileManager {
                     showErrorMessage(msg, "Create Failed");
                 }
             } catch (Throwable t) {
-                showThrowable(t);
+                t.printStackTrace();
+                // showThrowable(t);
             }
         }
         gui.repaint();
@@ -835,10 +917,14 @@ class FileManager {
         }
 
         SwingWorker<Void, Long> worker = new SwingWorker<Void, Long>() {
+
+            boolean first_paint = false;
+
             @Override
             public Void doInBackground() {
                 try
                 {
+                    first_paint = false;
                     info.guardianproject.iocipher.File f = new info.guardianproject.iocipher.File(dst_dir + java.io.File.separator + src_file.getName());
                     info.guardianproject.iocipher.FileOutputStream out = new info.guardianproject.iocipher.FileOutputStream(f);
 
@@ -878,9 +964,26 @@ class FileManager {
             @Override
             protected void process(List<Long> chunks) {
                 Long val = chunks.get(chunks.size() - 1);
-                // String progress = String.valueOf(val);
+                String progress = String.valueOf(val);
                 // System.out.println("progress : " + progress);
                 progressBar.setValue(Math.toIntExact(val));
+                if (!first_paint) {
+                    first_paint = true;
+
+                    try {
+                        TreePath parentPath = findTreePath(current_vfs_dir);
+                        DefaultMutableTreeNode parentNode = null;
+                        try {
+                            parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        showChildren(parentNode, false);
+                        gui.repaint();
+                    } catch(Exception e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             @Override
@@ -897,7 +1000,7 @@ class FileManager {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    showChildren(parentNode);
+                    showChildren(parentNode, true);
                     gui.repaint();
                 } catch(Exception e) {
                     e.printStackTrace();
@@ -985,7 +1088,7 @@ class FileManager {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                    showChildren(parentNode);
+                    showChildren(parentNode, true);
                     gui.repaint();
                 } catch(Exception e) {
                     e.printStackTrace();
@@ -999,10 +1102,13 @@ class FileManager {
      * Add the files that are contained within the directory of this node.
      * Thanks to Hovercraft Full Of Eels.
      */
-    private void showChildren(final DefaultMutableTreeNode node) {
-        tree.setEnabled(false);
-        progressBar.setVisible(true);
-        progressBar.setIndeterminate(true);
+    private void showChildren(final DefaultMutableTreeNode node, boolean lock) {
+        if (lock)
+        {
+            tree.setEnabled(false);
+            progressBar.setVisible(true);
+            progressBar.setIndeterminate(true);
+        }
 
         SwingWorker<Void, File> worker = new SwingWorker<Void, File>() {
             @Override
@@ -1034,9 +1140,12 @@ class FileManager {
 
             @Override
             protected void done() {
-                progressBar.setIndeterminate(false);
-                progressBar.setVisible(false);
-                tree.setEnabled(true);
+                if (lock)
+                {
+                    progressBar.setIndeterminate(false);
+                    progressBar.setVisible(false);
+                    tree.setEnabled(true);
+                }
             }
         };
         worker.execute();
@@ -1046,8 +1155,13 @@ class FileManager {
     private void setFileDetails(File file, boolean select_dir) {
         if (select_dir) {
             current_vfs_dir = file;
+            currentFile = null;
+            // System.out.println("current_vfs_dir=" + current_vfs_dir.getAbsolutePath());
+            return;
+        } else {
+            currentFile = file;
+            // System.out.println("currentFile=" + currentFile.getAbsolutePath());
         }
-        currentFile = file;
         // Icon icon = fileSystemView.getSystemIcon(file);
         // fileName.setIcon(icon);
         fileName.setText(fileSystemView.getSystemDisplayName(file));
@@ -1103,6 +1217,9 @@ class FileManager {
     }
 
     public static void main(String[] args) {
+
+        // select ROOT dir at start
+        current_vfs_dir = new info.guardianproject.iocipher.File("/");
 
         // System.out.println("number of args: " + args.length);
         showcase_mode = false;
