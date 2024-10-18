@@ -26,7 +26,7 @@ static struct sqlfs_t *sqlfs = NULL;
 // ======= VFS helper functions =======
 struct vfs_file {
     char pathname[PATH_MAX];
-    long cur_pos;
+    size_t cur_pos;
     int flags;
 };
 
@@ -76,51 +76,34 @@ struct vfs_file *vfs_open(const char *pathname, int flags)
     return vfs_fd;
 }
 
-int vfs_write(struct vfs_file *fd, const void *buf, size_t count)
+ssize_t vfs_write(struct vfs_file *fd, const void *buf, size_t count)
 {
-    int res = sqlfs_proc_write(sqlfs, fd->pathname, buf, count, fd->cur_pos, fd->flags);
-    fd->cur_pos = fd->cur_pos + count;
+    int written_bytes_or_error = sqlfs_proc_write(sqlfs, fd->pathname, buf, count, fd->cur_pos, fd->flags);
 
-    if (res < 0)
+    if (written_bytes_or_error > 0)
     {
-        return -1;
+        fd->cur_pos = fd->cur_pos + written_bytes_or_error;
     }
-    else if (res == 0)
-    {
-        return 0;
-    }
-    else
-    {
-        return count;
-    }
+    return (ssize_t)written_bytes_or_error;
 }
 
 ssize_t vfs_read(struct vfs_file *fd, void *buf, size_t count)
 {
     struct fuse_file_info fi = { 0 };
     fi.flags |= ~0;
-    int res = sqlfs_proc_read(sqlfs, fd->pathname, buf, count, fd->cur_pos, &fi);
-    fd->cur_pos = fd->cur_pos + count;
-
-    if (res < 0)
+    int read_bytes_or_error = sqlfs_proc_read(sqlfs, fd->pathname, buf, count, fd->cur_pos, &fi);
+    if (read_bytes_or_error > 0)
     {
-        return -1;
+        fd->cur_pos = fd->cur_pos + read_bytes_or_error;
     }
-    else if (res == 0)
-    {
-        return 0;
-    }
-    else
-    {
-        return count;
-    }
+    return (ssize_t)read_bytes_or_error;
 }
 
-static long vfs_get_file_size(struct vfs_file *fd)
+static size_t vfs_get_file_size(struct vfs_file *fd)
 {
     struct stat stbuf;
     int res = sqlfs_proc_getattr(sqlfs, fd->pathname, &stbuf);
-    // printf("fsize=%ld\n", (long)stbuf.st_size);
+    printf("fsize=%ld\n", (long)stbuf.st_size);
     return stbuf.st_size;
 }
 
@@ -213,10 +196,11 @@ int main(int argc, char *argv[])
     fd = vfs_open(FILENAME, O_WRONLY | O_CREAT | O_TRUNC);
     assert(fd);
     printf("write to file\n");
-    vfs_write(fd, write_buf, strlen(write_buf));
+    ssize_t written_bytes = vfs_write(fd, write_buf, strlen(write_buf));
+    printf("written_bytes=%ld\n", (long)written_bytes);
 
-    long size1 = vfs_get_file_size(fd);
-    printf("check file size:%ld %ld\n", size1, (long)strlen(write_buf));
+    size_t size1 = vfs_get_file_size(fd);
+    printf("check file size:%ld %ld\n", (long)size1, (long)strlen(write_buf));
     assert((size_t)size1 == (size_t)strlen(write_buf));
 
     printf("close file\n");
@@ -226,7 +210,8 @@ int main(int argc, char *argv[])
     printf("open file\n");
     fd = vfs_open(FILENAME, O_RDONLY);
     printf("read from file\n");
-    vfs_read(fd, read_buf, BUFFER_SIZE);
+    ssize_t read_bytes = vfs_read(fd, read_buf, BUFFER_SIZE);
+    printf("read_bytes=%ld\n", (long)read_bytes);
     printf("close file\n");
     vfs_close(fd);
 
@@ -255,16 +240,18 @@ int main(int argc, char *argv[])
     printf("seek\n");
     vfs_lseek(fd, 7, SEEK_SET); // Seek to the 8th byte
     printf("write\n");
-    vfs_write(fd, "C programming", 13);
+    written_bytes = vfs_write(fd, "C programming", 13);
+    printf("written_bytes=%ld\n", (long)written_bytes);
 
-    long size2 = vfs_get_file_size(fd);
-    printf("check file size:%ld %ld\n", size2, (long)strlen(write_buf));
+    size_t size2 = vfs_get_file_size(fd);
+    printf("check file size:%ld %ld\n", (long)size2, (long)strlen(write_buf));
     assert((size_t)size2 == (size_t)strlen(write_buf));
 
     printf("seek again\n");
     vfs_lseek(fd, 0, SEEK_SET); // Seek back to the start
     printf("read\n");
-    vfs_read(fd, read_buf, BUFFER_SIZE);
+    read_bytes = vfs_read(fd, read_buf, BUFFER_SIZE);
+    printf("read_bytes=%ld\n", (long)read_bytes);
     printf("File content after modification: %s\n", read_buf);
     printf("close file\n");
     vfs_close(fd);
@@ -277,16 +264,17 @@ int main(int argc, char *argv[])
     const int seek_bytes_end = 11;
     vfs_lseek(fd, seek_bytes_end, SEEK_END); // Seek "seek_bytes_end" bytes after the current end of file
 
-    long size3 = vfs_get_file_size(fd);
-    printf("check file size:%ld %ld\n", size3, (long)strlen(write_buf));
+    size_t size3 = vfs_get_file_size(fd);
+    printf("check file size:%ld %ld\n", (long)size3, (long)strlen(write_buf));
     assert((size_t)size3 == (size_t)strlen(write_buf));
 
     printf("write\n");
     const int write_bytes = 8;
-    vfs_write(fd, "mdifjw398ur893u3u98woier", write_bytes);
+    written_bytes = vfs_write(fd, "mdifjw398ur893u3u98woier", write_bytes);
+    printf("written_bytes=%ld\n", (long)written_bytes);
 
-    long size4 = vfs_get_file_size(fd);
-    printf("check file size:%ld %ld\n", size4, (long)(strlen(write_buf) + seek_bytes_end + write_bytes));
+    size_t size4 = vfs_get_file_size(fd);
+    printf("check file size:%ld %ld\n", (long)size4, (long)(strlen(write_buf) + seek_bytes_end + write_bytes));
     assert((size_t)size4 == (size_t)(strlen(write_buf) + seek_bytes_end + write_bytes));
 
     // to silence warnings
@@ -305,7 +293,8 @@ int main(int argc, char *argv[])
     printf("write to large file\n");
     uint64_t t1 = current_time_monotonic_default();
     for(long i=0;i<loops;i++) {
-        vfs_write(fd, kbuf, kbuf_size);
+        written_bytes = vfs_write(fd, kbuf, kbuf_size);
+        // printf("written_bytes=%ld\n", (long)written_bytes);
         const long cur_size = i * kbuf_size;
         const long cur_size_mb = cur_size / (1024*1024);
         if ((cur_size % (10*1024*1024)) == 0)
@@ -317,8 +306,8 @@ int main(int argc, char *argv[])
         }
     }
 
-    long size_l1 = vfs_get_file_size(fd);
-    printf("check file size:%ld %ld\n", size_l1, (long)(loops * kbuf_size));
+    size_t size_l1 = vfs_get_file_size(fd);
+    printf("check file size:%ld %ld\n", (long)size_l1, (long)(loops * kbuf_size));
     assert((size_t)size_l1 == (size_t)(loops * kbuf_size));
 
     printf("close file\n");
@@ -334,7 +323,8 @@ int main(int argc, char *argv[])
     memset(kbuf, 16, kbuf_size);
     t1 = current_time_monotonic_default();
     for(long i=0;i<loops;i++) {
-        vfs_read(fd, kbuf, kbuf_size);
+        read_bytes = vfs_read(fd, kbuf, kbuf_size);
+        // printf("read_bytes=%ld\n", (long)read_bytes);
         const long cur_size = i * kbuf_size;
         const long cur_size_mb = cur_size / (1024*1024);
         if ((cur_size % (10*1024*1024)) == 0)
@@ -347,8 +337,30 @@ int main(int argc, char *argv[])
     }
 
     size_l1 = vfs_get_file_size(fd);
-    printf("check file size:%ld %ld\n", size_l1, (long)(loops * kbuf_size));
+    printf("check file size:%ld %ld\n", (long)size_l1, (long)(loops * kbuf_size));
     assert((size_t)size_l1 == (size_t)(loops * kbuf_size));
+
+    off_t offset1 = size_l1 - 1000;
+    off_t got_offset = vfs_lseek(fd, offset1, SEEK_SET);
+    printf("seek pos 1:%ld\n", (long)got_offset);
+
+    offset1 = size_l1 - 1000;
+    got_offset = vfs_lseek(fd, offset1, SEEK_CUR);
+    printf("seek pos 2:%ld\n", (long)got_offset);
+
+    offset1 = size_l1 - 1000;
+    got_offset = vfs_lseek(fd, offset1, SEEK_END);
+    printf("seek pos 3:%ld\n", (long)got_offset);
+
+    const int bsize = 1000;
+    uint8_t lbuf[bsize];
+    printf("trying to add to file\n");
+    written_bytes = vfs_write(fd, lbuf, bsize);
+    printf("written_bytes=%ld\n", (long)written_bytes);
+
+    size_l1 = vfs_get_file_size(fd);
+    printf("check file size:%ld %ld\n", (long)size_l1, (long)(got_offset + bsize));
+    assert((size_t)size_l1 == (size_t)(got_offset + bsize));
 
     printf("close file\n");
     vfs_close(fd);
