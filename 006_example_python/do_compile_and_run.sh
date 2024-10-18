@@ -37,5 +37,6 @@ gcc -g -O3 -fPIC -fstack-protector-all -D_FORTIFY_SOURCE=2 \
 -shared \
 -Wl,-soname,libiocipher2_python.so -o libiocipher2_python.so || exit 1
 
-# rm -Rf ./tmp/
+rm -Rf ./tmp/
 
+python3 iocipher_example.py
