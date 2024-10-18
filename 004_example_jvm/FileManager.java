@@ -391,6 +391,7 @@ class FileManager {
 
             toolBar.addSeparator();
 
+            /*
             newFile = new JButton("New");
             newFile.setMnemonic('n');
             newFile.addActionListener(new ActionListener() {
@@ -399,6 +400,7 @@ class FileManager {
                 }
             });
             toolBar.add(newFile);
+            */
 
             /*
              * copyFile = new JButton("Copy");
@@ -472,6 +474,7 @@ class FileManager {
 
             JPanel simpleOutput = new JPanel(new BorderLayout(3, 3));
             progressBar = new JProgressBar();
+            progressBar.setPreferredSize(new Dimension(400, 20));
             simpleOutput.add(progressBar, BorderLayout.EAST);
             progressBar.setVisible(false);
 
