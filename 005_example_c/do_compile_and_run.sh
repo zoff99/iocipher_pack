@@ -18,6 +18,8 @@ cp -r ../002_src_libsqlfs/openssl_libs ./
 cp -r ../002_src_libsqlfs/sqlcipher/ ./
 
 # compile
+# ASANFLAGS="-fsanitize=address -fno-omit-frame-pointer -static-libasan"
+ASANFLAGS=""
 CFLAGS="-g -O3 -fPIC -Wall -Wextra -pedantic -pthread -I./ -I./openssl_includes -I./sqlcipher/"
 LIBS="libsqlfs.a sqlite3.a openssl_libs/libcrypto.a openssl_libs/libssl.a -lm"
 CFSQLCIPHER="-DHAVE_LIBSQLCIPHER -DSQLITE_HAS_CODEC -DSQLCIPHER_CRYPTO_OPENSSL -DSQLITE_TEMP_STORE=2 \
@@ -30,7 +32,7 @@ CFSQLCIPHER="-DHAVE_LIBSQLCIPHER -DSQLITE_HAS_CODEC -DSQLCIPHER_CRYPTO_OPENSSL -
 	-DSQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576 -DSQLITE_ENABLE_SESSION \
 	-DSQLITE_ENABLE_PREUPDATE_HOOK -DSQLITE_ENABLE_DBSTAT_VTAB"
 
-gcc -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter c_example.c -D_GNU_SOURCE=1 $CFLAGS $LIBS $CFSQLCIPHER -o c_example || exit 1
+gcc $ASANFLAGS -Wall -Wextra -Wno-unused-variable -Wno-unused-parameter c_example.c -D_GNU_SOURCE=1 $CFLAGS $LIBS $CFSQLCIPHER -o c_example || exit 1
 
 rm -f example.txt
 rm -f vfs.db
