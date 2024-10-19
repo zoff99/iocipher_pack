@@ -29,7 +29,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # define statvfs statfs
 # define fstatvfs fstatfs
 #else
-# include <sys/statvfs.h>
+# ifndef __MINGW32__
+#  include <sys/statvfs.h>
+# endif
 #endif
 #include <unistd.h>
 #include <fcntl.h>

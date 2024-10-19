@@ -11,6 +11,10 @@ ccmachine = $(shell $(CC) -dumpmachine)
 ifeq ($(findstring mingw, $(ccmachine)), mingw)
   ismingw = 1
   CFLAGS += --static
+  SSL_LIB_DIR = openssl_win64_libs/
+else
+  CFLAGS += -Werror=maybe-uninitialized
+  SSL_LIB_DIR = openssl_libs/
 endif
 
 # ------------------------------
@@ -22,7 +26,7 @@ ASANCFLAGS = -fsanitize=address -fno-omit-frame-pointer -static-libasan
 TSANCFLAGS = -fsanitize=thread -fno-omit-frame-pointer -static-libasan
 UBSANCFLAGS = -fno-sanitize-recover=all -fsanitize=undefined,float-divide-by-zero
 
-CFLAGS += -g -O3 -fPIC -Wall -Wextra -pedantic -Werror=maybe-uninitialized -Wdouble-promotion -Wno-unknown-warning-option -std=c99 -pedantic -pthread -I./
+CFLAGS += -g -O3 -fPIC -Wall -Wextra -pedantic -Wdouble-promotion -Wno-unknown-warning-option -std=c99 -pedantic -pthread -I./
 
 ifdef ENCRYPT_CS
 CFLAGS += -DSQLITE_HAS_CODEC -DHAVE_LIBSQLCIPHER -Isqlcipher/ -Iopenssl_includes
@@ -36,7 +40,7 @@ CFSQLCIPHER = -DSQLITE_HAS_CODEC -DSQLCIPHER_CRYPTO_OPENSSL -DSQLITE_TEMP_STORE=
 	-DSQLITE_DEFAULT_JOURNAL_SIZE_LIMIT=1048576 -DSQLITE_ENABLE_SESSION \
 	-DSQLITE_ENABLE_PREUPDATE_HOOK -DSQLITE_ENABLE_DBSTAT_VTAB
 
-LBSQLCIPHER = openssl_libs/libcrypto.a openssl_libs/libssl.a -lm
+LBSQLCIPHER = $(SSL_LIB_DIR)/libcrypto.a $(SSL_LIB_DIR)/libssl.a -lm
 SQLITE_DIR = sqlcipher
 else
 CFLAGS += -Isqlite/
