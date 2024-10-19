@@ -60,57 +60,34 @@ def vfs_open(pathname, flags):
 def vfs_write(vfs_fd, instr):
     str_utf8 = instr.encode(encoding="utf-8")
     count = len(str_utf8)
-    res = c_lib.sqlfs_proc_write(
+    print("want to write bytes: " + str(count))
+    written_bytes_or_error = c_lib.sqlfs_proc_write(
             sqlfs,
             vfs_fd.pathname,
             ctypes.c_char_p(str_utf8),
             count,
             vfs_fd.cur_pos,
             vfs_fd.flags)
-
-    print("bytes written: " + str(res))
-
-    vfs_fd.cur_pos = vfs_fd.cur_pos + count
-
-    if (res < 0):
-        return -1
-    elif (res == 0):
-        return 0
-    else:
-        return count
+    print("bytes written: " + str(written_bytes_or_error))
+    if (written_bytes_or_error > 0):
+        vfs_fd.cur_pos = vfs_fd.cur_pos + written_bytes_or_error
+    return written_bytes_or_error
 
 def vfs_read(vfs_fd, readbuf, numbytes):
-    # struct fuse_file_info fi = { 0 };
-    # fi.flags |= ~0;
     HANDLE = ctypes.c_void_p
     fi = HANDLE(0)
-
-    # int sqlfs_proc_read(sqlfs_t *sqlfs, const char *path, char *buf, size_t size, off_t offset, struct
-    #                fuse_file_info *fi)
-
-#    c_lib.sqlfs_proc_read.argtypes = (
-#            ctypes.POINTER(ctypes.c_void_p),
-#            ctypes.c_void_p,
-#            ctypes.c_char_p,
-#            ctypes.c_long,
-#            ctypes.c_long,
-#            ctypes.POINTER(ctypes.c_void_p))
-
-    res = c_lib.sqlfs_proc_read(
+    print("want to ready bytes: " + str(numbytes))
+    read_bytes_or_error = c_lib.sqlfs_proc_read(
             sqlfs,
             vfs_fd.pathname,
             byref(readbuf),
             numbytes,
             vfs_fd.cur_pos,
             fi)
-    vfs_fd.cur_pos = vfs_fd.cur_pos + numbytes
-
-    if (res < 0):
-        return -1
-    elif (res == 0):
-        return 0
-    else:
-        return numbytes
+    print("bytes read: " + str(read_bytes_or_error))
+    if (read_bytes_or_error > 0):
+        vfs_fd.cur_pos = vfs_fd.cur_pos + numbytes
+    return read_bytes_or_error
 
 def vfs_close(vfs_fd):
     # basically a dummy
@@ -137,10 +114,11 @@ if __name__ == "__main__":
 
 
     file2 = vfs_open(example_filename_in_vfs, "r")
-    buffer = create_string_buffer(300)
-    max_countbytes = 40
+    buf_size_in_bytes = 300
+    buffer = create_string_buffer(buf_size_in_bytes)
+    max_read_bytes = buf_size_in_bytes
     print("read from file:")
-    vfs_read(file2, buffer, max_countbytes)
+    vfs_read(file2, buffer, max_read_bytes)
     print("=======================")
     print("Contents of File:")
     print("======== char* =======:")
