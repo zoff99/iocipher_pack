@@ -28,6 +28,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *  API implementation
  *
  *****************************************************************************/
+#ifdef __MINGW32__
+# define _LARGEFILE64_SOURCE
+#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -56,6 +59,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #  include <sys/statvfs.h>
 # endif
 #endif
+
+/*
+#ifdef __MINGW32__
+typedef off64_t sqlfs_off_t;
+#else
+typedef off_t sqlfs_off_t;
+#endif
+*/
 
 #include "sqlite3.h"
 
@@ -1820,7 +1831,7 @@ int sqlfs_proc_getattr(sqlfs_t *sqlfs, const char *path, struct stat *stbuf)
         stbuf->st_nlink = 1;
         stbuf->st_uid = (uid_t) attr.uid;
         stbuf->st_gid = (gid_t) attr.gid;
-        stbuf->st_size = (off_t) attr.size;
+        stbuf->st_size = (sqlfs_off_t) attr.size;
 #ifndef __MINGW32__
         stbuf->st_blksize = 512;
         stbuf->st_blocks = attr.size / 512;
@@ -2002,7 +2013,7 @@ int sqlfs_proc_readlink(sqlfs_t *sqlfs, const char *path, char *buf, size_t size
 #define INDEX 30
 
 int sqlfs_proc_readdir(sqlfs_t *sqlfs, const char *path, void *buf, fuse_fill_dir_t filler,
-                       off_t offset, struct fuse_file_info *fi)
+                       sqlfs_off_t offset, struct fuse_file_info *fi)
 {
     int i, r, result = 0;
     const char *tail;
@@ -2520,7 +2531,7 @@ int sqlfs_proc_chown(sqlfs_t *sqlfs, const char *path, uid_t uid, gid_t gid)
     return result;
 }
 
-int sqlfs_proc_truncate(sqlfs_t *sqlfs, const char *path, off_t size)
+int sqlfs_proc_truncate(sqlfs_t *sqlfs, const char *path, sqlfs_off_t size)
 {
     int i, r, result = 0;
     size_t existing_size = 0;
@@ -2765,7 +2776,7 @@ int sqlfs_proc_open(sqlfs_t *sqlfs, const char *path, struct fuse_file_info *fi)
     return result;
 }
 
-int sqlfs_proc_read(sqlfs_t *sqlfs, const char *path, char *buf, size_t size, off_t offset, struct
+int sqlfs_proc_read(sqlfs_t *sqlfs, const char *path, char *buf, size_t size, sqlfs_off_t offset, struct
                     fuse_file_info *fi)
 {
     int i, r, result = 0;
@@ -2820,7 +2831,7 @@ int sqlfs_proc_read(sqlfs_t *sqlfs, const char *path, char *buf, size_t size, of
     return result;
 }
 
-int sqlfs_proc_write(sqlfs_t *sqlfs, const char *path, const char *buf, size_t size, off_t offset,
+int sqlfs_proc_write(sqlfs_t *sqlfs, const char *path, const char *buf, size_t size, sqlfs_off_t offset,
                      int mode_flags)
 {
     int i, r, result = 0;
@@ -3582,7 +3593,7 @@ static int sqlfs_op_readlink(const char *path, char *buf, size_t size)
     return sqlfs_proc_readlink(0, path, buf, size);
 }
 static int sqlfs_op_readdir(const char *path, void *buf, fuse_fill_dir_t filler,
-                            off_t offset, struct fuse_file_info *fi)
+                            sqlfs_off_t offset, struct fuse_file_info *fi)
 {
     return sqlfs_proc_readdir(0, path, buf, filler, offset, fi);
 }
@@ -3622,7 +3633,7 @@ static int sqlfs_op_chown(const char *path, uid_t uid, gid_t gid)
 {
     return sqlfs_proc_chown(0, path, uid, gid);
 }
-static int sqlfs_op_truncate(const char *path, off_t size)
+static int sqlfs_op_truncate(const char *path, sqlfs_off_t size)
 {
     return sqlfs_proc_truncate(0, path, size);
 }
@@ -3639,12 +3650,12 @@ static int sqlfs_op_open(const char *path, struct fuse_file_info *fi)
 {
     return sqlfs_proc_open(0, path, fi);
 }
-static int sqlfs_op_read(const char *path, char *buf, size_t size, off_t offset, struct
+static int sqlfs_op_read(const char *path, char *buf, size_t size, sqlfs_off_t offset, struct
                          fuse_file_info *fi)
 {
     return sqlfs_proc_read(0, path, buf, size, offset, fi);
 }
-static int sqlfs_op_write(const char *path, const char *buf, size_t size, off_t offset,
+static int sqlfs_op_write(const char *path, const char *buf, size_t size, sqlfs_off_t offset,
                           struct fuse_file_info *fi)
 {
     return sqlfs_proc_write(0, path, buf, size, offset, fi->flags);
