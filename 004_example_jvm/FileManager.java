@@ -266,6 +266,7 @@ class FileManager {
 
             tree = new JTree(treeModel);
             tree.setRootVisible(false);
+            tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             tree.addTreeSelectionListener(treeSelectionListener);
             tree.setCellRenderer(new FileTreeCellRenderer());
             tree.expandRow(0);
@@ -1407,9 +1408,16 @@ class FileTreeCellRenderer extends DefaultTreeCellRenderer {
             boolean hasFocus) {
 
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
-        File file = (File) node.getUserObject();
+        java.io.File file = (File) node.getUserObject();
         // label.setIcon(fileSystemView.getSystemIcon(file));
-        label.setText(fileSystemView.getSystemDisplayName(file));
+        if (file.getAbsolutePath().compareTo("/") == 0)
+        {
+            label.setText(fileSystemView.getSystemDisplayName(file) + " (ROOT node)");
+        }
+        else
+        {
+            label.setText(fileSystemView.getSystemDisplayName(file));
+        }
         label.setToolTipText(file.getPath());
 
         if (selected) {
