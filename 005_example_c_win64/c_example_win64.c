@@ -5,6 +5,8 @@
  *
  */
 
+#define _LARGEFILE64_SOURCE
+
 #include <assert.h>
 //#include <bits/time.h>
 #include <errno.h>
@@ -13,7 +15,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
 #include <time.h>
+
+#ifdef __MINGW32__
+typedef off64_t sqlfs_off_t;
+#else
+typedef off_t sqlfs_off_t;
+#endif
 
 #include "sqlfs.h"
 
@@ -110,7 +119,7 @@ static size_t vfs_get_file_size(struct vfs_file *fd)
     return stbuf.st_size;
 }
 
-off_t vfs_lseek(struct vfs_file *fd, off_t offset, int whence)
+sqlfs_off_t vfs_lseek(struct vfs_file *fd, sqlfs_off_t offset, int whence)
 {
     if (whence == SEEK_SET)
     {
@@ -124,7 +133,7 @@ off_t vfs_lseek(struct vfs_file *fd, off_t offset, int whence)
     {
         fd->cur_pos = vfs_get_file_size(fd) + offset;
     }
-    return (off_t)fd->cur_pos;
+    return (sqlfs_off_t)fd->cur_pos;
 }
 
 int vfs_mkdir(const char *pathname, mode_t mode)
@@ -181,6 +190,13 @@ static uint64_t current_time_monotonic_default()
 
 int main(int argc, char *argv[])
 {
+    size_t a;
+    off_t b;
+    off64_t b2;
+    long c;
+    int d;
+    printf("%d %d %d %d %d\n", (int)sizeof(a), (int)sizeof(b), (int)sizeof(b2), (int)sizeof(c), (int)sizeof(d));
+
     setup_vfs();
 
 #define FILENAME "example.txt"
@@ -291,7 +307,7 @@ int main(int argc, char *argv[])
     fd = vfs_open(LARGEFILENAME, O_WRONLY | O_CREAT | O_TRUNC);
     assert(fd);
     const int kbuf_size = 8192 * 50;
-    const int64_t wanted_file_size = 1LL * 1024 * 1024 * 1024; // 1 GBytes
+    const int64_t wanted_file_size = 16LL * 1024 * 1024 * 1024; // 1 GBytes
     const int64_t loops = wanted_file_size / kbuf_size;
     uint8_t kbuf[kbuf_size];
     memset(kbuf, 16, kbuf_size);
@@ -345,8 +361,8 @@ int main(int argc, char *argv[])
     printf("check file size:%ld %ld\n", (long)size_l1, (long)(loops * kbuf_size));
     assert((size_t)size_l1 == (size_t)(loops * kbuf_size));
 
-    off_t offset1 = size_l1 - 1000;
-    off_t got_offset = vfs_lseek(fd, offset1, SEEK_SET);
+    sqlfs_off_t offset1 = size_l1 - 1000;
+    sqlfs_off_t got_offset = vfs_lseek(fd, offset1, SEEK_SET);
     printf("seek pos 1:%ld\n", (long)got_offset);
 
     offset1 = size_l1 - 1000;
