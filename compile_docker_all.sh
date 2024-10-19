@@ -32,6 +32,8 @@ if [ "$build_openssl""x" == "1x" ]; then
     ./docker_linux_fast.sh build >> "$logfile" 2>&1 || exit 1
     echo "build openssl for android and linux"
     ./docker_linux_fast.sh >> "$logfile" 2>&1 || exit 1
+    echo "build openssl for windows x64"
+    ./docker_win_fast.sh >> "$logfile" 2>&1 || exit 1
 fi
 
 if [ "$build_sqlfs""x" == "1x" ]; then
@@ -42,6 +44,8 @@ if [ "$build_sqlfs""x" == "1x" ]; then
     cp -av ./001_src_openssl/.localrun/debian_12_linux/artefacts/linux_debian12_x86_64/include/* ./002_src_libsqlfs/openssl_includes/ >> "$logfile" 2>&1 || exit 1
     echo "install openssl linux libs"
     cp -av ./001_src_openssl/.localrun/debian_12_linux/artefacts/linux_debian12_x86_64/lib*.a ./002_src_libsqlfs/openssl_libs/ >> "$logfile" 2>&1 || exit 1
+    echo "install openssl windows libs"
+    cp -av ./001_src_openssl/.localrun/debian_12_win64/artefacts/win_x86_64/lib*.a ./002_src_libsqlfs/openssl_win64_libs/ >> "$logfile" 2>&1 || exit 1
     echo "install openssl android libs"
     cp -av ./001_src_openssl/.localrun/debian_12_linux/artefacts/android-arm/lib*.a ./003_src_iocipher/libiocipher2-c/src/main/jniLibs/armeabi-v7a/ >> "$logfile" 2>&1 || exit 1
     cp -av ./001_src_openssl/.localrun/debian_12_linux/artefacts/android-arm64/lib*.a ./003_src_iocipher/libiocipher2-c/src/main/jniLibs/arm64-v8a/ >> "$logfile" 2>&1 || exit 1
