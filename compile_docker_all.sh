@@ -76,6 +76,9 @@ if [ "$build_sqlfs""x" == "1x" ]; then
     ./docker_linux_fast.sh build >> "$logfile" 2>&1 || exit 1
     echo "build sqlfs and sqlcipher for android"
     ./docker_linux_fast.sh >> "$logfile" 2>&1 || exit 1
+    echo "build sqlfs and sqlcipher for windows x64"
+    ./docker_win_fast.sh >> "$logfile" 2>&1 || exit 1
+
     echo "install sqlfs and sqlcipher android libs"
     cd "$_HOME_""/"
     cp -av ./002_src_libsqlfs/.localrun/debian_12_linux/artefacts/android-arm/*.a ./003_src_iocipher/libiocipher2-c/src/main/jniLibs/armeabi-v7a/ >> "$logfile" 2>&1 || exit 1

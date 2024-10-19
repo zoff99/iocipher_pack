@@ -31,6 +31,35 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #else
 # ifndef __MINGW32__
 #  include <sys/statvfs.h>
+# else
+// HINT: this is just a hack for MingW
+    typedef uint32_t uid_t;
+    typedef uint32_t gid_t;
+
+    typedef uint32_t fsblkcnt_t;
+    typedef uint32_t fsfilcnt_t;
+
+    #define S_IFLNK    0120000
+    #define S_IFSOCK   0140000
+    #define ST_NOSUID  2
+
+    struct statvfs {
+        unsigned long  f_bsize;    /* Filesystem block size */
+        unsigned long  f_frsize;   /* Fragment size */
+        fsblkcnt_t     f_blocks;   /* Size of fs in f_frsize units */
+        fsblkcnt_t     f_bfree;    /* Number of free blocks */
+        fsblkcnt_t     f_bavail;   /* Number of free blocks for
+                                        unprivileged users */
+        fsfilcnt_t     f_files;    /* Number of inodes */
+        fsfilcnt_t     f_ffree;    /* Number of free inodes */
+        fsfilcnt_t     f_favail;   /* Number of free inodes for
+                                        unprivileged users */
+        unsigned long  f_fsid;     /* Filesystem ID */
+        unsigned long  f_flag;     /* Mount flags */
+        unsigned long  f_namemax;  /* Maximum filename length */
+    };
+
+
 # endif
 #endif
 #include <unistd.h>

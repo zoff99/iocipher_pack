@@ -1821,8 +1821,10 @@ int sqlfs_proc_getattr(sqlfs_t *sqlfs, const char *path, struct stat *stbuf)
         stbuf->st_uid = (uid_t) attr.uid;
         stbuf->st_gid = (gid_t) attr.gid;
         stbuf->st_size = (off_t) attr.size;
+#ifndef __MINGW32__
         stbuf->st_blksize = 512;
         stbuf->st_blocks = attr.size / 512;
+#endif
         stbuf->st_atime = attr.atime;
         stbuf->st_mtime = attr.mtime;
         stbuf->st_ctime = attr.ctime;
@@ -1838,12 +1840,20 @@ int sqlfs_proc_getattr(sqlfs_t *sqlfs, const char *path, struct stat *stbuf)
 
 static int gid_in_supp_groups(gid_t gid)
 {
+#ifdef __MINGW32__
+    int num_groups = 0;
+#else
     int num_groups = getgroups(0, 0);
+#endif
     int r = 0;
     if (num_groups)
     {
         gid_t *gids = malloc(sizeof(gids[0]) * num_groups);
+#ifdef __MINGW32__
+        int n = 0;
+#else
         int n = getgroups(num_groups, gids);
+#endif
 
         assert(n == num_groups);
         for (n = 0; n < num_groups; n++)
@@ -2939,6 +2949,10 @@ int sqlfs_proc_statfs(sqlfs_t *sqlfs, const char *path, struct statvfs *stbuf)
     }
     stbuf->f_namelen = sb.f_namelen;
 #else
+
+#ifdef __MINGW32__
+    stbuf->f_namemax = 200; // HINT: this value is a random guess for mingw
+#else
     struct statvfs sb;
     int rc = statvfs(default_db_file, &sb);
     if (rc == -1) {
@@ -2946,6 +2960,7 @@ int sqlfs_proc_statfs(sqlfs_t *sqlfs, const char *path, struct statvfs *stbuf)
     }
     stbuf->f_namemax = sb.f_namemax;
     stbuf->f_flag = sb.f_flag | ST_NOSUID; // TODO set S_RDONLY based on perms of file
+#endif
     /* TODO implement the inode info using information from the db itself */
     stbuf->f_favail = 99;
 #endif
@@ -2954,15 +2969,18 @@ int sqlfs_proc_statfs(sqlfs_t *sqlfs, const char *path, struct statvfs *stbuf)
     stbuf->f_files = 999;
     /* some guesses at how things should be represented */
     stbuf->f_frsize = BLOCK_SIZE;
+
+#ifndef __MINGW32__
     stbuf->f_bsize = sb.f_bsize;
     stbuf->f_bfree = sb.f_bfree;
 
     struct stat st;
-    rc = stat(default_db_file, &st);
-    if (rc == -1) {
+    int rc2 = stat(default_db_file, &st);
+    if (rc2 == -1) {
         return -errno;
     }
     sb.f_blocks = st.st_blocks * sb.f_bsize / stbuf->f_frsize;
+#endif
     return 0;
 }
 
@@ -2974,7 +2992,11 @@ int sqlfs_proc_release(sqlfs_t *sqlfs, const char *path, struct fuse_file_info *
 
 int sqlfs_proc_fsync(sqlfs_t *sqlfs, const char *path, int isfdatasync, struct fuse_file_info *fi)
 {
+#ifdef __MINGW32__
+    printf("WARNING: no sync() on Windows!");
+#else
     sync(); /* just to sync everything */
+#endif
     return 0;
 }
 
@@ -3322,13 +3344,17 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
      * the database itself.  So set a limit here to prevent the disk
      * from filling with the WAL. */
     char buf[256];
+    uint64_t limit = 10*1024*1024; // set min limit to 10MB
+#ifndef __MINGW32__
     struct statvfs vfs;
     statvfs(db_file, &vfs);
-    uint64_t limit = 10*1024*1024; // set min limit to 10MB
     // set dynamic limit to 10% of available space on partition
     uint64_t availableBytes = (uint64_t)vfs.f_bavail * vfs.f_bsize * 0.1;
     if (availableBytes > limit)
+    {
         limit = availableBytes;
+    }
+#endif
     snprintf(buf, 256, "PRAGMA journal_size_limit = %"PRIu64";", limit);
     sqlite3_exec(sql_fs->db, buf, NULL, NULL, NULL);
 
