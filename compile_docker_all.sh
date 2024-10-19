@@ -90,6 +90,12 @@ if [ "$build_sqlfs""x" == "1x" ]; then
     cd "$_HOME_""/"
     cp -av ./002_src_libsqlfs/sqlfs.h ./003_src_iocipher/libiocipher2-c/src/main/cpp/libsqlfs/ >> "$logfile" 2>&1 || exit 1
     cp -av ./002_src_libsqlfs/sqlfs_internal.h ./003_src_iocipher/libiocipher2-c/src/main/cpp/libsqlfs/ >> "$logfile" 2>&1 || exit 1
+
+    echo "install sqlfs and sqlcipher windows libs"
+    cd "$_HOME_""/"
+    cp -av ./002_src_libsqlfs/.localrun/debian_12_win64/artefacts/win_x86_64/libsqlfs.a ./002_src_libsqlfs/libsqlfs_win64.a >> "$logfile" 2>&1 || exit 1
+    cp -av ./002_src_libsqlfs/.localrun/debian_12_win64/artefacts/win_x86_64/sqlite3.a ./002_src_libsqlfs/sqlite3_win64.a >> "$logfile" 2>&1 || exit 1
+
 fi
 
 echo "deleting all *.class files"
