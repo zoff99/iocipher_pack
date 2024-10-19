@@ -189,6 +189,60 @@ class FileManager {
         }
     }
 
+    public void listSubdirectories(java.io.File directory, String current_work_dir) {
+        if (directory.isDirectory()) {
+            try
+            {
+                java.io.File[] subdirectories = directory.listFiles(java.io.File::isDirectory);
+                if (subdirectories != null) {
+                    for (java.io.File subdirectory : subdirectories) {
+                        System.out.println("D: " + current_work_dir + "/" + subdirectory.getName());
+                        info.guardianproject.iocipher.File create_dir =
+                            new info.guardianproject.iocipher.File(current_work_dir, subdirectory.getName());
+                        create_dir.mkdirs();
+
+                        if (subdirectory.isDirectory()) {
+                            java.io.File[] files_in_dir = subdirectory.listFiles(java.io.File::isFile);
+                            for (java.io.File file_in_dir : files_in_dir) {
+                                import_file(file_in_dir, create_dir);
+                            }
+                        }
+
+                        listSubdirectories(subdirectory, current_work_dir + java.io.File.separator + subdirectory.getName());
+                    }
+                }
+            }
+            catch(Exception e)
+            {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void check_and_create_dir_structure(java.io.File file)
+    {
+        System.out.println("check_and_create_dir_structure: " + file.getAbsolutePath() + " " + file.getName());
+        info.guardianproject.iocipher.File create_dir =
+            new info.guardianproject.iocipher.File(current_vfs_dir.getAbsolutePath(), file.getName());
+        create_dir.mkdirs();
+
+        try
+        {
+            if (file.isDirectory()) {
+                java.io.File[] files_in_dir = file.listFiles(java.io.File::isFile);
+                for (java.io.File file_in_dir : files_in_dir) {
+                    import_file(file_in_dir, create_dir);
+                }
+            }
+
+            listSubdirectories(file, current_vfs_dir.getAbsolutePath() + java.io.File.separator + file.getName());
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     public Container getGui() {
         if (gui == null) {
             gui = new JPanel(new BorderLayout(3, 3));
@@ -207,14 +261,22 @@ class FileManager {
                         System.out.println("Error. no current directory inside VFS selected");
                         return;
                     }
+
                     // System.out.println("current dir: " + target_vfs_dir);
+                    for (java.io.File file : files) {
+                        // first check if there are directories and make all the needed dirs
+                        if (file.isDirectory()) {
+                            check_and_create_dir_structure(file);
+                        }
+                    }
+                    update_files_and_dirs();
+
                     for (java.io.File file : files) {
                         if (file.isDirectory()) {
                             System.out.println("dropped dir: " + file.getAbsolutePath());
-                            System.out.println("importing directories not supported yet");
                             // TODO: import also full directories with subdirs? somehow
                         } else {
-                            // System.out.println("dropped file: " + file.getAbsolutePath());
+                            System.out.println("dropped file: " + file.getAbsolutePath());
                             import_file(file, target_vfs_dir);
                         }
                     }
@@ -488,23 +550,55 @@ class FileManager {
         tree.setSelectionInterval(0, 0);
     }
 
-    private TreePath findTreePath(java.io.File find)
+    private synchronized TreePath findTreePath(java.io.File find)
     {
-        for (int ii = 0; ii < tree.getRowCount(); ii++)
-        {
-            TreePath treePath = tree.getPathForRow(ii);
-            // System.out.println("findTreePath:path="+treePath+" ii=" + ii);
-            Object object = treePath.getLastPathComponent();
-            DefaultMutableTreeNode node = (DefaultMutableTreeNode) object;
-            java.io.File nodeFile = (File) node.getUserObject();
-            // System.out.println("findTreePath:want="+find.getAbsolutePath()+" ii=" + ii + " " + nodeFile.getAbsolutePath());
-
-            if (nodeFile.getAbsolutePath().compareTo(find.getAbsolutePath()) == 0)
-            {
-                return treePath;
+        TreePath t = null;
+        int max_tries = 5;
+        int tries = 0;
+        while(t == null) {
+            t = findTreePath_real(find);
+            tries++;
+            if (tries > max_tries) {
+                break;
             }
         }
+        return t;
+    }
+
+    private synchronized TreePath findTreePath_real(java.io.File find)
+    {
+        try
+        {
+            DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
+
+            java.util.List<TreePath> paths = new ArrayList<>();
+            @SuppressWarnings("unchecked")
+            java.util.Enumeration<DefaultMutableTreeNode> e = root.depthFirstEnumeration();
+            while (e.hasMoreElements()) {
+                try
+                {
+                    DefaultMutableTreeNode node = e.nextElement();
+                    java.io.File nodeFile = (File) node.getUserObject();
+                    if (nodeFile.getAbsolutePath().compareTo(find.getAbsolutePath()) == 0)
+                    {
+                        TreePath treePath = new TreePath(node.getPath());
+                        return treePath;
+                    }
+                }
+                catch(Exception e2)
+                {
+                    e2.printStackTrace();
+                }
+            }
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+            System.out.println("findTreePath ======= EXCEPTION ===\n\n");
+        }
         // not found!
+        System.out.println("findTreePath ======= DONE ERROR ==\n\n");
         return null;
     }
 
@@ -900,6 +994,22 @@ class FileManager {
         tableColumn.setPreferredWidth(width);
         tableColumn.setMaxWidth(width);
         tableColumn.setMinWidth(width);
+    }
+
+    private synchronized void update_files_and_dirs() {
+        try {
+            TreePath parentPath = findTreePath(current_vfs_dir);
+            DefaultMutableTreeNode parentNode = null;
+            try {
+                parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            showChildren(parentNode, true);
+            gui.repaint();
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private void import_file(java.io.File src_file, info.guardianproject.iocipher.File dst_dir) {
