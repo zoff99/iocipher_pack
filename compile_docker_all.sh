@@ -45,6 +45,7 @@ if [ "$build_sqlfs""x" == "1x" ]; then
     echo "install openssl linux libs"
     cp -av ./001_src_openssl/.localrun/debian_12_linux/artefacts/linux_debian12_x86_64/lib*.a ./002_src_libsqlfs/openssl_libs/ >> "$logfile" 2>&1 || exit 1
     echo "install openssl windows libs"
+    mkdir -p ./002_src_libsqlfs/openssl_win64_libs/ >> "$logfile" 2>&1
     cp -av ./001_src_openssl/.localrun/debian_12_win64/artefacts/win_x86_64/lib*.a ./002_src_libsqlfs/openssl_win64_libs/ >> "$logfile" 2>&1 || exit 1
     echo "install openssl android libs"
     cp -av ./001_src_openssl/.localrun/debian_12_linux/artefacts/android-arm/lib*.a ./003_src_iocipher/libiocipher2-c/src/main/jniLibs/armeabi-v7a/ >> "$logfile" 2>&1 || exit 1
