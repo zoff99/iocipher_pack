@@ -42,6 +42,29 @@ cd ./003_src_iocipher/linux_jni/c_src
 ./compile_linux_c.sh
 ```
 
+Building for Windows
+--------------------
+
+This app relies on OpenSSL libcrypto, sqlcipher, and libsqlfs, which
+are all "native" C code that need to be built.
+
+```
+# you need docker and jdk 11 or higher installed
+./compile_docker_all.sh
+cd ./003_src_iocipher/linux_jni/c_src
+./compile_linux_c.sh
+
+# you need a working x86_64-w64-mingw32-gcc installed and in your path
+apt-get install -y --no-install-recommends \
+          wine libwine-dev libwine wine64 wine64-tools \
+          make wget git coreutils autoconf \
+          libtool pkg-config gcc-mingw-w64-x86-64 \
+          gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 binutils-mingw-w64-x86-64 \
+          mingw-w64-tools pkg-config-mingw-w64-x86-64 \
+          mingw-w64-x86-64-dev
+
+./compile_win_c.sh
+```
 
 License
 -------
