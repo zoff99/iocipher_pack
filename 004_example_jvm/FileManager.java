@@ -165,8 +165,10 @@ class FileManager {
             f1.mkdirs();
             f1 = new info.guardianproject.iocipher.File("/Music");
             f1.mkdirs();
+            /*
             f1 = new info.guardianproject.iocipher.File("/เอกสารสำคัญ");
             f1.mkdirs();
+            */
             f1 = new info.guardianproject.iocipher.File("/listy zakupów");
             f1.mkdirs();
             f1 = new info.guardianproject.iocipher.File("/My Shopping.docx");
@@ -572,11 +574,11 @@ class FileManager {
             DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
             java.util.List<TreePath> paths = new ArrayList<>();
             @SuppressWarnings("unchecked")
-            java.util.Enumeration<DefaultMutableTreeNode> e = (java.util.Enumeration<DefaultMutableTreeNode>)root.preorderEnumeration();
+            java.util.Enumeration<TreeNode> e = (java.util.Enumeration<TreeNode>)root.preorderEnumeration();
             while (e.hasMoreElements()) {
                 try
                 {
-                    DefaultMutableTreeNode node = e.nextElement();
+                    DefaultMutableTreeNode node = (DefaultMutableTreeNode)e.nextElement();
                     // System.out.println("findTreePath_real:node=" + node);
                     java.io.File nodeFile = (File) node.getUserObject();
                     if (nodeFile.getAbsolutePath().compareTo(find.getAbsolutePath()) == 0)
