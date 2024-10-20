@@ -37,5 +37,5 @@ rm -f vfs.db
 rm -f vfs.db-*
 rm -Rf example_dir/
 
-wine ./c_example_win64
+wine ./c_example_win64.exe
 
