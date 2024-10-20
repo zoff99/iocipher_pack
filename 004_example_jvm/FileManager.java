@@ -569,16 +569,15 @@ class FileManager {
     {
         try
         {
-            DefaultTreeModel model = (DefaultTreeModel) tree.getModel();
-            DefaultMutableTreeNode root = (DefaultMutableTreeNode) model.getRoot();
-
+            DefaultMutableTreeNode root = (DefaultMutableTreeNode) tree.getModel().getRoot();
             java.util.List<TreePath> paths = new ArrayList<>();
             @SuppressWarnings("unchecked")
-            java.util.Enumeration<DefaultMutableTreeNode> e = root.depthFirstEnumeration();
+            java.util.Enumeration<DefaultMutableTreeNode> e = (java.util.Enumeration<DefaultMutableTreeNode>)root.preorderEnumeration();
             while (e.hasMoreElements()) {
                 try
                 {
                     DefaultMutableTreeNode node = e.nextElement();
+                    // System.out.println("findTreePath_real:node=" + node);
                     java.io.File nodeFile = (File) node.getUserObject();
                     if (nodeFile.getAbsolutePath().compareTo(find.getAbsolutePath()) == 0)
                     {
@@ -588,7 +587,7 @@ class FileManager {
                 }
                 catch(Exception e2)
                 {
-                    e2.printStackTrace();
+                    // e2.printStackTrace();
                 }
             }
         }
