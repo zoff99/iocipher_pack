@@ -165,10 +165,6 @@ class FileManager {
             f1.mkdirs();
             f1 = new info.guardianproject.iocipher.File("/Music");
             f1.mkdirs();
-            /*
-            f1 = new info.guardianproject.iocipher.File("/เอกสารสำคัญ");
-            f1.mkdirs();
-            */
             f1 = new info.guardianproject.iocipher.File("/listy zakupów");
             f1.mkdirs();
             f1 = new info.guardianproject.iocipher.File("/My Shopping.docx");
