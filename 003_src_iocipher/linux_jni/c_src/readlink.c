@@ -14,6 +14,10 @@
  * limitations under the License.
  */
 
+#ifdef __MINGW32__
+# define _LARGEFILE64_SOURCE
+#endif
+
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,7 +36,11 @@ bool readlink_wrapper(const char* path, char** result) {
             return false;
         }
 
+#ifdef __MINGW32__
+        len = -1;
+#else
         len = readlink(path, buf, bufSize);
+#endif
         if (len == -1) {
             // An error occurred.
             free(buf);

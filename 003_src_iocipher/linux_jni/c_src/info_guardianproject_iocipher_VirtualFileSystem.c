@@ -2,7 +2,9 @@
 
 #define LOG_TAG "VirtualFileSystem.cpp"
 
-#include <alloca.h>
+#ifndef __MINGW32__
+# include <alloca.h>
+#endif
 #include <jni.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -13,7 +15,9 @@
 #include <errno.h>
 #include <libgen.h>
 #include <sys/stat.h>
-#include <linux/limits.h>
+#ifndef __MINGW32__
+# include <linux/limits.h>
+#endif
 
 #include "sqlfs.h"
 
@@ -22,6 +26,15 @@
 #define IOCIPHER_VERSION "1.0.0"
 
 char dbFileName[PATH_MAX] = { 0 };
+
+#ifdef __MINGW32__
+typedef off64_t sqlfs_off_t;
+typedef struct _stat64 sqlfs_stat;
+#else
+typedef off_t sqlfs_off_t;
+typedef struct stat sqlfs_stat;
+#endif
+
 // store first sqlfs instance as marker for mounted state
 static sqlfs_t *sqlfs = NULL;
 // memory blob for error messages
@@ -100,7 +113,7 @@ static void VirtualFileSystem_setContainerPath(JNIEnv *env, jobject obj, jstring
     }
 
     int validFileName = 1;
-    struct stat sb;
+    sqlfs_stat sb;
     char *name2 = alloca(nameLen + 1);
     memset(name2, 0, nameLen + 1);
     memcpy(name2, name, nameLen);

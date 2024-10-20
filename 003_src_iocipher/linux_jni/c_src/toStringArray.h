@@ -1,6 +1,8 @@
+
 #include "JniConstants.h"
 #include <jni.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 
 jobjectArray toStringArray(JNIEnv* env, size_t (*counter)(), const char* (*getter)(size_t)) {

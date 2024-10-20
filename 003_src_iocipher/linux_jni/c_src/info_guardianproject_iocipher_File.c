@@ -27,7 +27,9 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <sys/vfs.h>
+#ifndef __MINGW32__
+# include <sys/vfs.h>
+#endif
 #include <time.h>
 #include <unistd.h>
 #include <utime.h>
@@ -40,12 +42,21 @@
 #include "toStringArray.h"
 #include "sqlfs.h"
 
+#ifdef __MINGW32__
+typedef off64_t sqlfs_off_t;
+typedef struct _stat64 sqlfs_stat;
+bool realpath_wrapper(const char* path, char** resolved);
+#else
+typedef off_t sqlfs_off_t;
+typedef struct stat sqlfs_stat;
+#endif
+
 /* right now, we use a single global virtual file system so we don't
  * have to map the structs sqlfs_t and sqlite3 to Java code */
 extern sqlfs_t *sqlfs;
 
 // from fuse.h
-typedef int(* fuse_fill_dir_t )(void *buf, const char *name, const struct stat *stbuf, off_t off);
+typedef int(* fuse_fill_dir_t )(void *buf, const char *name, const sqlfs_stat *stbuf, sqlfs_off_t off);
 
 static jstring File_readlink(JNIEnv* env, jclass cls, jstring javaPath) {
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
@@ -54,7 +65,11 @@ static jstring File_readlink(JNIEnv* env, jclass cls, jstring javaPath) {
     }
 
     char result[PATH_MAX];
+#ifdef __MINGW32__
+    ssize_t len = -1;
+#else
     ssize_t len = readlink(path, result, sizeof(result) - 1);
+#endif
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 
     if (len == -1) {
@@ -73,7 +88,19 @@ static jstring File_realpath(JNIEnv* env, jclass cls, jstring javaPath) {
     }
 
     char resolved[PATH_MAX];
+    memset(resolved, 0, PATH_MAX);
+#ifdef __MINGW32__
+    char* result = NULL;
+    bool res1 = realpath_wrapper(path, (char **)&resolved);
+    if (res1 == true)
+    {
+        // Can we use a stack allocated string here? or do we need to strdup() it first?
+        // NewStringUTF() make a utf-16 copy for java. so i think it's ok like this
+        result = resolved;
+    }
+#else
     char* result = realpath(path, resolved);
+#endif
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 
     if (result == NULL) {
@@ -89,7 +116,7 @@ static jlong File_lastModifiedImpl(JNIEnv* env, jclass cls, jstring javaPath) {
     if (path == NULL) {
         return JNI_FALSE;
     }
-    struct stat sb;
+    sqlfs_stat sb;
     sqlfs_proc_getattr(0, path, &sb);
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 
@@ -103,7 +130,7 @@ static jboolean File_setLastModifiedImpl(JNIEnv* env, jclass cls, jstring javaPa
     }
 
     // We want to preserve the access time.
-    struct stat sb;
+    sqlfs_stat sb;
     sqlfs_proc_getattr(0, path, &sb);
     key_attr atime;
     atime.atime = (long)sb.st_atime;
@@ -135,7 +162,7 @@ typedef struct {
 /* FUSE filler() function for use with the FUSE style readdir() that
  * libsqlfs provides.  Note: this function only ever expects statp to
  * be NULL and off to be 0.  buf is DirEntries */
-static int fill_dir(void *buf, const char *name, const struct stat *statp, off_t off) {
+static int fill_dir(void *buf, const char *name, const sqlfs_stat *statp, sqlfs_off_t off) {
     DirEntries *entries = (DirEntries*) buf;
     if(statp != NULL)
         LOGE("File.listImpl() fill_dir always expects statp to be NULL");

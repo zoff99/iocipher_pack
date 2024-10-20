@@ -20,20 +20,26 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <poll.h>
-#include <pwd.h>
-#include <linux/limits.h>
+#ifndef __MINGW32__
+# include <poll.h>
+# include <pwd.h>
+# include <linux/limits.h>
+#endif
 #include <signal.h>
 #include <stdlib.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
+#ifndef __MINGW32__
+# include <sys/ioctl.h>
+# include <sys/mman.h>
+#endif
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <sys/uio.h>
-#include <sys/utsname.h>
-#include <sys/vfs.h> // Bionic doesn't have <sys/statvfs.h>
-#include <sys/wait.h>
+#ifndef __MINGW32__
+# include <sys/uio.h>
+# include <sys/utsname.h>
+# include <sys/vfs.h> // Bionic doesn't have <sys/statvfs.h>
+# include <sys/wait.h>
+#endif
 #include <unistd.h>
 
 #include <jni.h>
@@ -41,6 +47,24 @@
 
 #include "JNIHelp.h"
 #include "JniConstants.h"
+
+#ifdef __MINGW32__
+struct passwd {
+    char    *pw_name;  // User's login name.
+    uid_t    pw_uid;   // Numerical user ID.
+    gid_t    pw_gid;   // Numerical group ID.
+    char    *pw_dir;   // Initial working directory.
+    char    *pw_shell; // Program to use as shell.
+};
+#endif
+
+#ifdef __MINGW32__
+typedef off64_t sqlfs_off_t;
+typedef struct _stat64 sqlfs_stat;
+#else
+typedef off_t sqlfs_off_t;
+typedef struct stat sqlfs_stat;
+#endif
 
 /* right now, we use a single global virtual file system so we don't
  * have to map the structs sqlfs_t and sqlite3 to Java code */
@@ -101,7 +125,7 @@ static jobject makeStructPasswd(JNIEnv* env, const struct passwd* pw) {
                           pw_name, (jint)pw->pw_uid, (jint)pw->pw_gid, pw_dir, pw_shell);
 }
 
-static jobject makeStructStat(JNIEnv* env, const struct stat* sb) {
+static jobject makeStructStat(JNIEnv* env, const sqlfs_stat* sb) {
     jclass cls = (*env)->FindClass(env, "info/guardianproject/libcore/io/StructStat");
     jmethodID ctor = (*env)->GetMethodID(env, cls, "<init>",
                             "(JJIJIIJJJJJJJ)V");
@@ -111,10 +135,16 @@ static jobject makeStructStat(JNIEnv* env, const struct stat* sb) {
                           (jint)sb->st_uid, (jint)sb->st_gid,
                           (jlong)sb->st_rdev, (jlong)sb->st_size,
                           (jlong)sb->st_atime, (jlong)sb->st_mtime,
+#ifdef __MINGW32__
+                          (jlong)sb->st_ctime, (jlong)512,
+                          (jlong)0);
+#else
                           (jlong)sb->st_ctime, (jlong)sb->st_blksize,
                           (jlong)sb->st_blocks);
+#endif
 }
 
+#ifndef __MINGW32__
 static jobject makeStructStatFs(JNIEnv* env, const struct statfs* sb) {
     jclass cls = (*env)->FindClass(env, "info/guardianproject/libcore/io/StructStatFs");
     jmethodID ctor = (*env)->GetMethodID(env, cls, "<init>",
@@ -125,6 +155,7 @@ static jobject makeStructStatFs(JNIEnv* env, const struct statfs* sb) {
                           (jlong)sb->f_ffree, (jlong)sb->f_namelen,
                           (jlong)sb->f_frsize);
 }
+#endif
 
 static jobject makeStructTimeval(JNIEnv* env, const struct timeval* tv) {
     jclass cls = (*env)->FindClass(env, "info/guardianproject/libcore/io/StructTimeval");
@@ -133,6 +164,7 @@ static jobject makeStructTimeval(JNIEnv* env, const struct timeval* tv) {
                           (jlong)tv->tv_sec, (jlong)tv->tv_usec);
 }
 
+#ifndef __MINGW32__
 static jobject makeStructUtsname(JNIEnv* env, const struct utsname* buf) {
     TO_JAVA_STRING(sysname, buf->sysname);
     TO_JAVA_STRING(nodename, buf->nodename);
@@ -145,13 +177,14 @@ static jobject makeStructUtsname(JNIEnv* env, const struct utsname* buf) {
     return (*env)->NewObject(env, cls, ctor,
                           sysname, nodename, release, version, machine);
 };
+#endif
 
 static jobject doStat(JNIEnv* env, jstring javaPath, jboolean isLstat) {
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     if (path == NULL) {
         return NULL;
     }
-    struct stat sb;
+    sqlfs_stat sb;
     // TODO implement lstat() once symlink support is added
     if (isLstat)
         jniThrowRuntimeException(env, "lstat() is not implemented");
@@ -294,7 +327,7 @@ static jint Posix_preadBytes(JNIEnv* env, jobject, jobject javaFd, jobject javaB
         (*env)->ReleaseByteArrayElements(env, javaBytes, bytes, 0);
         return -1;
     }
-    int result = sqlfs_proc_read(0, path, (char*)(bytes + byteOffset), byteCount, (off_t)offset, NULL);
+    int result = sqlfs_proc_read(0, path, (char*)(bytes + byteOffset), byteCount, (sqlfs_off_t)offset, NULL);
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
     (*env)->ReleaseByteArrayElements(env, javaBytes, bytes, 0);
     if (result < 0) {
@@ -380,6 +413,9 @@ static jobject Posix_stat(JNIEnv* env, jobject, jstring javaPath) {
  partition that the database file is stored on.  That means we ignore
  the javaPath passed in and just use the dbFilename. */
 static jobject Posix_statfs(JNIEnv* env, jobject, jstring javaPath) {
+#ifdef __MINGW32__
+    return NULL;
+#else
     struct statfs sb;
     int rc = TEMP_FAILURE_RETRY(statfs(dbFileName, &sb));
     if (rc == -1) {
@@ -389,10 +425,11 @@ static jobject Posix_statfs(JNIEnv* env, jobject, jstring javaPath) {
     /* some guesses at how things should be represented */
     sb.f_bsize = 4096; // libsqlfs uses 4k page sizes in sqlite (I think) // Zoff: isn't it using 8k blocks in sqlcipher? hmmm. not sure what's the correct value here.
 
-    struct stat st;
+    sqlfs_stat st;
     stat(dbFileName, &st);
     sb.f_blocks = st.st_blocks;
     return makeStructStatFs(env, &sb);
+#endif
 }
 
 static jstring Posix_strerror(JNIEnv* env, jobject, jint errnum) {

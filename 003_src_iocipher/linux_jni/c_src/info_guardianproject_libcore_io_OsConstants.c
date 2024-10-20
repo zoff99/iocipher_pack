@@ -25,18 +25,22 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <net/if.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <poll.h>
+
+#ifndef __MINGW32__
+# include <net/if.h>
+# include <netdb.h>
+# include <netinet/in.h>
+# include <netinet/tcp.h>
+# include <poll.h>
+# include <sys/ioctl.h>
+# include <sys/mman.h>
+# include <sys/socket.h>
+# include <sys/wait.h>
+#endif
+
 #include <signal.h>
 #include <stdlib.h>
-#include <sys/ioctl.h>
-#include <sys/mman.h>
-#include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
 #include <unistd.h>
 
 static void initConstant(JNIEnv* env, jclass c, const char* fieldName, int value) {
@@ -45,6 +49,7 @@ static void initConstant(JNIEnv* env, jclass c, const char* fieldName, int value
 }
 
 static void OsConstants_initConstants(JNIEnv* env, jclass c) {
+#ifndef __MINGW32__
     initConstant(env, c, "AF_INET", AF_INET);
     initConstant(env, c, "AF_INET6", AF_INET6);
     initConstant(env, c, "AF_UNIX", AF_UNIX);
@@ -446,6 +451,7 @@ static void OsConstants_initConstants(JNIEnv* env, jclass c) {
     initConstant(env, c, "_SC_XOPEN_UNIX", _SC_XOPEN_UNIX);
     initConstant(env, c, "_SC_XOPEN_VERSION", _SC_XOPEN_VERSION);
     initConstant(env, c, "_SC_XOPEN_XCU_VERSION", _SC_XOPEN_XCU_VERSION);
+#endif
 }
 
 JNIEXPORT void JNICALL

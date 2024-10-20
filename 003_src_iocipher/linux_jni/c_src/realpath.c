@@ -100,6 +100,7 @@ bool realpath_wrapper(const char* path, char** resolved) {
         strcat(*resolved, nextPathComponent);
 
         // See if we've got a symbolic link, and resolve it if so.
+#ifndef __MINGW32__
         struct stat sb;
         if (lstat(*resolved, &sb) == 0 && S_ISLNK(sb.st_mode)) {
             if (symlinkCount++ > MAXSYMLINKS) {
@@ -138,6 +139,7 @@ bool realpath_wrapper(const char* path, char** resolved) {
             }
             free(symlink);
         }
+#endif
     }
 
     // Remove trailing slash except when the resolved pathname is a single "/".

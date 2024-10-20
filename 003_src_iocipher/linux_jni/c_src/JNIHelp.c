@@ -276,11 +276,13 @@ const char* jniStrError(int errnum, char* buf, size_t buflen) {
     // char *strerror_r(int errnum, char *buf, size_t n);
     return strerror_r(errnum, buf, buflen);
 #else
+# ifndef __MINGW32__
     int rc = strerror_r(errnum, buf, buflen);
     if (rc != 0) {
         snprintf(buf, buflen, "errno %d", errnum);
     }
     return buf;
+# endif
 #endif
 }
 
