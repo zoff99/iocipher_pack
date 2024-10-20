@@ -75,8 +75,10 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #ifdef __MINGW32__
 typedef off64_t sqlfs_off_t;
+typedef struct _stat64 sqlfs_stat;
 #else
 typedef off_t sqlfs_off_t;
+typedef struct stat sqlfs_stat;
 #endif
 
 #define TYPE_NULL "null"
@@ -145,7 +147,7 @@ int sqlfs_begin_transaction(sqlfs_t *sqlfs);
 int sqlfs_complete_transaction(sqlfs_t *sqlfs, int i);
 int sqlfs_break_transaction(sqlfs_t *sqlfs);
 
-int sqlfs_proc_getattr(sqlfs_t *, const char *path, struct stat *stbuf);
+int sqlfs_proc_getattr(sqlfs_t *, const char *path, sqlfs_stat *stbuf);
 int sqlfs_proc_access(sqlfs_t *, const char *path, int mask);
 int sqlfs_proc_create(sqlfs_t *sqlfs, const char *path, mode_t mode, struct fuse_file_info *fi);
 int sqlfs_proc_readlink(sqlfs_t *, const char *path, char *buf, size_t size);

@@ -21,6 +21,12 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 #ifndef __SQLFS_INTERNAL_H__
 #define __SQLFS_INTERNAL_H__
 
+#ifdef __MINGW32__
+# ifndef _LARGEFILE64_SOURCE
+#  define _LARGEFILE64_SOURCE
+# endif
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #ifdef __ANDROID__
@@ -29,12 +35,51 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # define statvfs statfs
 # define fstatvfs fstatfs
 #else
-# include <sys/statvfs.h>
+# ifndef __MINGW32__
+#  include <sys/statvfs.h>
+# else
+// HINT: this is just a hack for MingW
+    typedef uint32_t uid_t;
+    typedef uint32_t gid_t;
+
+    typedef uint32_t fsblkcnt_t;
+    typedef uint32_t fsfilcnt_t;
+
+    #define S_IFLNK    0120000
+    #define S_IFSOCK   0140000
+    #define ST_NOSUID  2
+
+    struct statvfs {
+        unsigned long  f_bsize;    /* Filesystem block size */
+        unsigned long  f_frsize;   /* Fragment size */
+        fsblkcnt_t     f_blocks;   /* Size of fs in f_frsize units */
+        fsblkcnt_t     f_bfree;    /* Number of free blocks */
+        fsblkcnt_t     f_bavail;   /* Number of free blocks for
+                                        unprivileged users */
+        fsfilcnt_t     f_files;    /* Number of inodes */
+        fsfilcnt_t     f_ffree;    /* Number of free inodes */
+        fsfilcnt_t     f_favail;   /* Number of free inodes for
+                                        unprivileged users */
+        unsigned long  f_fsid;     /* Filesystem ID */
+        unsigned long  f_flag;     /* Mount flags */
+        unsigned long  f_namemax;  /* Maximum filename length */
+    };
+
+
+# endif
 #endif
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
 #include <utime.h>
+
+#ifdef __MINGW32__
+typedef off64_t sqlfs_off_t;
+typedef struct _stat64 sqlfs_stat;
+#else
+typedef off_t sqlfs_off_t;
+typedef struct stat sqlfs_stat;
+#endif
 
 #define TYPE_NULL "null"
 #define TYPE_DIR "dir"
@@ -102,12 +147,12 @@ int sqlfs_begin_transaction(sqlfs_t *sqlfs);
 int sqlfs_complete_transaction(sqlfs_t *sqlfs, int i);
 int sqlfs_break_transaction(sqlfs_t *sqlfs);
 
-int sqlfs_proc_getattr(sqlfs_t *, const char *path, struct stat *stbuf);
+int sqlfs_proc_getattr(sqlfs_t *, const char *path, sqlfs_stat *stbuf);
 int sqlfs_proc_access(sqlfs_t *, const char *path, int mask);
 int sqlfs_proc_create(sqlfs_t *sqlfs, const char *path, mode_t mode, struct fuse_file_info *fi);
 int sqlfs_proc_readlink(sqlfs_t *, const char *path, char *buf, size_t size);
 int sqlfs_proc_readdir(sqlfs_t *, const char *path, void *buf, fuse_fill_dir_t filler,
-                       off_t offset, struct fuse_file_info *fi);
+                       sqlfs_off_t offset, struct fuse_file_info *fi);
 int sqlfs_proc_mknod(sqlfs_t *, const char *path, mode_t mode, dev_t rdev);
 int sqlfs_proc_mkdir(sqlfs_t *, const char *path, mode_t mode);
 int sqlfs_proc_unlink(sqlfs_t *, const char *path);
@@ -117,12 +162,12 @@ int sqlfs_proc_rename(sqlfs_t *, const char *from, const char *to);
 int sqlfs_proc_link(sqlfs_t *, const char *from, const char *to);
 int sqlfs_proc_chmod(sqlfs_t *, const char *path, mode_t mode);
 int sqlfs_proc_chown(sqlfs_t *, const char *path, uid_t uid, gid_t gid);
-int sqlfs_proc_truncate(sqlfs_t *, const char *path, off_t size);
+int sqlfs_proc_truncate(sqlfs_t *, const char *path, sqlfs_off_t size);
 int sqlfs_proc_utime(sqlfs_t *, const char *path, struct utimbuf *buf);
 int sqlfs_proc_open(sqlfs_t *, const char *path, struct fuse_file_info *fi);
-int sqlfs_proc_read(sqlfs_t *, const char *path, char *buf, size_t size, off_t offset, struct
+int sqlfs_proc_read(sqlfs_t *, const char *path, char *buf, size_t size, sqlfs_off_t offset, struct
                     fuse_file_info *fi);
-int sqlfs_proc_write(sqlfs_t *, const char *path, const char *buf, size_t size, off_t offset,
+int sqlfs_proc_write(sqlfs_t *, const char *path, const char *buf, size_t size, sqlfs_off_t offset,
                      int mode_flags);
 int sqlfs_proc_statfs(sqlfs_t *, const char *path, struct statvfs *stbuf);
 int sqlfs_proc_release(sqlfs_t *, const char *path, struct fuse_file_info *fi);
