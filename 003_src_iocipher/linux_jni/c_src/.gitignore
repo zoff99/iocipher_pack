@@ -6,3 +6,5 @@ test.db-wal
 speedtest.db
 speedtest.db-shm
 speedtest.db-wal
+compile.win.log
+compile.log

@@ -273,7 +273,7 @@ public class NativeLibLoader
  *
  * @author Eugene Ryzhikov
  */
-public enum OperatingSystem
+enum OperatingSystem
 {
 
     WINDOWS("windows"), MACOS("mac"), MACARM("silicone"), RASPI("aarm64"), LINUX("linux"), UNIX("nix"), SOLARIS("solaris"),
