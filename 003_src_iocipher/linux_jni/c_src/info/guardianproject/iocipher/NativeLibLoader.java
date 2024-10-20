@@ -185,7 +185,7 @@ public class NativeLibLoader
         try
         {
             // Extract a native library file into the target directory
-            try (java.io.InputStream reader = (NativeLibLoader.class.getResourceAsStream(libFolderForCurrentOS + java.io.File.separator + libraryFileName)))
+            try (java.io.InputStream reader = (NativeLibLoader.class.getResourceAsStream(nativeLibraryFilePath)))
             {
                 System.out.println("reader=" + reader);
                 if (Files.notExists(extractedLckFile))
