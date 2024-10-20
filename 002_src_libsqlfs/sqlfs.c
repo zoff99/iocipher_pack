@@ -1831,7 +1831,9 @@ int sqlfs_proc_getattr(sqlfs_t *sqlfs, const char *path, struct stat *stbuf)
         stbuf->st_nlink = 1;
         stbuf->st_uid = (uid_t) attr.uid;
         stbuf->st_gid = (gid_t) attr.gid;
+        // WARNING: TODO: stbuf->st_size on windows / mingw this is a "long" type, which is only 4 bytes!!
         stbuf->st_size = (sqlfs_off_t) attr.size;
+        // WARNING: TODO: stbuf->st_size on windows / mingw this is a "long" type, which is only 4 bytes!!
 #ifndef __MINGW32__
         stbuf->st_blksize = 512;
         stbuf->st_blocks = attr.size / 512;
