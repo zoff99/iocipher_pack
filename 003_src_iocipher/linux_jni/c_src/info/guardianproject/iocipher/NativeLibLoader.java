@@ -22,8 +22,11 @@ public class NativeLibLoader
     private static final String LOCK_EXT = ".lck";
     private static boolean extracted = false;
 
-    private static final String NativeLibraryPath = "/jnilibs/linux_amd64";
-    private static final String NativeLibraryName = "libiocipher2.so";
+    private static final String NativeLibraryPath_Linux = "/jnilibs/linux_amd64";
+    private static final String NativeLibraryName_Linux = "libiocipher2.so";
+
+    private static final String NativeLibraryPath_winx64 = "/jnilibs/win_x64";
+    private static final String NativeLibraryName_winx64 = "iocipher2.dll";
 
 
     /**
@@ -235,6 +238,19 @@ public class NativeLibLoader
         List<String> triedPaths = new LinkedList<>();
         // temporary library folder
         String tempFolder = getTempDir().getAbsolutePath();
+        // check OS
+        String NativeLibraryPath = NativeLibraryPath_Linux;
+        String NativeLibraryName = NativeLibraryName_Linux;
+        if (OperatingSystem.getCurrent() == OperatingSystem.LINUX)
+        {
+            NativeLibraryPath = NativeLibraryPath_Linux;
+            NativeLibraryName = NativeLibraryName_Linux;
+        }
+        else if (OperatingSystem.getCurrent() == OperatingSystem.WINDOWS)
+        {
+            NativeLibraryPath = NativeLibraryPath_winx64;
+            NativeLibraryName = NativeLibraryName_winx64;
+        }
         // Try extracting the library from jar
         if (extractAndLoadLibraryFile(NativeLibraryPath, NativeLibraryName, tempFolder))
         {
@@ -245,5 +261,100 @@ public class NativeLibLoader
         {
             triedPaths.add(NativeLibraryPath);
         }
+    }
+}
+
+
+
+/**
+ * Utility class to allow OS determination
+ * <p>
+ * Created on Mar 11, 2010
+ *
+ * @author Eugene Ryzhikov
+ */
+public enum OperatingSystem
+{
+
+    WINDOWS("windows"), MACOS("mac"), MACARM("silicone"), RASPI("aarm64"), LINUX("linux"), UNIX("nix"), SOLARIS("solaris"),
+
+    UNKNOWN("unknown")
+            {
+                @Override
+                protected boolean isReal()
+                {
+                    return false;
+                }
+            };
+
+
+    private String tag;
+
+    OperatingSystem(String tag)
+    {
+        this.tag = tag;
+    }
+
+    public boolean isCurrent()
+    {
+        return isReal() && getName().toLowerCase().indexOf(tag) >= 0;
+    }
+
+    public static final String getName()
+    {
+        return System.getProperty("os.name");
+    }
+
+    public static final String getVersion()
+    {
+        return System.getProperty("os.version");
+    }
+
+    public static final String getArchitecture()
+    {
+        return System.getProperty("os.arch");
+    }
+
+    @Override
+    public final String toString()
+    {
+        return String.format("%s v%s (%s)", getName(), getVersion(), getArchitecture());
+    }
+
+    protected boolean isReal()
+    {
+        return true;
+    }
+
+    /**
+     * Returns current operating system
+     *
+     * @return current operating system or UNKNOWN if not found
+     */
+    public static final OperatingSystem getCurrent()
+    {
+        for (OperatingSystem os : OperatingSystem.values())
+        {
+            if (os.isCurrent())
+            {
+                if (os == OperatingSystem.MACOS)
+                {
+                    if (getArchitecture().equalsIgnoreCase("aarch64"))
+                    {
+                        return OperatingSystem.MACARM;
+                    }
+                }
+                else if (os == OperatingSystem.LINUX)
+                {
+                    if (getArchitecture().equalsIgnoreCase("aarch64"))
+                    {
+                        return OperatingSystem.RASPI;
+                    }
+                }
+
+                return os;
+            }
+        }
+        return UNKNOWN;
     }
 }
