@@ -57,7 +57,16 @@ public class NativeLibLoader
      */
     static void cleanup()
     {
-        String searchPattern = "libiocipher2.so";
+        String searchPattern_ = NativeLibraryName_Linux;
+        if (OperatingSystem.getCurrent() == OperatingSystem.LINUX)
+        {
+            searchPattern_ = NativeLibraryName_Linux;
+        }
+        else if (OperatingSystem.getCurrent() == OperatingSystem.WINDOWS)
+        {
+            searchPattern_ = NativeLibraryName_winx64;
+        }
+        final String searchPattern = searchPattern_;
         try (Stream<Path> dirList = Files.list(getTempDir().toPath()))
         {
             dirList.filter(
@@ -176,7 +185,7 @@ public class NativeLibLoader
         try
         {
             // Extract a native library file into the target directory
-            try (java.io.InputStream reader = (NativeLibLoader.class.getResourceAsStream("/jnilibs/linux_amd64/libiocipher2.so")))
+            try (java.io.InputStream reader = (NativeLibLoader.class.getResourceAsStream(libFolderForCurrentOS + java.io.File.separator + libraryFileName)))
             {
                 System.out.println("reader=" + reader);
                 if (Files.notExists(extractedLckFile))
