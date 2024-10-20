@@ -60,14 +60,6 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 # endif
 #endif
 
-/*
-#ifdef __MINGW32__
-typedef off64_t sqlfs_off_t;
-#else
-typedef off_t sqlfs_off_t;
-#endif
-*/
-
 #include "sqlite3.h"
 
 struct sqlfs_t
