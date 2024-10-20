@@ -111,12 +111,14 @@ ssize_t vfs_read(struct vfs_file *fd, void *buf, size_t count)
     return (ssize_t)read_bytes_or_error;
 }
 
-static size_t vfs_get_file_size(struct vfs_file *fd)
+static int64_t vfs_get_file_size(struct vfs_file *fd)
 {
-    struct stat stbuf;
+    struct _stat64 stbuf;
+    printf("_stat64 size = %d\n", (int)sizeof(stbuf));
+    printf("_stat64 st_size size = %d\n", (int)sizeof(stbuf.st_size));
     int res = sqlfs_proc_getattr(sqlfs, fd->pathname, &stbuf);
-    printf("fsize=%ld\n", (int64_t)stbuf.st_size);
-    return (size_t)stbuf.st_size;
+    printf("fsize=%lld\n", (long long)stbuf.st_size);
+    return (int64_t)stbuf.st_size;
 }
 
 sqlfs_off_t vfs_lseek(struct vfs_file *fd, sqlfs_off_t offset, int whence)
@@ -299,6 +301,9 @@ int main(int argc, char *argv[])
     // to silence warnings
     current_time_monotonic_default();
 
+
+#define RUN_LARGE_FILETEST 1
+
 #if RUN_LARGE_FILETEST
     // Open very large file and write ---------------------
     printf("open large file\n");
@@ -313,7 +318,7 @@ int main(int argc, char *argv[])
     uint64_t t1 = current_time_monotonic_default();
     for(int64_t i=0;i<loops;i++) {
         written_bytes = vfs_write(fd, kbuf, kbuf_size);
-        // printf("written_bytes=%ld\n", (long)written_bytes);
+        // printf("written_bytes=%lld\n", (long long)written_bytes);
         const int64_t cur_size = i * kbuf_size;
         const int64_t cur_size_mb = cur_size / (1024*1024);
         if ((cur_size % (10*1024*1024)) == 0)
@@ -325,9 +330,11 @@ int main(int argc, char *argv[])
         }
     }
 
-    size_t size_l1 = vfs_get_file_size(fd);
-    printf("check file size:%ld %ld\n", (int64_t)size_l1, (int64_t)(loops * kbuf_size));
-    // assert((int64_t)size_l1 == (int64_t)(loops * kbuf_size));
+    int64_t size_l1 = vfs_get_file_size(fd);
+    printf("size_l1:%lld\n", (long long)size_l1);
+
+    printf("check file size:%lld %lld\n", (int64_t)size_l1, (int64_t)(loops * kbuf_size));
+    assert((long long)size_l1 == (long long)(loops * kbuf_size));
 
     printf("close file\n");
     vfs_close(fd);
@@ -343,7 +350,7 @@ int main(int argc, char *argv[])
     t1 = current_time_monotonic_default();
     for(int64_t i=0;i<loops;i++) {
         read_bytes = vfs_read(fd, kbuf, kbuf_size);
-        // printf("read_bytes=%ld\n", (long)read_bytes);
+        // printf("read_bytes=%lld\n", (long long)read_bytes);
         const int64_t cur_size = i * kbuf_size;
         const int64_t cur_size_mb = cur_size / (1024*1024);
         if ((cur_size % (10*1024*1024)) == 0)
@@ -356,31 +363,31 @@ int main(int argc, char *argv[])
     }
 
     size_l1 = vfs_get_file_size(fd);
-    printf("check file size:%ld %ld\n", (int64_t)size_l1, (int64_t)(loops * kbuf_size));
-    // assert((size_t)size_l1 == (size_t)(loops * kbuf_size));
+    printf("check file size:%lld %lld\n", (int64_t)size_l1, (int64_t)(loops * kbuf_size));
+    assert((long long)size_l1 == (long long)(loops * kbuf_size));
 
     sqlfs_off_t offset1 = size_l1 - 1000;
     sqlfs_off_t got_offset = vfs_lseek(fd, offset1, SEEK_SET);
-    printf("seek pos 1:%ld\n", (int64_t)got_offset);
+    printf("seek pos 1:%lld\n", (int64_t)got_offset);
 
     offset1 = size_l1 - 1000;
     got_offset = vfs_lseek(fd, offset1, SEEK_CUR);
-    printf("seek pos 2:%ld\n", (int64_t)got_offset);
+    printf("seek pos 2:%lld\n", (int64_t)got_offset);
 
     offset1 = size_l1 - 1000;
     got_offset = vfs_lseek(fd, offset1, SEEK_END);
-    printf("seek pos 3:%ld\n", (int64_t)got_offset);
+    printf("seek pos 3:%lld\n", (int64_t)got_offset);
 
     const int bsize = 1000;
     uint8_t lbuf[bsize];
-/*
+
     printf("trying to add to file\n");
     written_bytes = vfs_write(fd, lbuf, bsize);
-    printf("written_bytes=%ld\n", (int64_t)written_bytes);
-*/
+    printf("written_bytes=%lld\n", (int64_t)written_bytes);
+
     size_l1 = vfs_get_file_size(fd);
-    printf("check file size:%ld %ld\n", (int64_t)size_l1, (int64_t)(got_offset + bsize));
-    // assert((size_t)size_l1 == (size_t)(got_offset + bsize));
+    printf("check file size:%lld %lld\n", (int64_t)size_l1, (int64_t)(got_offset + bsize));
+    assert((long long)size_l1 == (long long)(got_offset + bsize));
 
     printf("close file\n");
     vfs_close(fd);

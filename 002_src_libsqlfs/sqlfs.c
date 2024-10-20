@@ -1808,7 +1808,7 @@ static int check_parent_write(sqlfs_t *sqlfs, const char *path)
         }                                               \
     }
 
-int sqlfs_proc_getattr(sqlfs_t *sqlfs, const char *path, struct stat *stbuf)
+int sqlfs_proc_getattr(sqlfs_t *sqlfs, const char *path, sqlfs_stat *stbuf)
 {
     key_attr attr = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
     int r, result = 0;
@@ -1832,8 +1832,10 @@ int sqlfs_proc_getattr(sqlfs_t *sqlfs, const char *path, struct stat *stbuf)
         stbuf->st_uid = (uid_t) attr.uid;
         stbuf->st_gid = (gid_t) attr.gid;
         // WARNING: TODO: stbuf->st_size on windows / mingw this is a "long" type, which is only 4 bytes!!
-        stbuf->st_size = (sqlfs_off_t) attr.size;
-        // WARNING: TODO: stbuf->st_size on windows / mingw this is a "long" type, which is only 4 bytes!!
+        // so we use "typedef struct _stat64 sqlfs_stat" and "typedef off64_t sqlfs_off_t" to work around that on windows / mingw
+        // printf("size of stbuf->st_size=%d\n", (int)sizeof(stbuf->st_size));
+        stbuf->st_size = attr.size;
+        // printf("st_size=%lld attr.size=%lld\n", (long long)stbuf->st_size, (long long)attr.size);
 #ifndef __MINGW32__
         stbuf->st_blksize = 512;
         stbuf->st_blocks = attr.size / 512;
