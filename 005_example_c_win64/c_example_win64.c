@@ -299,8 +299,6 @@ int main(int argc, char *argv[])
     // to silence warnings
     current_time_monotonic_default();
 
-#define RUN_LARGE_FILETEST 1
-
 #if RUN_LARGE_FILETEST
     // Open very large file and write ---------------------
     printf("open large file\n");
