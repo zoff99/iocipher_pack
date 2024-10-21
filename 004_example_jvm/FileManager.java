@@ -94,6 +94,8 @@ class FileManager {
     /** Directory listing */
     private JTable table;
     private JProgressBar progressBar;
+    private JProgressBar progressBar_import;
+    private JProgressBar progressBar_export;
     /** Table model for File[]. */
     private FileTableModel fileTableModel;
     private ListSelectionListener listSelectionListener;
@@ -532,10 +534,21 @@ class FileManager {
             gui.add(splitPane, BorderLayout.CENTER);
 
             JPanel simpleOutput = new JPanel(new BorderLayout(3, 3));
+
             progressBar = new JProgressBar();
             progressBar.setPreferredSize(new Dimension(400, 20));
-            simpleOutput.add(progressBar, BorderLayout.EAST);
-            progressBar.setVisible(false);
+            simpleOutput.add(progressBar, BorderLayout.NORTH);
+            progressBar.setVisible(true);
+
+            progressBar_import = new JProgressBar();
+            progressBar_import.setPreferredSize(new Dimension(400, 20));
+            simpleOutput.add(progressBar_import, BorderLayout.CENTER);
+            progressBar_import.setVisible(true);
+
+            progressBar_export = new JProgressBar();
+            progressBar_export.setPreferredSize(new Dimension(400, 20));
+            simpleOutput.add(progressBar_export, BorderLayout.SOUTH);
+            progressBar_export.setVisible(true);
 
             gui.add(simpleOutput, BorderLayout.SOUTH);
 
@@ -1011,17 +1024,17 @@ class FileManager {
 
     private void import_file(java.io.File src_file, info.guardianproject.iocipher.File dst_dir) {
         tree.setEnabled(false);
-        progressBar.setVisible(true);
-        progressBar.setIndeterminate(false);
+        progressBar_import.setVisible(true);
+        progressBar_import.setIndeterminate(false);
         final int chunk_size = (int)(8192 * 100); // should be multiple of 8192 !
         long f_len_mbytes = src_file.length() / chunk_size;
         if ((f_len_mbytes < 1) || (f_len_mbytes > 2000000)) {
             // System.out.println("setIndeterminate");
-            progressBar.setIndeterminate(true);
+            progressBar_import.setIndeterminate(true);
         } else {
             // System.out.println("max=" + f_len_mbytes);
-            progressBar.setValue(0);
-            progressBar.setMaximum((int) f_len_mbytes);
+            progressBar_import.setValue(0);
+            progressBar_import.setMaximum((int) f_len_mbytes);
         }
 
         SwingWorker<Void, Long> worker = new SwingWorker<Void, Long>() {
@@ -1074,7 +1087,7 @@ class FileManager {
                 Long val = chunks.get(chunks.size() - 1);
                 String progress = String.valueOf(val);
                 // System.out.println("progress : " + progress);
-                progressBar.setValue(Math.toIntExact(val));
+                progressBar_import.setValue(Math.toIntExact(val));
                 if (!first_paint) {
                     first_paint = true;
 
@@ -1096,8 +1109,9 @@ class FileManager {
 
             @Override
             protected void done() {
-                progressBar.setIndeterminate(false);
-                progressBar.setVisible(false);
+                progressBar_import.setIndeterminate(false);
+                // progressBar_import.setVisible(false);
+                progressBar_import.setValue(0);
                 tree.setEnabled(true);
 
                 try {
@@ -1120,17 +1134,17 @@ class FileManager {
 
     private void export_file(info.guardianproject.iocipher.File src_file, java.io.File dst_dir) {
         tree.setEnabled(false);
-        progressBar.setVisible(true);
-        progressBar.setIndeterminate(false);
+        progressBar_export.setVisible(true);
+        progressBar_export.setIndeterminate(false);
         final int chunk_size = (int)(8192 * 100); // should be multiple of 8192 !
         long f_len_mbytes = src_file.length() / chunk_size;
         if ((f_len_mbytes < 1) || (f_len_mbytes > 2000000)) {
             // System.out.println("setIndeterminate");
-            progressBar.setIndeterminate(true);
+            progressBar_export.setIndeterminate(true);
         } else {
             // System.out.println("max=" + f_len_mbytes);
-            progressBar.setValue(0);
-            progressBar.setMaximum((int) f_len_mbytes);
+            progressBar_export.setValue(0);
+            progressBar_export.setMaximum((int) f_len_mbytes);
         }
 
         SwingWorker<Void, Long> worker = new SwingWorker<Void, Long>() {
@@ -1179,13 +1193,14 @@ class FileManager {
                 Long val = chunks.get(chunks.size() - 1);
                 // String progress = String.valueOf(val);
                 // System.out.println("progress : " + progress);
-                progressBar.setValue(Math.toIntExact(val));
+                progressBar_export.setValue(Math.toIntExact(val));
             }
 
             @Override
             protected void done() {
-                progressBar.setIndeterminate(false);
-                progressBar.setVisible(false);
+                progressBar_export.setIndeterminate(false);
+                // progressBar_export.setVisible(false);
+                progressBar_export.setValue(0);
                 tree.setEnabled(true);
 
                 try {
@@ -1251,7 +1266,8 @@ class FileManager {
                 if (lock)
                 {
                     progressBar.setIndeterminate(false);
-                    progressBar.setVisible(false);
+                    // progressBar.setVisible(false);
+                    progressBar.setValue(0);
                     tree.setEnabled(true);
                 }
             }
