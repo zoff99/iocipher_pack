@@ -28,6 +28,7 @@ import javax.imageio.ImageIO;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.ArrayList;
 
 import java.net.URL;
@@ -93,9 +94,23 @@ class FileManager {
 
     /** Directory listing */
     private JTable table;
+    private static final long one_mg = 1024 * 1024;
     private JProgressBar progressBar;
     private JProgressBar progressBar_import;
     private JProgressBar progressBar_export;
+    private static long import_files_running = 0;
+    private static final long SMALL_FILE_SIZE = 300 * 1024;
+    private static final long TINY_FILE_SIZE = 20 * 1024;
+    private static final long import_files_running_max = 2;
+    private static final long import_files_running_small_files_max = 30;
+    private static final long import_files_running_tiny_files_max = 100;
+    private static Semaphore semaphore_import_progress = new Semaphore(1);
+    private static Semaphore semaphore_export_progress = new Semaphore(1);
+    private static Semaphore semaphore_progress_global = new Semaphore(1);
+    private long progressBar_import_bytes_sum = 0;
+    private long progressBar_import_bytes_cur = 0;
+    private long progressBar_export_bytes_sum = 0;
+    private long progressBar_export_bytes_cur = 0;
     /** Table model for File[]. */
     private FileTableModel fileTableModel;
     private ListSelectionListener listSelectionListener;
@@ -196,7 +211,7 @@ class FileManager {
                 java.io.File[] subdirectories = directory.listFiles(java.io.File::isDirectory);
                 if (subdirectories != null) {
                     for (java.io.File subdirectory : subdirectories) {
-                        System.out.println("D: " + current_work_dir + "/" + subdirectory.getName());
+                        // System.out.println("D: " + current_work_dir + "/" + subdirectory.getName());
                         info.guardianproject.iocipher.File create_dir =
                             new info.guardianproject.iocipher.File(current_work_dir, subdirectory.getName());
                         create_dir.mkdirs();
@@ -221,7 +236,7 @@ class FileManager {
 
     public void check_and_create_dir_structure(java.io.File file)
     {
-        System.out.println("check_and_create_dir_structure: " + file.getAbsolutePath() + " " + file.getName());
+        // System.out.println("check_and_create_dir_structure: " + file.getAbsolutePath() + " " + file.getName());
         info.guardianproject.iocipher.File create_dir =
             new info.guardianproject.iocipher.File(current_vfs_dir.getAbsolutePath(), file.getName());
         create_dir.mkdirs();
@@ -240,6 +255,230 @@ class FileManager {
         catch(Exception e)
         {
             e.printStackTrace();
+        }
+    }
+
+    synchronized void progressBar_import_bytes_sum_add(long d)
+    {
+        try
+        {
+            semaphore_import_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return;
+        }
+        progressBar_import_bytes_sum = progressBar_import_bytes_sum + d;
+        semaphore_import_progress.release();
+    }
+
+    synchronized void progressBar_import_bytes_sum_sub(long d)
+    {
+        try
+        {
+            semaphore_import_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return;
+        }
+        if ((progressBar_import_bytes_sum - d) >= 0)
+        {
+            progressBar_import_bytes_sum = progressBar_import_bytes_sum - d;
+        }
+        else
+        {
+            progressBar_import_bytes_sum = 0;
+        }
+        semaphore_import_progress.release();
+    }
+
+    synchronized long progressBar_import_bytes_sum_get_mb(boolean in_mb)
+    {
+        try
+        {
+            semaphore_import_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return 0;
+        }
+        if (in_mb) {
+            long v = progressBar_import_bytes_sum / one_mg;
+            semaphore_import_progress.release();
+            return v;
+        } else {
+            long v = progressBar_import_bytes_sum;
+            semaphore_import_progress.release();
+            return v;
+        }
+    }
+
+    synchronized void progressBar_import_bytes_cur_add(long d)
+    {
+        try
+        {
+            semaphore_import_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return;
+        }
+        progressBar_import_bytes_cur = progressBar_import_bytes_cur + d;
+        semaphore_import_progress.release();
+    }
+
+    synchronized void progressBar_import_bytes_cur_sub(long d)
+    {
+        try
+        {
+            semaphore_import_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return;
+        }
+        if ((progressBar_import_bytes_cur - d) >= 0)
+        {
+            progressBar_import_bytes_cur = progressBar_import_bytes_cur - d;
+        }
+        else
+        {
+            progressBar_import_bytes_cur = 0;
+        }
+        semaphore_import_progress.release();
+    }
+
+    synchronized long progressBar_import_bytes_cur_get_mb(boolean in_mb)
+    {
+        try
+        {
+            semaphore_import_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return 0;
+        }
+        if (in_mb) {
+            long v = progressBar_import_bytes_cur / one_mg;
+            semaphore_import_progress.release();
+            return v;
+        } else {
+            long v = progressBar_import_bytes_cur;
+            semaphore_import_progress.release();
+            return v;
+        }
+    }
+
+    synchronized void progressBar_export_bytes_sum_add(long d)
+    {
+        try
+        {
+            semaphore_export_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return;
+        }
+        progressBar_export_bytes_sum = progressBar_export_bytes_sum + d;
+        semaphore_export_progress.release();
+    }
+
+    synchronized void progressBar_export_bytes_sum_sub(long d)
+    {
+        try
+        {
+            semaphore_export_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return;
+        }
+        if ((progressBar_export_bytes_sum - d) >= 0)
+        {
+            progressBar_export_bytes_sum = progressBar_export_bytes_sum - d;
+        }
+        else
+        {
+            progressBar_export_bytes_sum = 0;
+        }
+        semaphore_export_progress.release();
+    }
+
+    synchronized long progressBar_export_bytes_sum_get_mb(boolean in_mb)
+    {
+        try
+        {
+            semaphore_export_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return 0;
+        }
+        if (in_mb) {
+            long v = progressBar_export_bytes_sum / one_mg;
+            semaphore_export_progress.release();
+            return v;
+        } else {
+            long v = progressBar_export_bytes_sum;
+            semaphore_export_progress.release();
+            return v;
+        }
+    }
+
+    synchronized void progressBar_export_bytes_cur_add(long d)
+    {
+        try
+        {
+            semaphore_export_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return;
+        }
+        progressBar_export_bytes_cur = progressBar_export_bytes_cur + d;
+        semaphore_export_progress.release();
+    }
+
+    synchronized void progressBar_export_bytes_cur_sub(long d)
+    {
+        try
+        {
+            semaphore_export_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return;
+        }
+        if ((progressBar_export_bytes_cur - d) >= 0)
+        {
+            progressBar_export_bytes_cur = progressBar_export_bytes_cur - d;
+        }
+        else
+        {
+            progressBar_export_bytes_cur = 0;
+        }
+        semaphore_export_progress.release();
+    }
+
+    synchronized long progressBar_export_bytes_cur_get_mb(boolean in_mb)
+    {
+        try
+        {
+            semaphore_export_progress.acquire();
+        }
+        catch(Exception e)
+        {
+            return 0;
+        }
+        if (in_mb) {
+            long v = progressBar_export_bytes_cur / one_mg;
+            semaphore_export_progress.release();
+            return v;
+        } else {
+            long v = progressBar_export_bytes_cur;
+            semaphore_export_progress.release();
+            return v;
         }
     }
 
@@ -273,10 +512,8 @@ class FileManager {
 
                     for (java.io.File file : files) {
                         if (file.isDirectory()) {
-                            System.out.println("dropped dir: " + file.getAbsolutePath());
-                            // TODO: import also full directories with subdirs? somehow
                         } else {
-                            System.out.println("dropped file: " + file.getAbsolutePath());
+                            // System.out.println("dropped file: " + file.getAbsolutePath());
                             import_file(file, target_vfs_dir);
                         }
                     }
@@ -541,7 +778,7 @@ class FileManager {
             progressBar.setVisible(true);
 
             progressBar_import = new JProgressBar();
-            progressBar_import.setPreferredSize(new Dimension(400, 20));
+            progressBar_import.setPreferredSize(new Dimension(400, 40));
             simpleOutput.add(progressBar_import, BorderLayout.CENTER);
             progressBar_import.setVisible(true);
 
@@ -1024,18 +1261,23 @@ class FileManager {
 
     private void import_file(java.io.File src_file, info.guardianproject.iocipher.File dst_dir) {
         tree.setEnabled(false);
-        progressBar_import.setVisible(true);
-        progressBar_import.setIndeterminate(false);
+        // --------
+        try{ semaphore_progress_global.acquire(); }catch(Exception e) {}
+        progressBar_import_bytes_sum_add(src_file.length());
         final int chunk_size = (int)(8192 * 100); // should be multiple of 8192 !
-        long f_len_mbytes = src_file.length() / chunk_size;
-        if ((f_len_mbytes < 1) || (f_len_mbytes > 2000000)) {
-            // System.out.println("setIndeterminate");
-            progressBar_import.setIndeterminate(true);
-        } else {
-            // System.out.println("max=" + f_len_mbytes);
-            progressBar_import.setValue(0);
-            progressBar_import.setMaximum((int) f_len_mbytes);
-        }
+        final long chunk_count = src_file.length() / chunk_size;
+
+        long f_len_mbytes = progressBar_import_bytes_cur_get_mb(true);
+        long f_sum_mbytes = progressBar_import_bytes_sum_get_mb(true);
+
+        // System.out.println("cur=" + f_len_mbytes + " max=" + f_sum_mbytes);
+        progressBar_import.setIndeterminate(false);
+        progressBar_import.setStringPainted(true);
+        progressBar_import.setString("" + f_len_mbytes + " / " + f_sum_mbytes + " MiB");
+        progressBar_import.setValue(Math.toIntExact(f_len_mbytes));
+        progressBar_import.setMaximum(Math.toIntExact(f_sum_mbytes));
+        try{ semaphore_progress_global.release(); }catch(Exception e) {}
+        // --------
 
         SwingWorker<Void, Long> worker = new SwingWorker<Void, Long>() {
 
@@ -1045,6 +1287,35 @@ class FileManager {
             public Void doInBackground() {
                 try
                 {
+                    long tmp_import_files_running = 0;
+                    try{ semaphore_progress_global.acquire(); }catch(Exception e) {}
+                    tmp_import_files_running = import_files_running;
+                    try{ semaphore_progress_global.release(); }catch(Exception e) {}
+
+                    // System.out.println("" + tmp_import_files_running + " > " + import_files_running_max);
+                    long import_files_running_max_corrected = import_files_running_max;
+                    if (src_file.length() < TINY_FILE_SIZE) {
+                        import_files_running_max_corrected = import_files_running_tiny_files_max;
+                    } else if (src_file.length() < SMALL_FILE_SIZE) {
+                        import_files_running_max_corrected = import_files_running_small_files_max;
+                    } else {
+                        // System.out.println("import_files_running_max_corrected = " + import_files_running_max_corrected + " l=" + src_file.length());
+                    }
+                    while (tmp_import_files_running >= import_files_running_max_corrected) {
+                        // HINT: we need to wait
+                        // System.out.println("s:" + tmp_import_files_running + " > " + import_files_running_max);
+                        // System.out.println("sleep ...");
+                        try{ Thread.sleep(40); } catch(Exception e) {}
+
+                        try{ semaphore_progress_global.acquire(); }catch(Exception e) {}
+                        tmp_import_files_running = import_files_running;
+                        try{ semaphore_progress_global.release(); }catch(Exception e) {}
+                    }
+
+                    try{ semaphore_progress_global.acquire(); }catch(Exception e) {}
+                    import_files_running++;
+                    try{ semaphore_progress_global.release(); }catch(Exception e) {}
+
                     first_paint = false;
                     info.guardianproject.iocipher.File f = new info.guardianproject.iocipher.File(dst_dir + java.io.File.separator + src_file.getName());
                     info.guardianproject.iocipher.FileOutputStream out = new info.guardianproject.iocipher.FileOutputStream(f);
@@ -1053,23 +1324,33 @@ class FileManager {
                     final byte[] buf = new byte[chunk_size];
                     // System.out.println("dst=" + f.getAbsolutePath());
 
-                    for (long i = 0; i < f_len_mbytes; i++) {
-                        in.read(buf);
-                        out.write(buf);
+                    for (long i = 0; i < chunk_count; i++) {
+                        progressBar_import_bytes_cur_add(chunk_size);
+                        try
+                        {
+                            in.read(buf);
+                            out.write(buf);
+                        }
+                        catch(Exception e){}
                         // System.out.println("Value in thread : " + i);
                         publish(i);
                     }
 
                     long last_bytes = 0;
-                    long bluk_bytes = f_len_mbytes * chunk_size;
-                    if ((bluk_bytes > 0) || (f_len_mbytes == 0)) {
+                    long bluk_bytes = chunk_count * chunk_size;
+                    if ((bluk_bytes > 0) || (chunk_count == 0)) {
                         last_bytes = src_file.length() - bluk_bytes;
                     }
                     if (last_bytes > 0) {
                         // System.out.println("last_bytes : " + last_bytes);
                         final byte[] buf_last = new byte[(int)last_bytes];
-                        in.read(buf_last);
-                        out.write(buf_last);
+                        progressBar_import_bytes_cur_add(last_bytes);
+                        try
+                        {
+                            in.read(buf_last);
+                            out.write(buf_last);
+                        }
+                        catch(Exception e){}
                     }
 
                     in.close();
@@ -1086,8 +1367,17 @@ class FileManager {
             protected void process(List<Long> chunks) {
                 Long val = chunks.get(chunks.size() - 1);
                 String progress = String.valueOf(val);
-                // System.out.println("progress : " + progress);
-                progressBar_import.setValue(Math.toIntExact(val));
+                // --------
+                try{ semaphore_progress_global.acquire(); }catch(Exception e) {}
+                long f_len_mbytes = progressBar_import_bytes_cur_get_mb(true);
+                long f_sum_mbytes = progressBar_import_bytes_sum_get_mb(true);
+                progressBar_import.setValue(Math.toIntExact(f_len_mbytes));
+                progressBar_import.setMaximum(Math.toIntExact(f_sum_mbytes));
+                progressBar_import.setString("" + f_len_mbytes + " / " + f_sum_mbytes + " MiB");
+                // System.out.println("cur:" + f_len_mbytes);
+                try{ semaphore_progress_global.release(); }catch(Exception e) {}
+                // --------
+
                 if (!first_paint) {
                     first_paint = true;
 
@@ -1104,28 +1394,71 @@ class FileManager {
                     } catch(Exception e) {
                         e.printStackTrace();
                     }
+                } else {
+                    gui.repaint();
                 }
             }
 
             @Override
             protected void done() {
+                long import_files_running_ = 0;
+                // --------
+                try{ semaphore_progress_global.acquire(); }catch(Exception e) {}
+                import_files_running--;
+                if (import_files_running < 0) {
+                    import_files_running = 0;
+                }
+                import_files_running_ = import_files_running;
+                long f_len_bytes = progressBar_import_bytes_cur_get_mb(false);
+                long f_len_mbytes = progressBar_import_bytes_cur_get_mb(true);
+                long f_sum_bytes = progressBar_import_bytes_sum_get_mb(false);
+                long f_sum_mbytes = progressBar_import_bytes_sum_get_mb(true);
+                if (f_len_bytes == f_sum_bytes) {
+                    progressBar_import_bytes_sum_sub(f_len_bytes);
+                    progressBar_import_bytes_cur_sub(f_len_bytes);
+                }
+                f_len_bytes = progressBar_import_bytes_cur_get_mb(false);
+                f_len_mbytes = progressBar_import_bytes_cur_get_mb(true);
+                f_sum_bytes = progressBar_import_bytes_sum_get_mb(false);
+                f_sum_mbytes = progressBar_import_bytes_sum_get_mb(true);
+
+                // System.out.println("cur_a~" + f_len_mbytes + " max=" + f_sum_mbytes);
+                // System.out.println("cur_b~" + f_len_bytes + " max=" + f_sum_bytes);
                 progressBar_import.setIndeterminate(false);
-                // progressBar_import.setVisible(false);
-                progressBar_import.setValue(0);
+                progressBar_import.setValue(Math.toIntExact(f_len_mbytes));
+                progressBar_import.setMaximum(Math.toIntExact(f_sum_mbytes));
+                progressBar_import.setString("" + f_len_mbytes + " / " + f_sum_mbytes + " MiB");
+
+                // if ((f_len_bytes == 0) && (f_sum_bytes == 0))
+                if ((import_files_running == 0) && ((f_len_bytes == 0) && (f_sum_bytes == 0)))
+                {
+                    progressBar_import.setValue(0);
+                    progressBar_import.setString("");
+                }
+
+                try{ semaphore_progress_global.release(); }catch(Exception e) {}
+                // --------
+
                 tree.setEnabled(true);
 
-                try {
-                    TreePath parentPath = findTreePath(current_vfs_dir);
-                    DefaultMutableTreeNode parentNode = null;
+                // if ((f_len_bytes == 0) && (f_sum_bytes == 0))
+                if ((import_files_running_ == 0) && ((f_len_bytes == 0) && (f_sum_bytes == 0)))
+                {
                     try {
-                        parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
-                    } catch (Exception e) {
+                        TreePath parentPath = findTreePath(current_vfs_dir);
+                        DefaultMutableTreeNode parentNode = null;
+                        try {
+                            parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        showChildren(parentNode, true);
+                        gui.repaint();
+                    } catch(Exception e) {
                         e.printStackTrace();
                     }
-                    showChildren(parentNode, true);
+                } else {
                     gui.repaint();
-                } catch(Exception e) {
-                    e.printStackTrace();
                 }
             }
         };
