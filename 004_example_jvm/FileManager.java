@@ -28,6 +28,8 @@ import javax.imageio.ImageIO;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.ArrayList;
 
@@ -84,6 +86,8 @@ class FileManager {
     private info.guardianproject.iocipher.File currentFile = null;
     /** current Directory inside the VFS. */
     private static info.guardianproject.iocipher.File current_vfs_dir = null;
+
+    private static ExecutorService threadPool = null;
 
     /** Main GUI container */
     private JPanel gui;
@@ -1270,7 +1274,7 @@ class FileManager {
         long f_len_mbytes = progressBar_import_bytes_cur_get_mb(true);
         long f_sum_mbytes = progressBar_import_bytes_sum_get_mb(true);
 
-        // System.out.println("cur=" + f_len_mbytes + " max=" + f_sum_mbytes);
+        // System.out.println("src_file=" + src_file + "cur=" + f_len_mbytes + " max=" + f_sum_mbytes);
         progressBar_import.setIndeterminate(false);
         progressBar_import.setStringPainted(true);
         progressBar_import.setString("" + f_len_mbytes + " / " + f_sum_mbytes + " MiB");
@@ -1438,10 +1442,8 @@ class FileManager {
 
                 try{ semaphore_progress_global.release(); }catch(Exception e) {}
                 // --------
+                gui.repaint();
 
-                tree.setEnabled(true);
-
-                // if ((f_len_bytes == 0) && (f_sum_bytes == 0))
                 if ((import_files_running_ == 0) && ((f_len_bytes == 0) && (f_sum_bytes == 0)))
                 {
                     try {
@@ -1457,8 +1459,6 @@ class FileManager {
                     } catch(Exception e) {
                         e.printStackTrace();
                     }
-                } else {
-                    gui.repaint();
                 }
             }
         };
@@ -1572,11 +1572,9 @@ class FileManager {
                 File file = (File) node.getUserObject();
                 if (file.isDirectory()) {
                     File[] files = file.listFiles(); // !!
-                    // System.out.println("listfiles:002");
                     if (node.isLeaf()) {
                         for (File child : files) {
                             if (child.isDirectory()) {
-                                // System.out.println("listfiles:003");
                                 publish(child);
                             }
                         }
@@ -1590,7 +1588,6 @@ class FileManager {
             protected void process(List<File> chunks) {
                 for (java.io.File child : chunks) {
                     node.add(new DefaultMutableTreeNode(child));
-                    // System.out.println("node.add:003:" + child.getAbsolutePath());
                 }
             }
 
@@ -1605,11 +1602,12 @@ class FileManager {
                 }
             }
         };
-        worker.execute();
+        threadPool.execute(worker);
     }
 
     /** Update the File details view with the details of this File. */
     private void setFileDetails(File file, boolean select_dir) {
+        // System.out.println("setFileDetails:current_vfs_dir=" + current_vfs_dir.getAbsolutePath() + " select_dir=" + select_dir);
         if (select_dir) {
             current_vfs_dir = file;
             currentFile = null;
@@ -1678,6 +1676,9 @@ class FileManager {
         // select ROOT dir at start
         current_vfs_dir = new info.guardianproject.iocipher.File("/");
 
+        int n = 100; // Maximum number of threads
+        threadPool = Executors.newFixedThreadPool(n);
+
         // System.out.println("number of args: " + args.length);
         showcase_mode = false;
         if (args.length == 1) {
@@ -1724,6 +1725,7 @@ class FileManager {
                         int result = JOptionPane.showConfirmDialog(f, "Close the application");
                         if (result == JOptionPane.OK_OPTION) {
                             tearDown();
+                            threadPool.shutdown();
                             f.setVisible(false);
                             f.dispose();
                         }
