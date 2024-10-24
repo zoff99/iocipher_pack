@@ -77,6 +77,7 @@ class FileManager {
 
     /** Title of the application */
     public static final String APP_TITLE = "VFS Manager";
+    private static final String VERSION = "1.0.0";
     /** Used to open/edit/print files. */
     private Desktop desktop;
     /** Provides nice icons and names for files. */
@@ -1678,6 +1679,7 @@ class FileManager {
 
         int n = 100; // Maximum number of threads
         threadPool = Executors.newFixedThreadPool(n);
+        System.out.println("FileManager version: " + VERSION);
 
         // System.out.println("number of args: " + args.length);
         showcase_mode = false;
