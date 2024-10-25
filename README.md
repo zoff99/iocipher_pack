@@ -42,8 +42,8 @@ cd ./003_src_iocipher/linux_jni/c_src
 ./compile_linux_c.sh
 ```
 
-Building for Windows
---------------------
+Building for Windows (on Linux)
+-------------------------------
 
 This app relies on OpenSSL libcrypto, sqlcipher, and libsqlfs, which
 are all "native" C code that need to be built.
