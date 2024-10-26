@@ -141,6 +141,7 @@ class FileManager {
     private JCheckBox executable;
     private JRadioButton isDirectory;
     private JRadioButton isFile;
+    private JTextArea textviewer;
 
     /* GUI options/containers for new File/Directory creation. Created lazily. */
     private JPanel newFilePanel;
@@ -768,7 +769,18 @@ class FileManager {
             fileView.add(toolBar, BorderLayout.NORTH);
             fileView.add(fileMainDetails, BorderLayout.CENTER);
 
+            textviewer = new JTextArea(10, 20);
+            textviewer.setText("");
+            textviewer.setEditable(false);
+
+            JScrollPane scr = new JScrollPane();
+            scr.setViewportView(textviewer);
+            scr.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+
+            fileView.add(scr, BorderLayout.SOUTH);
+
             detailView.add(fileView, BorderLayout.SOUTH);
+
 
             JSplitPane splitPane = new JSplitPane(
                     JSplitPane.HORIZONTAL_SPLIT,
@@ -1659,8 +1671,54 @@ class FileManager {
         threadPool.execute(worker);
     }
 
+    private String getFileExtension(info.guardianproject.iocipher.File file, boolean lowercase)
+    {
+        try
+        {
+            String name = file.getName();
+            int lastIndexOf = name.lastIndexOf(".");
+            if (lastIndexOf == -1) {
+                return ""; // empty extension
+            }
+            if (lowercase)
+            {
+                return name.substring(lastIndexOf).toLowerCase();
+            }
+            else
+            {
+                return name.substring(lastIndexOf);
+            }
+        }
+        catch(Exception e)
+        {
+            return "";
+        }
+    }
+
+    private String read_file_content(info.guardianproject.iocipher.File file)
+    {
+        String ret = "";
+        info.guardianproject.iocipher.RandomAccessFile in = null;
+        try {
+            in = new info.guardianproject.iocipher.RandomAccessFile(file, "r");
+            String str = "";
+            while ((str = in.readLine()) != null)
+            {
+                ret = ret + "\n" + str;
+            }
+        }
+        catch(Exception e)
+        {
+        }
+        finally
+        {
+            try { in.close(); } catch (Exception ex) {}
+        }
+        return ret;
+    }
+
     /** Update the File details view with the details of this File. */
-    private void setFileDetails(File file, boolean select_dir) {
+    private void setFileDetails(info.guardianproject.iocipher.File file, boolean select_dir) {
         // System.out.println("setFileDetails:current_vfs_dir=" + current_vfs_dir.getAbsolutePath() + " select_dir=" + select_dir);
         if (select_dir) {
             current_vfs_dir = file;
@@ -1681,6 +1739,21 @@ class FileManager {
         writable.setSelected(file.canWrite());
         executable.setSelected(file.canExecute());
         isDirectory.setSelected(file.isDirectory());
+
+        textviewer.setText("");
+        if (getFileExtension(file, true).compareTo(".txt") == 0)
+        {
+            if (file.length() < (one_mg * 5)) {
+                try
+                {
+                    String file_content = read_file_content(file);
+                    textviewer.setText(file_content);
+                }
+                catch(Exception e)
+                {
+                }
+            }
+        }
 
         isFile.setSelected(file.isFile());
 
