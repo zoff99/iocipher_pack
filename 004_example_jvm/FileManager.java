@@ -104,6 +104,7 @@ class FileManager {
     private JProgressBar progressBar_import;
     private JProgressBar progressBar_export;
     private static long import_files_running = 0;
+    private static long import_files_remaining = 0;
     private static final long SMALL_FILE_SIZE = 300 * 1024;
     private static final long TINY_FILE_SIZE = 20 * 1024;
     private static final long import_files_running_max = 2;
@@ -850,7 +851,7 @@ class FileManager {
             System.out.println("findTreePath ======= EXCEPTION ===\n\n");
         }
         // not found!
-        System.out.println("findTreePath ======= DONE ERROR ==\n\n");
+        // System.out.println("findTreePath ======= DONE ERROR ==\n\n");
         return null;
     }
 
@@ -968,7 +969,75 @@ class FileManager {
                 }
     }
 
-    private void delete_file_bg() {
+    private void delete_single_directory_recursive(info.guardianproject.iocipher.File f_iter, DefaultMutableTreeNode parentNode)
+    {
+        // now recurse into the directory
+        if (f_iter.isDirectory())
+        {
+            info.guardianproject.iocipher.File[] files_in_dir = f_iter.listFiles();
+            for (info.guardianproject.iocipher.File file_in_dir : files_in_dir)
+            {
+                if (!file_in_dir.isDirectory())
+                {
+                    delete_single_file(file_in_dir, parentNode);
+                }
+                else
+                {
+                    delete_single_directory_recursive(file_in_dir, parentNode);
+                }
+            }
+        }
+
+        // at the end delete the (hopefully now empty) directory itself
+        System.out.println("deleting D: " + f_iter.getAbsolutePath());
+
+        boolean deleted = f_iter.delete();
+        if (deleted) {
+            try
+            {
+                // delete the node..
+                TreePath currentPath = findTreePath(f_iter);
+                // System.out.println(currentPath);
+                DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) currentPath
+                        .getLastPathComponent();
+
+                treeModel.removeNodeFromParent(currentNode);
+                showChildren(parentNode, true);
+            }
+            catch(Exception e)
+            {
+            }
+        } else {
+            System.out.println("The file could not be deleted.");
+        }
+
+    }
+
+    private void delete_single_file(info.guardianproject.iocipher.File f_iter, DefaultMutableTreeNode parentNode)
+    {
+        System.out.println("deleting F: " + f_iter.getAbsolutePath());
+
+        if (f_iter.getAbsolutePath().compareTo("/") == 0)
+        {
+            System.out.println("trying to delete ROOT directory");
+            return;
+        }
+        boolean deleted = f_iter.delete();
+        // System.out.println("deleting " + f_iter.getAbsolutePath() + " done");
+
+        if (deleted)
+        {
+            TreePath parentPath = findTreePath(current_vfs_dir);
+            parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
+            showChildren(parentNode, true);
+        } else {
+            System.out.println("The file could not be deleted.");
+        }
+        gui.repaint();
+    }
+
+    private void delete_file_bg()
+    {
         try
         {
             // System.out.println("currentFile: " + currentFile);
@@ -984,7 +1053,7 @@ class FileManager {
 
             // System.out.println("parentNode: " + parentNode);
 
-            boolean directory = currentFile.isDirectory();
+            // boolean directory = currentFile.isDirectory();
             List<info.guardianproject.iocipher.File> files_to_delete = new ArrayList<>();
 
             FileTableModel model = (FileTableModel) table.getModel();
@@ -995,40 +1064,13 @@ class FileManager {
                         info.guardianproject.iocipher.File f_iter = model.getFile(i);
                         files_to_delete.add(f_iter);
                     }
+
                     // delete files first
-                    for (info.guardianproject.iocipher.File f_iter : files_to_delete) {
+                    for (info.guardianproject.iocipher.File f_iter : files_to_delete)
+                    {
                         if (!f_iter.isDirectory())
                         {
-                            // System.out.println("selected " + i + " " + f_iter.getAbsolutePath());
-                            // System.out.println("deleting " + f_iter.getAbsolutePath() + " ...");
-
-                            if (f_iter.getAbsolutePath().compareTo("/") == 0)
-                            {
-                                System.out.println("trying to delete ROOT directory");
-                                continue;
-                            }
-                            boolean deleted = f_iter.delete();
-                            // System.out.println("deleting " + f_iter.getAbsolutePath() + " done");
-
-                            if (deleted) {
-                                if (directory) {
-                                    // delete the node..
-                                    TreePath currentPath = findTreePath(f_iter);
-                                    // System.out.println(currentPath);
-                                    DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) currentPath
-                                            .getLastPathComponent();
-            
-                                    treeModel.removeNodeFromParent(currentNode);
-                                    showChildren(parentNode, true);
-                                } else {
-                                    parentPath = findTreePath(current_vfs_dir);
-                                    parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
-                                    showChildren(parentNode, true);
-                                }
-                            } else {
-                                System.out.println("The file could not be deleted.");
-                            }
-                            gui.repaint();
+                            delete_single_file(f_iter, parentNode);
                         }
                     }
 
@@ -1036,38 +1078,11 @@ class FileManager {
                     for (info.guardianproject.iocipher.File f_iter : files_to_delete) {
                         if (f_iter.isDirectory())
                         {
-                            // System.out.println("selected " + i + " " + f_iter.getAbsolutePath());
-                            // System.out.println("deleting " + f_iter.getAbsolutePath());
-
-                            boolean deleted = f_iter.delete();
-                            if (deleted) {
-                                if (directory) {
-                                    // delete the node..
-                                    TreePath currentPath = findTreePath(f_iter);
-                                    // System.out.println(currentPath);
-                                    DefaultMutableTreeNode currentNode = (DefaultMutableTreeNode) currentPath
-                                            .getLastPathComponent();
-            
-                                    treeModel.removeNodeFromParent(currentNode);
-                                    showChildren(parentNode, true);
-                                } else {
-                                    parentPath = findTreePath(current_vfs_dir);
-                                    parentNode = (DefaultMutableTreeNode) parentPath.getLastPathComponent();
-                                    showChildren(parentNode, true);
-                                }
-                            } else {
-                                System.out.println("The file could not be deleted.");
-                            }
-            
+                            delete_single_directory_recursive(f_iter, parentNode);
                         }
                     }
-
-
-
                 }
             }
-
-
         } catch (Throwable t) {
             t.printStackTrace();
             // showThrowable(t);
@@ -1080,13 +1095,13 @@ class FileManager {
 
     private void deleteFile() {
         if (currentFile == null) {
-            showErrorMessage("No file selected for deletion.", "Select File");
+            showErrorMessage("No file selected for deletion.", "Select File or Directory");
             return;
         }
 
         int result = JOptionPane.showConfirmDialog(
                 gui,
-                "Are you sure you want to delete the selected Files?",
+                "Are you sure you want to delete the selected Files and Directories?",
                 "Delete Files",
                 JOptionPane.ERROR_MESSAGE);
         if (result == JOptionPane.OK_OPTION) {
@@ -1278,6 +1293,7 @@ class FileManager {
         // --------
         try{ semaphore_progress_global.acquire(); }catch(Exception e) {}
         progressBar_import_bytes_sum_add(src_file.length());
+        import_files_remaining++;
         final int chunk_size = (int)(8192 * 100); // should be multiple of 8192 !
         final long chunk_count = src_file.length() / chunk_size;
 
@@ -1334,7 +1350,32 @@ class FileManager {
                     info.guardianproject.iocipher.File f = new info.guardianproject.iocipher.File(dst_dir + java.io.File.separator + src_file.getName());
                     info.guardianproject.iocipher.FileOutputStream out = new info.guardianproject.iocipher.FileOutputStream(f);
 
-                    java.io.FileInputStream in = new java.io.FileInputStream(src_file);
+                    java.io.FileInputStream in = null;
+                    try
+                    {
+                        in = new java.io.FileInputStream(src_file);
+                    }
+                    catch(Exception e)
+                    {
+                        e.printStackTrace();
+                        System.out.println("Can not access this file: " + src_file.getAbsolutePath());
+                        try
+                        {
+                            progressBar_import_bytes_cur_add(src_file.length());
+                            publish(1L);
+                        }
+                        catch(Exception e2)
+                        {
+                        }
+                        try
+                        {
+                            out.close();
+                        }
+                        catch(Exception e2)
+                        {
+                        }
+                        return null;
+                    }
                     final byte[] buf = new byte[chunk_size];
                     // System.out.println("dst=" + f.getAbsolutePath());
 
@@ -1380,7 +1421,7 @@ class FileManager {
             @Override
             protected void process(List<Long> chunks) {
                 Long val = chunks.get(chunks.size() - 1);
-                String progress = String.valueOf(val);
+                String progress__UNUSED = String.valueOf(val);
                 // --------
                 try{ semaphore_progress_global.acquire(); }catch(Exception e) {}
                 long f_len_mbytes = progressBar_import_bytes_cur_get_mb(true);
@@ -1416,9 +1457,12 @@ class FileManager {
             @Override
             protected void done() {
                 long import_files_running_ = 0;
+                long import_files_remaining_ = 0;
                 // --------
                 try{ semaphore_progress_global.acquire(); }catch(Exception e) {}
                 import_files_running--;
+                import_files_remaining--;
+                import_files_remaining_ = import_files_remaining;
                 if (import_files_running < 0) {
                     import_files_running = 0;
                 }
@@ -1443,8 +1487,7 @@ class FileManager {
                 progressBar_import.setMaximum(Math.toIntExact(f_sum_mbytes));
                 progressBar_import.setString("" + f_len_mbytes + " / " + f_sum_mbytes + " MiB");
 
-                // if ((f_len_bytes == 0) && (f_sum_bytes == 0))
-                if ((import_files_running == 0) && ((f_len_bytes == 0) && (f_sum_bytes == 0)))
+                if (import_files_remaining_ == 0)
                 {
                     progressBar_import.setValue(0);
                     progressBar_import.setString("");
@@ -1454,7 +1497,8 @@ class FileManager {
                 // --------
                 gui.repaint();
 
-                if ((import_files_running_ == 0) && ((f_len_bytes == 0) && (f_sum_bytes == 0)))
+                // System.out.println("import_files_remaining: " + import_files_remaining);
+                if (import_files_remaining_ == 0)
                 {
                     try {
                         TreePath parentPath = findTreePath(current_vfs_dir);
@@ -1571,9 +1615,9 @@ class FileManager {
     private void showChildren(final DefaultMutableTreeNode node, boolean lock) {
         if (lock)
         {
-            tree.setEnabled(false);
-            progressBar.setVisible(true);
-            progressBar.setIndeterminate(true);
+            try{tree.setEnabled(false);}catch(Exception e){}
+            try{progressBar.setVisible(true);}catch(Exception e){}
+                try{progressBar.setIndeterminate(true);}catch(Exception e){}
         }
 
         SwingWorker<Void, File> worker = new SwingWorker<Void, File>() {
