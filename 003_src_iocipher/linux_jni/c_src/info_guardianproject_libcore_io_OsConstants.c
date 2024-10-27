@@ -451,6 +451,18 @@ static void OsConstants_initConstants(JNIEnv* env, jclass c) {
     initConstant(env, c, "_SC_XOPEN_UNIX", _SC_XOPEN_UNIX);
     initConstant(env, c, "_SC_XOPEN_VERSION", _SC_XOPEN_VERSION);
     initConstant(env, c, "_SC_XOPEN_XCU_VERSION", _SC_XOPEN_XCU_VERSION);
+#else
+    initConstant(env, c, "O_ACCMODE", 0x0003);
+    initConstant(env, c, "O_APPEND", 0x02000);
+    initConstant(env, c, "O_CREAT", 0x0100);
+    initConstant(env, c, "O_EXCL", 0x0200);
+    initConstant(env, c, "O_NOCTTY", 0x0400);
+    initConstant(env, c, "O_NONBLOCK", 0x04000);
+    initConstant(env, c, "O_RDONLY", 0x00);
+    initConstant(env, c, "O_RDWR", 0x02);
+    initConstant(env, c, "O_SYNC", 0x04010000);
+    initConstant(env, c, "O_TRUNC", 0x01000);
+    initConstant(env, c, "O_WRONLY", 0x01);
 #endif
 }
 
