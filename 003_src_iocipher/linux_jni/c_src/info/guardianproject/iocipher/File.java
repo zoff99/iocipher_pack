@@ -93,6 +93,8 @@ public class File extends java.io.File {
      */
     private String path;
 
+    private static String OS = System.getProperty("os.name").toLowerCase();
+
     /**
      * Constructs a new file using the specified directory and name.
      *
@@ -111,7 +113,8 @@ public class File extends java.io.File {
      */
     public File(String path) {
         super(path);
-        this.path = super.getPath();
+        String tmp = super.getPath();
+        this.path = convertSlashesWin(tmp);
     }
 
     /**
@@ -124,7 +127,8 @@ public class File extends java.io.File {
      */
     public File(String dirPath, String name) {
         super(dirPath, name);
-        this.path = super.getPath();
+        String tmp = super.getPath();
+        this.path = convertSlashesWin(tmp);
     }
 
     /**
@@ -143,6 +147,18 @@ public class File extends java.io.File {
     public File(URI uri) {
         super(uri);
         this.path = super.getPath();
+    }
+
+    private static boolean isWindows() {
+        return OS.contains("win");
+    }
+
+    private static String convertSlashesWin(String input) {
+        if (isWindows()) {
+            return input.replace("\\", "/");
+        } else {
+            return input;
+        }
     }
 
     // Removes duplicate adjacent slashes and any trailing slash.
