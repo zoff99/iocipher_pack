@@ -1327,7 +1327,7 @@ class FileManager {
         long f_len_mbytes = progressBar_import_bytes_cur_get_mb(true);
         long f_sum_mbytes = progressBar_import_bytes_sum_get_mb(true);
 
-        // System.out.println("src_file=" + src_file + "cur=" + f_len_mbytes + " max=" + f_sum_mbytes);
+        System.out.println("src_file=" + src_file + " cur=" + f_len_mbytes + " max=" + f_sum_mbytes);
         progressBar_import.setIndeterminate(false);
         progressBar_import.setStringPainted(true);
         progressBar_import.setString("" + f_len_mbytes + " / " + f_sum_mbytes + " MiB");
@@ -1923,6 +1923,7 @@ class FileTableModel extends AbstractTableModel {
                 // return fileSystemView.getSystemIcon(file);
                 return null;
             case 1:
+                // System.out.println("xxxx: " + file + " " + file.getName() + " " + FileManager.getFilename_without_path(file.getName()));
                 return FileManager.getFilename_without_path(file.getName());
             case 2:
                 return file.getPath();
@@ -2014,7 +2015,7 @@ class FileTreeCellRenderer extends DefaultTreeCellRenderer {
         // label.setIcon(fileSystemView.getSystemIcon(file));
         if (file.getAbsolutePath().compareTo("/") == 0)
         {
-            label.setText(FileManager.getFilename_without_path(file.getName()) + " (ROOT node)");
+            label.setText("/" + " (ROOT node)");
         }
         else
         {
