@@ -1,3 +1,4 @@
 vfsmanager.db
 vfsmanager.db-shm
 vfsmanager.db-wal
+do_run_wine.sh
