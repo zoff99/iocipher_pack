@@ -197,7 +197,7 @@ static jobject doStat(JNIEnv* env, jstring javaPath, jboolean isLstat) {
     return makeStructStat(env, &sb);
 }
 
-static jboolean Posix_access(JNIEnv* env, jobject, jstring javaPath, jint mode) {
+static jboolean Posix_access(JNIEnv* env, jobject obj, jstring javaPath, jint mode) {
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     if (path == NULL) {
         return JNI_FALSE;
@@ -210,7 +210,7 @@ static jboolean Posix_access(JNIEnv* env, jobject, jstring javaPath, jint mode) 
     return (rc == 0);
 }
 
-static void Posix_chmod(JNIEnv* env, jobject, jstring javaPath, jint mode) {
+static void Posix_chmod(JNIEnv* env, jobject obj, jstring javaPath, jint mode) {
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     if (path == NULL) {
         return;
@@ -219,20 +219,20 @@ static void Posix_chmod(JNIEnv* env, jobject, jstring javaPath, jint mode) {
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 }
 
-static void Posix_close(JNIEnv* env, jobject, jobject javaFd) {
+static void Posix_close(JNIEnv* env, jobject obj, jobject javaFd) {
     // Get the FileDescriptor's 'fd' field and clear it.
     // sqlfs doesn't have a close() since files don't really need to be open()ed
     jstring path = jniGetPathFromFileDescriptor(env, javaFd);
     jniSetFileDescriptorInvalid(env, javaFd);
 }
 
-static jobject Posix_fstat(JNIEnv* env, jobject, jobject javaFd) {
+static jobject Posix_fstat(JNIEnv* env, jobject obj, jobject javaFd) {
     jstring javaPath = jniGetPathFromFileDescriptor(env, javaFd);
     return doStat(env, javaPath, JNI_FALSE);
 }
 
 // TODO if sqlfs_proc_fsync changes to need isfdatasync and *fi, then fix here
-static void Posix_fsync(JNIEnv* env, jobject, jobject javaFd) {
+static void Posix_fsync(JNIEnv* env, jobject obj, jobject javaFd) {
     jstring javaPath = jniGetPathFromFileDescriptor(env, javaFd);
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     throwIfNegative(env, "fsync", TEMP_FAILURE_RETRY(sqlfs_proc_fsync(0, path, 0, NULL)));
@@ -241,14 +241,14 @@ static void Posix_fsync(JNIEnv* env, jobject, jobject javaFd) {
 
 /* in sqlfs, truncate() and ftruncate() do the same thing since there
  * isn't a difference between and open and a closed file */
-static void Posix_ftruncate(JNIEnv* env, jobject, jobject javaFd, jlong length) {
+static void Posix_ftruncate(JNIEnv* env, jobject obj, jobject javaFd, jlong length) {
     jstring javaPath = jniGetPathFromFileDescriptor(env, javaFd);
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     throwIfNegative(env, "ftruncate", TEMP_FAILURE_RETRY(sqlfs_proc_truncate(0, path, length)));
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 }
 
-static void Posix_link(JNIEnv* env, jobject, jstring javaFrom, jstring javaTo) {
+static void Posix_link(JNIEnv* env, jobject obj, jstring javaFrom, jstring javaTo) {
     const char* from = (*env)->GetStringUTFChars(env, javaFrom, NULL);
     const char* to = (*env)->GetStringUTFChars(env, javaTo, NULL);
     if (from == NULL || to == NULL) {
@@ -265,7 +265,7 @@ static void Posix_link(JNIEnv* env, jobject, jstring javaFrom, jstring javaTo) {
     (*env)->ReleaseStringUTFChars(env, javaTo, to);
 }
 
-static void Posix_mkdir(JNIEnv* env, jobject, jstring javaPath, jint mode) {
+static void Posix_mkdir(JNIEnv* env, jobject obj, jstring javaPath, jint mode) {
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     if (path == NULL) {
         return;
@@ -275,7 +275,7 @@ static void Posix_mkdir(JNIEnv* env, jobject, jstring javaPath, jint mode) {
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 }
 
-static jobject Posix_open(JNIEnv* env, jobject, jstring javaPath, jint flags, jint mode) {
+static jobject Posix_open(JNIEnv* env, jobject obj, jstring javaPath, jint flags, jint mode) {
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     if (path == NULL) {
         return NULL;
@@ -316,7 +316,7 @@ static jobject Posix_open(JNIEnv* env, jobject, jstring javaPath, jint flags, ji
     }
 }
 
-static jint Posix_preadBytes(JNIEnv* env, jobject, jobject javaFd, jobject javaBytes, jint byteOffset, jint byteCount, jlong offset) {
+static jint Posix_preadBytes(JNIEnv* env, jobject obj, jobject javaFd, jobject javaBytes, jint byteOffset, jint byteCount, jlong offset) {
     jbyte* bytes = (*env)->GetByteArrayElements(env, javaBytes, NULL);
     if (bytes == NULL) {
         return -1;
@@ -340,7 +340,7 @@ static jint Posix_preadBytes(JNIEnv* env, jobject, jobject javaFd, jobject javaB
     }
 }
 
-static jint Posix_pwriteBytes(JNIEnv* env, jobject, jobject javaFd, jobject javaBytes, jint byteOffset, jint byteCount, jlong offset, jint modeFlags) {
+static jint Posix_pwriteBytes(JNIEnv* env, jobject obj, jobject javaFd, jobject javaBytes, jint byteOffset, jint byteCount, jlong offset, jint modeFlags) {
     jbyte* bytes = (*env)->GetByteArrayElements(env, javaBytes, NULL);
     if (bytes == NULL) {
         return -1;
@@ -369,7 +369,7 @@ static jint Posix_pwriteBytes(JNIEnv* env, jobject, jobject javaFd, jobject java
     }
 }
 
-static void Posix_remove(JNIEnv* env, jobject, jstring javaPath) {
+static void Posix_remove(JNIEnv* env, jobject obj, jstring javaPath) {
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     if (path == NULL) {
         return;
@@ -381,7 +381,7 @@ static void Posix_remove(JNIEnv* env, jobject, jstring javaPath) {
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 }
 
-static void Posix_rename(JNIEnv* env, jobject, jstring javaOldPath, jstring javaNewPath) {
+static void Posix_rename(JNIEnv* env, jobject obj, jstring javaOldPath, jstring javaNewPath) {
     const char* oldPath = (*env)->GetStringUTFChars(env, javaOldPath, NULL);
     if (oldPath == NULL) {
         return;
@@ -396,7 +396,7 @@ static void Posix_rename(JNIEnv* env, jobject, jstring javaOldPath, jstring java
     (*env)->ReleaseStringUTFChars(env, javaNewPath, newPath);
 }
 
-static void Posix_rmdir(JNIEnv* env, jobject, jstring javaPath) {
+static void Posix_rmdir(JNIEnv* env, jobject obj, jstring javaPath) {
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     if (path == NULL) {
         return;
@@ -405,14 +405,14 @@ static void Posix_rmdir(JNIEnv* env, jobject, jstring javaPath) {
     (*env)->ReleaseStringUTFChars(env, javaPath, path);
 }
 
-static jobject Posix_stat(JNIEnv* env, jobject, jstring javaPath) {
+static jobject Posix_stat(JNIEnv* env, jobject obj, jstring javaPath) {
     return doStat(env, javaPath, JNI_FALSE);
 }
 
 /* we are faking this somewhat by using the data from the underlying
  partition that the database file is stored on.  That means we ignore
  the javaPath passed in and just use the dbFilename. */
-static jobject Posix_statfs(JNIEnv* env, jobject, jstring javaPath) {
+static jobject Posix_statfs(JNIEnv* env, jobject obj, jstring javaPath) {
 #ifdef __MINGW32__
     return NULL;
 #else
@@ -432,13 +432,13 @@ static jobject Posix_statfs(JNIEnv* env, jobject, jstring javaPath) {
 #endif
 }
 
-static jstring Posix_strerror(JNIEnv* env, jobject, jint errnum) {
+static jstring Posix_strerror(JNIEnv* env, jobject obj, jint errnum) {
     char buffer[BUFSIZ];
     const char* message = jniStrError(errnum, buffer, sizeof(buffer));
     return (*env)->NewStringUTF(env, message);
 }
 
-static void Posix_symlink(JNIEnv* env, jobject, jstring javaOldPath, jstring javaNewPath) {
+static void Posix_symlink(JNIEnv* env, jobject obj, jstring javaOldPath, jstring javaNewPath) {
     const char* oldPath = (*env)->GetStringUTFChars(env, javaOldPath, NULL);
     if (oldPath == NULL) {
         return;
@@ -453,7 +453,7 @@ static void Posix_symlink(JNIEnv* env, jobject, jstring javaOldPath, jstring jav
     (*env)->ReleaseStringUTFChars(env, javaNewPath, newPath);
 }
 
-static void Posix_unlink(JNIEnv* env, jobject, jstring javaPath) {
+static void Posix_unlink(JNIEnv* env, jobject obj, jstring javaPath) {
     const char* path = (*env)->GetStringUTFChars(env, javaPath, NULL);
     if (path == NULL) {
         return;
