@@ -156,6 +156,11 @@ class FileManager {
     private static String curdir = "/";
     private static boolean showcase_mode = false;
 
+    private static String OS = System.getProperty("os.name").toLowerCase();
+    private static boolean isWindows() {
+        return OS.contains("win");
+    }
+
     public static void setUp() {
         vfs = VirtualFileSystem.get();
         vfs.setContainerPath(dbfilename);
@@ -487,6 +492,16 @@ class FileManager {
             semaphore_export_progress.release();
             return v;
         }
+    }
+
+    static String getFilename_without_path(String f)
+    {
+        int lastPath = f.lastIndexOf("/");
+        if (lastPath!=-1) {
+            String out = f.substring(lastPath+1);
+            return out;
+        }
+        return f;
     }
 
     public Container getGui() {
@@ -1359,7 +1374,7 @@ class FileManager {
                     try{ semaphore_progress_global.release(); }catch(Exception e) {}
 
                     first_paint = false;
-                    info.guardianproject.iocipher.File f = new info.guardianproject.iocipher.File(dst_dir + java.io.File.separator + src_file.getName());
+                    info.guardianproject.iocipher.File f = new info.guardianproject.iocipher.File(dst_dir + "/" + src_file.getName());
                     info.guardianproject.iocipher.FileOutputStream out = new info.guardianproject.iocipher.FileOutputStream(f);
 
                     java.io.FileInputStream in = null;
@@ -1629,7 +1644,7 @@ class FileManager {
         {
             try{tree.setEnabled(false);}catch(Exception e){}
             try{progressBar.setVisible(true);}catch(Exception e){}
-                try{progressBar.setIndeterminate(true);}catch(Exception e){}
+            try{progressBar.setIndeterminate(true);}catch(Exception e){}
         }
 
         SwingWorker<Void, File> worker = new SwingWorker<Void, File>() {
@@ -1638,13 +1653,13 @@ class FileManager {
                 File file = (File) node.getUserObject();
                 if (file.isDirectory()) {
                     File[] files = file.listFiles(); // !!
-                    if (node.isLeaf()) {
+                    //if (node.isLeaf()) {
                         for (File child : files) {
                             if (child.isDirectory()) {
                                 publish(child);
                             }
                         }
-                    }
+                    //}
                     setTableData(files);
                 }
                 return null;
@@ -1719,19 +1734,16 @@ class FileManager {
 
     /** Update the File details view with the details of this File. */
     private void setFileDetails(info.guardianproject.iocipher.File file, boolean select_dir) {
-        // System.out.println("setFileDetails:current_vfs_dir=" + current_vfs_dir.getAbsolutePath() + " select_dir=" + select_dir);
         if (select_dir) {
             current_vfs_dir = file;
             currentFile = null;
-            // System.out.println("current_vfs_dir=" + current_vfs_dir.getAbsolutePath());
             return;
         } else {
             currentFile = file;
-            // System.out.println("currentFile=" + currentFile.getAbsolutePath());
         }
         // Icon icon = fileSystemView.getSystemIcon(file);
         // fileName.setIcon(icon);
-        fileName.setText(fileSystemView.getSystemDisplayName(file));
+        fileName.setText(getFilename_without_path(file.getName()));
         path.setText(file.getPath());
         date.setText(new Date(file.lastModified()).toString());
         size.setText(file.length() + " bytes");
@@ -1762,7 +1774,7 @@ class FileManager {
             f.setTitle(
                     APP_TITLE +
                             " :: " +
-                            fileSystemView.getSystemDisplayName(file));
+                            getFilename_without_path(file.getName()));
         }
 
         gui.repaint();
@@ -1907,7 +1919,7 @@ class FileTableModel extends AbstractTableModel {
                 // return fileSystemView.getSystemIcon(file);
                 return null;
             case 1:
-                return fileSystemView.getSystemDisplayName(file);
+                return FileManager.getFilename_without_path(file.getName());
             case 2:
                 return file.getPath();
             case 3:
@@ -1998,11 +2010,11 @@ class FileTreeCellRenderer extends DefaultTreeCellRenderer {
         // label.setIcon(fileSystemView.getSystemIcon(file));
         if (file.getAbsolutePath().compareTo("/") == 0)
         {
-            label.setText(fileSystemView.getSystemDisplayName(file) + " (ROOT node)");
+            label.setText(FileManager.getFilename_without_path(file.getName()) + " (ROOT node)");
         }
         else
         {
-            label.setText(fileSystemView.getSystemDisplayName(file));
+            label.setText(FileManager.getFilename_without_path(file.getName()));
         }
         label.setToolTipText(file.getPath());
 
