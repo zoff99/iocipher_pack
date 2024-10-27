@@ -361,8 +361,13 @@ public class File extends java.io.File {
         if (isAbsolute()) {
             return path;
         }
-        String userDir = System.getProperty("user.dir");
-        return path.length() == 0 ? userDir : join(userDir, path);
+
+        if (isWindows()) {
+            return path.length() == 0 ? "/" : path;
+        } else {
+            String userDir = System.getProperty("user.dir");
+            return path.length() == 0 ? userDir : join(userDir, path);
+        }
     }
 
     /**
