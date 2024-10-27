@@ -1771,7 +1771,7 @@ static int check_parent_write(sqlfs_t *sqlfs, const char *path)
     result = (sqlfs_proc_access(sqlfs, (p), R_OK | F_OK | X_OK));   \
     if (result != 0)                                                \
     {                                                               \
-        show_msg(stderr, "dir read failed %d\n", result);           \
+        show_msg(stderr, "dir read failed %d sourcefile:%s line:%d func:%s\n", result, __FILE__, __LINE__, __func__);           \
         commit_transaction(get_sqlfs(sqlfs), 1);                    \
         return result;                                              \
     }
@@ -1876,7 +1876,6 @@ static int gid_in_supp_groups(gid_t gid)
     return r;
 }
 
-
 int sqlfs_proc_access(sqlfs_t *sqlfs, const char *path, int mask)
 {
 
@@ -1894,6 +1893,13 @@ int sqlfs_proc_access(sqlfs_t *sqlfs, const char *path, int mask)
     mode_t fmode = 0;
 
     begin_transaction(get_sqlfs(sqlfs));
+
+#ifdef __MINGW32__
+    // HINT: on windows we bypass the UID check by setting uid=0 (root user)
+    // printf("bypassing user check in sqlfs_proc_access()\n");
+    // printf("sqlfs_proc_access: checking %s\n", path);
+    uid = 0;
+#endif
 
     if (uid == 0) /* root user so everything is granted */
     {
