@@ -1,0 +1,16 @@
+# syntax=docker/dockerfile:1
+FROM libsqlfs_android_deb12_001
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update && \
+          DEBIAN_FRONTEND=noninteractive \
+          apt-get install -y --no-install-recommends \
+          wine libwine-dev libwine wine64 wine64-tools \
+          make wget git coreutils autoconf \
+          libtool pkg-config gcc-mingw-w64-x86-64 \
+          gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 binutils-mingw-w64-x86-64 \
+          mingw-w64-tools pkg-config-mingw-w64-x86-64 \
+          mingw-w64-x86-64-dev
+
+RUN id -a;pwd

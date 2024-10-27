@@ -9,7 +9,7 @@ echo "$_HOME_"
 cd "$_HOME_" || exit
 
 if [ "$1""x" == "buildx" ]; then
-    docker build -f Dockerfile_deb12 -t libsqlfs_android_deb12_001 .
+    docker build -f Dockerfile_win_deb12 -t libsqlfs_android_win_deb12_001 .
     exit 0
 fi
 
@@ -84,7 +84,7 @@ chmod -R a+rw /artefacts/*
       -v "$_HOME_"/"$system_to_build_for"/script:/script \
       -v "$_HOME_"/"$system_to_build_for"/workspace:/workspace \
       --net=host \
-     "libsqlfs_android_deb12_001" \
+     "libsqlfs_android_win_deb12_001" \
      /bin/sh -c "apk add bash >/dev/null 2>/dev/null; /bin/bash /script/run.sh"
      if [ $? -ne 0 ]; then
         echo "** ERROR **:$system_to_build_for_orig"
