@@ -263,17 +263,17 @@ static void VirtualFileSystem_unmount(JNIEnv *env, jobject obj) {
     sqlfs = NULL;
 }
 
-static void VirtualFileSystem_detachThread(JNIEnv *env, jobject) {
+static void VirtualFileSystem_detachThread(JNIEnv *env, jobject obj) {
     sqlfs_detach_thread();
     return;
 }
 
-static void VirtualFileSystem_beginTransaction(JNIEnv *env, jobject) {
+static void VirtualFileSystem_beginTransaction(JNIEnv *env, jobject obj) {
     sqlfs_begin_transaction(0);
     return;
 }
 
-static void VirtualFileSystem_completeTransaction(JNIEnv *env, jobject) {
+static void VirtualFileSystem_completeTransaction(JNIEnv *env, jobject obj) {
     sqlfs_complete_transaction(0,1);
     return;
 }
