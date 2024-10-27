@@ -155,7 +155,11 @@ public class File extends java.io.File {
 
     private static String convertSlashesWin(String input) {
         if (isWindows()) {
-            return input.replace("\\", "/");
+            String temp = input.replace("\\", "/").replaceFirst("", "");
+            if (temp.startsWith("//")) {
+                temp = temp.replaceFirst("//", "/");
+            }
+            return temp;
         } else {
             return input;
         }
