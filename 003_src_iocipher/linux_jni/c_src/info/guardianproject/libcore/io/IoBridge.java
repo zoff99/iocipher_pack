@@ -31,6 +31,11 @@ import java.io.IOException;
  */
 public final class IoBridge {
 
+    private static String OS = System.getProperty("os.name").toLowerCase();
+    private static boolean isWindows() {
+        return OS.contains("win");
+    }
+
     private IoBridge() {
     }
     /**
@@ -60,8 +65,11 @@ public final class IoBridge {
             if (fd.valid()) {
                 // Posix open(2) fails with EISDIR only if you ask for write permission.
                 // Java disallows reading directories too.
-                if (S_ISDIR(Libcore.os.fstat(fd).st_mode)) {
-                    throw new ErrnoException("open", EISDIR);
+                if (!isWindows()) {
+                    if (S_ISDIR(Libcore.os.fstat(fd).st_mode)) {
+                        System.out.println("IoBridge:open:004");
+                        throw new ErrnoException("open", EISDIR);
+                    }
                 }
             }
             return fd;
