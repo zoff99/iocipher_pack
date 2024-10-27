@@ -77,6 +77,8 @@ if [ "$build_sqlfs""x" == "1x" ]; then
     ./docker_linux_fast.sh build >> "$logfile" 2>&1 || exit 1
     echo "build sqlfs and sqlcipher for android"
     ./docker_linux_fast.sh >> "$logfile" 2>&1 || exit 1
+    echo "build/upate windows docker container for libsqlfs"
+    ./docker_win_fast.sh build >> "$logfile" 2>&1 || exit 1
     echo "build sqlfs and sqlcipher for windows x64"
     ./docker_win_fast.sh >> "$logfile" 2>&1 || exit 1
 

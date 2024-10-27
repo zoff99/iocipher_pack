@@ -96,9 +96,29 @@ jobs:
       run: |
         cd 003_src_iocipher/linux_jni/c_src && ./compile_linux_c.sh || (cat compile.log; exit 1)
 
+    - name: install mingw cross compiler
+      run: |
+           sudo apt-get update
+           DEBIAN_FRONTEND=noninteractive \
+           sudo apt-get install -y --no-install-recommends \
+           wine libwine-dev libwine wine64 wine64-tools \
+           make wget git coreutils autoconf \
+           libtool pkg-config gcc-mingw-w64-x86-64 \
+           gcc-mingw-w64-x86-64 g++-mingw-w64-x86-64 binutils-mingw-w64-x86-64 \
+           mingw-w64-tools pkg-config-mingw-w64-x86-64 \
+           mingw-w64-x86-64-dev
+
+    - name: build windows version
+      run: |
+        cd 003_src_iocipher/linux_jni/c_src && ./compile_win_c.sh || (cat compile.win.log; exit 1)
+
     - name: rename linux c_src compile.log
       run: |
         cp -v 003_src_iocipher/linux_jni/c_src/compile.log ./compile_linux_c_src.log
+
+    - name: rename windows c_src compile.log
+      run: |
+        cp -v 003_src_iocipher/linux_jni/c_src/compile.win.log ./compile_win_c_src.log
 
     - name: move linux c_src jar
       run: |
@@ -115,7 +135,7 @@ jobs:
         prerelease: true
         replacesArtifacts: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "iocipher_linux-*.jar,compile_linux_c_src.log"
+        artifacts: "iocipher_linux-*.jar,compile_linux_c_src.log,compile_win_c_src.log"
 
     - name: Upload to versioned release
       if: contains(github.ref, 'refs/tags/v')
@@ -124,7 +144,7 @@ jobs:
         allowUpdates: true
         draft: true
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: "iocipher_linux-*.jar,compile_linux_c_src.log"
+        artifacts: "iocipher_linux-*.jar,compile_linux_c_src.log,compile_win_c_src.log"
 
 
     - name: raw speed test on linux
