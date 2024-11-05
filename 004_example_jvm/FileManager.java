@@ -504,6 +504,38 @@ class FileManager {
         return f;
     }
 
+    synchronized void node_add_to_tree(DefaultMutableTreeNode node, java.io.File file)
+    {
+        try
+        {
+            TreePath parentPath = null;
+            try
+            {
+                parentPath = findTreePath(file);
+            }
+            catch(Exception e)
+            {
+            }
+
+            if (parentPath != null)
+            {
+                if ((parentPath.getLastPathComponent() == null) || (file.toString().compareTo(parentPath.getLastPathComponent().toString()) != 0))
+                {
+                    // System.out.println("1: " + node + " :: " + file + " :: " + parentPath + " :: " + parentPath.getLastPathComponent());
+                    node.add(new DefaultMutableTreeNode(file));
+                }
+            }
+            else
+            {
+                // System.out.println("2: " + node + " :: " + file);
+                node.add(new DefaultMutableTreeNode(file));
+            }
+        }
+        catch(Exception e)
+        {
+        }
+    }
+
     public Container getGui() {
         if (gui == null) {
             gui = new JPanel(new BorderLayout(3, 3));
@@ -581,7 +613,7 @@ class FileManager {
             // System.out.println("listfiles:001");
             for (File file : files) {
                 if (file.isDirectory()) {
-                    node.add(new DefaultMutableTreeNode(file));
+                    node_add_to_tree(node, file);
                 }
             }
 
@@ -874,8 +906,8 @@ class FileManager {
         }
         catch(Exception e)
         {
-            e.printStackTrace();
-            System.out.println("findTreePath ======= EXCEPTION ===\n\n");
+            //e.printStackTrace();
+            //System.out.println("findTreePath ======= EXCEPTION ===\n\n");
         }
         // not found!
         // System.out.println("findTreePath ======= DONE ERROR ==\n\n");
@@ -1667,8 +1699,8 @@ class FileManager {
 
             @Override
             protected void process(List<File> chunks) {
-                for (java.io.File child : chunks) {
-                    node.add(new DefaultMutableTreeNode(child));
+                for (File child : chunks) {
+                    node_add_to_tree(node, child);
                 }
             }
 
