@@ -51,8 +51,10 @@ jobs:
       run: |
         cd 004_example_jvm/
         pwd
-        cp -v ../003_src_iocipher/linux_jni/c_src/iocipher_linux-1.0.3.jar ./iocipher_linux-1.0.3.jar
-        javac -classpath ".:iocipher_linux-1.0.3.jar" FileManager.java FileDrop.java
+        rm -f ./iocipher_linux-1.*.jar
+        cp -v ../003_src_iocipher/linux_jni/c_src/iocipher_linux-1.*.jar ./
+        jar=$(ls -1 iocipher_linux-1.*.jar 2>/dev/null)
+        javac -classpath ".:$jar" FileManager.java FileDrop.java
 
     - name: install deps
       run: |
