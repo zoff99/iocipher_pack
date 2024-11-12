@@ -49,6 +49,8 @@ static void setup_vfs()
     int rc;
     int i;
 
+    printf("sqlfs version: %s\n", SQLFS_VERSION);
+
     printf("Creating VFS %s...\n", database_filename);
     rc = sqlfs_open_password(database_filename, database_password, &sqlfs);
     assert(rc);
