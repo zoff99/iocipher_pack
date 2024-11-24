@@ -9,6 +9,15 @@ and SQLCipher.
 
 If you are using this in your app, we'd love to hear about it!
 
+The 2 Main Components
+---------------------
+
+<b>[libsqlfs](https://github.com/zoff99/iocipher_pack/blob/master/002_src_libsqlfs/sqlfs.c)</b>  is a single source library that translates filesystem functions into SQL queries and vice versa.
+<br>
+<b>IOCipher</b>, which is a bunch of [JNI code](https://github.com/zoff99/iocipher_pack/tree/master/003_src_iocipher/libiocipher2-c/src/main/cpp) and [Java classes](https://github.com/zoff99/iocipher_pack/tree/master/003_src_iocipher/libiocipher2-c/src/main/java/info/guardianproject) to almost transparently emulate `java.io.*` classes with
+`info.guardianproject.iocipher.*` classes of the same name.
+<br>
+
 Build Status
 ------------
 
@@ -26,6 +35,31 @@ are all "native" C code that need to be built.
 # you need docker and jdk 11 or higher installed
 ./compile_docker_all.sh
 ```
+
+Usage in an Android App:
+------------------------
+
+add to your project `build.gradle`<br>
+```
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url "https://jitpack.io"
+        }
+    }
+}
+```
+
+add to your module `build.gradle`<br>
+```
+implementation 'com.github.zoff99:pkgs_guardianprojectIOCipher:1.0.4'
+```
+
+then see
+https://github.com/zoff99/iocipher_pack/blob/master/003_src_iocipher/libiocipher2-c/src/androidTest/java/info/guardianproject/iocipher/tests/VirtualFileSystemTest.java
+for a usage example.
 
 Building for Linux
 ------------------
