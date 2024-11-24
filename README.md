@@ -14,7 +14,7 @@ The 2 Main Components
 
 [<b>libsqlfs</b>](https://github.com/zoff99/iocipher_pack/blob/master/002_src_libsqlfs/sqlfs.c) is a single source library that translates filesystem functions into SQL queries and vice versa.
 <br><br>
-<b>IOCipher</b>, which is a bunch of [JNI code](https://github.com/zoff99/iocipher_pack/tree/master/003_src_iocipher/libiocipher2-c/src/main/cpp) and [Java classes](https://github.com/zoff99/iocipher_pack/tree/master/003_src_iocipher/libiocipher2-c/src/main/java/info/guardianproject) to almost transparently emulate `java.io.*` classes with
+<b>IOCipher</b> is a bunch of [JNI code](https://github.com/zoff99/iocipher_pack/tree/master/003_src_iocipher/libiocipher2-c/src/main/cpp) and [Java classes](https://github.com/zoff99/iocipher_pack/tree/master/003_src_iocipher/libiocipher2-c/src/main/java/info/guardianproject) to almost transparently emulate `java.io.*` classes with
 `info.guardianproject.iocipher.*` classes of the same name.
 <br><br>
 
