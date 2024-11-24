@@ -2,5 +2,6 @@ vfsmanager.db
 vfsmanager.db-shm
 vfsmanager.db-wal
 do_run_wine.sh
+min_example.db
 min_example.db-shm
 min_example.db-wal
