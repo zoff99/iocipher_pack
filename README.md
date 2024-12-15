@@ -23,6 +23,8 @@ Build Status
 
 [![Android CI](https://github.com/zoff99/iocipher_pack/workflows/build/badge.svg)](https://github.com/zoff99/iocipher_pack/actions?query=workflow%3A%22build%22)
 [![Last release](https://img.shields.io/github/v/release/zoff99/iocipher_pack)](https://github.com/zoff99/iocipher_pack/releases/latest)
+[![Release](https://jitpack.io/v/zoff99/pkgs_guardianprojectIOCipher.svg)](https://jitpack.io/#zoff99/pkgs_guardianprojectIOCipher)
+[![Liberapay](https://img.shields.io/liberapay/goal/zoff.svg?logo=liberapay)](https://liberapay.com/zoff/donate)
 
 
 Building for Android
