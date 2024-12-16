@@ -81,6 +81,7 @@ jobs:
             adb shell screencap -p > ~/screen01.png
             ls -al ~/screen01.png
             adb logcat -d |grep 'IOCipher-Example:' &
+            sleep 20
 
       - name: upload screenshots
         uses: actions/upload-artifact@v4
