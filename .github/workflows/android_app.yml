@@ -75,7 +75,6 @@ jobs:
           disable-animations: true
           disable-spellchecker: true
           script: |
-            cd ~
             pwd
             cd 007_example_android/
             ./gradlew build
