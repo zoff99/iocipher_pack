@@ -75,5 +75,15 @@ jobs:
           disable-animations: true
           disable-spellchecker: true
           script: |
-            cd 007_example_android/ ; ./gradlew build || echo "NOERR"
+            cd ~
+            pwd
+            cd 007_example_android/
+            ./gradlew build
+            ./gradlew installDebug
+            adb shell am start com.example.iocipherexampleapp &
+            sleep 50
+            adb shell screencap -p > ~/screen01.png
+            ls -al ~/screen01.png
+            adb logcat –d &
+
 
