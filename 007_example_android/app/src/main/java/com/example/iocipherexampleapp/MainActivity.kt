@@ -8,9 +8,14 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.iocipherexampleapp.ui.theme.IOCipherExampleAppTheme
+import kotlinx.coroutines.flow.MutableStateFlow
+
+val messages = MutableStateFlow("running tests ...")
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -26,14 +31,16 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
-        com.example.iocipherexampleapp.vfsexample().testme(this)
+        val result = com.example.iocipherexampleapp.vfsexample().testme(this)
+        messages.value = messages.value + result
     }
 }
 
 @Composable
 fun Greeting(name: String, modifier: Modifier = Modifier) {
+    val txt by messages.collectAsState()
     Text(
-        text = "Hello $name!",
+        text = "" + txt,
         modifier = modifier
     )
 }
