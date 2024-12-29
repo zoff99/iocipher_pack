@@ -1,0 +1,28 @@
+name: python_app
+on:
+  push:
+    paths-ignore:
+     - 'README.md'
+  pull_request:
+    paths-ignore:
+     - 'README.md'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: dummy
+        default: dummy
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: build and run the python example
+      run: |
+        cd 006_example_python/
+        pwd
+        ./do_compile_and_run.sh
+

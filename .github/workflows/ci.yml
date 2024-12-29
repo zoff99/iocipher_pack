@@ -5,11 +5,13 @@ on:
      - 'README.md'
      - 'android_app.yml'
      - 'filemanager.yml'
+     - 'python_app.yml'
   pull_request:
     paths-ignore:
      - 'README.md'
      - 'android_app.yml'
      - 'filemanager.yml'
+     - 'python_app.yml'
   workflow_dispatch:
     inputs:
       version:
