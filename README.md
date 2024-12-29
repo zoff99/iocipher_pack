@@ -43,6 +43,9 @@ are all "native" C code that need to be built.
 Usage in an Android App:
 ------------------------
 
+<img src="https://github.com/zoff99/iocipher_pack/releases/download/nightly/android_screen01.png" height="300"></a>
+<br>
+
 add to your project `build.gradle`<br>
 ```
 allprojects {
