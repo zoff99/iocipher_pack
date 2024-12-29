@@ -3,9 +3,13 @@ on:
   push:
     paths-ignore:
      - 'README.md'
+     - 'android_app.yml'
+     - 'filemanager.yml'
   pull_request:
     paths-ignore:
      - 'README.md'
+     - 'android_app.yml'
+     - 'filemanager.yml'
   workflow_dispatch:
     inputs:
       version:
