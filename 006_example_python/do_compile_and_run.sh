@@ -9,13 +9,13 @@ cd "$_HOME_"
 
 
 # copy the current deps to this subdir
-cp ../002_src_libsqlfs/sqlfs.h ./
-cp ../002_src_libsqlfs/sqlfs_internal.h ./
-cp ../002_src_libsqlfs/libsqlfs.a ./
-cp ../002_src_libsqlfs/sqlite3.a ./
-cp -r ../002_src_libsqlfs/openssl_includes ./
-cp -r ../002_src_libsqlfs/openssl_libs ./
-cp -r ../002_src_libsqlfs/sqlcipher/ ./
+cp ../002_src_libsqlfs/sqlfs.h ./ || exit 1
+cp ../002_src_libsqlfs/sqlfs_internal.h ./ || exit 1
+cp ../002_src_libsqlfs/libsqlfs.a ./ || exit 1
+cp ../002_src_libsqlfs/sqlite3.a ./ || exit 1
+cp -r ../002_src_libsqlfs/openssl_includes ./ || exit 1
+cp -r ../002_src_libsqlfs/openssl_libs ./ || exit 1
+cp -r ../002_src_libsqlfs/sqlcipher/ ./ || exit 1
 
 # temp files
 rm -Rf ./tmp/
@@ -23,9 +23,10 @@ mkdir -p ./tmp/
 cd ./tmp/
 ar x ../libsqlfs.a
 ar x ../sqlite3.a
-# ar x ../openssl_libs/libcrypto.a
-# ar x ../openssl_libs/libssl.a
+# ar x ../openssl_libs/libcrypto.a || exit 1
+ar x ../openssl_libs/libssl.a || exit 1
 cd ../
+
 
 # compile
 gcc -g -O3 -fPIC -fstack-protector-all -D_FORTIFY_SOURCE=2 \

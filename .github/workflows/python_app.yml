@@ -24,5 +24,15 @@ jobs:
       run: |
         cd 006_example_python/
         pwd
-        ./do_compile_and_run.sh
+        ./do_compile_and_run.sh | tee out.txt
+
+    - name: check if the C lib could be loaded OK
+      run: |
+        cd 006_example_python/
+        cat out.txt | grep 'C library loaded'
+
+    - name: check if test was OK
+      run: |
+        cd 006_example_python/
+        cat out.txt | grep 'VFS: CLOSED'
 
