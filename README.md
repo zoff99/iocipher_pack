@@ -65,7 +65,7 @@ implementation 'com.github.zoff99:pkgs_guardianprojectIOCipher:1.0.4'
 ```
 
 then see
-https://github.com/zoff99/iocipher_pack/blob/master/003_src_iocipher/libiocipher2-c/src/androidTest/java/info/guardianproject/iocipher/tests/VirtualFileSystemTest.java
+https://github.com/zoff99/iocipher_pack/tree/master/007_example_android
 for a usage example.
 
 Building for Linux
