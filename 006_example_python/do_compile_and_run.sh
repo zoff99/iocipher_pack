@@ -11,8 +11,8 @@ cd "$_HOME_"
 # copy the current deps to this subdir
 cp ../002_src_libsqlfs/sqlfs.h ./ || exit 1
 cp ../002_src_libsqlfs/sqlfs_internal.h ./ || exit 1
-cp ../002_src_libsqlfs/libsqlfs.a ./ || exit 1
-cp ../002_src_libsqlfs/sqlite3.a ./ || exit 1
+cp ../002_src_libsqlfs/libsqlfs.a ./
+cp ../002_src_libsqlfs/sqlite3.a ./
 cp -r ../002_src_libsqlfs/openssl_includes ./ || exit 1
 cp -r ../002_src_libsqlfs/openssl_libs ./ || exit 1
 cp -r ../002_src_libsqlfs/sqlcipher/ ./ || exit 1
