@@ -78,8 +78,8 @@ jobs:
             cd 007_example_android/ ; ./gradlew build ; ./gradlew installDebug
             adb shell am start -n com.example.iocipherexampleapp/com.example.iocipherexampleapp.MainActivity  &
             sleep 50
-            adb shell screencap -p > ~/screen01.png
-            ls -al ~/screen01.png
+            adb shell screencap -p > ~/android_screen01.png
+            ls -al ~/android_screen01.png
             adb logcat -d |grep 'IOCipher-Example:' &
             sleep 20
 
@@ -88,8 +88,20 @@ jobs:
         with:
           name: linuxscreen
           path: |
-            /home/runner/screen*.png
+            /home/runner/android_screen*.png
 
+    - name: Upload to nightly release
+      uses: ncipollo/release-action@v1
+      if: github.ref == 'refs/heads/master'
+      with:
+        allowUpdates: true
+        tag: nightly
+        omitBodyDuringUpdate: true
+        omitNameDuringUpdate: true
+        prerelease: true
+        replacesArtifacts: true
+        token: ${{ secrets.GITHUB_TOKEN }}
+        artifacts: "/home/runner/android_screen01.png"
 
 
 
