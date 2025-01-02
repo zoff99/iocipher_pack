@@ -46,7 +46,7 @@ public class vfsexample
         }
 
         System.out.println(TAG + "starting ...");
-        ret = "\nstarting ...";
+        ret = ret + "\n" + "starting ...";
 
         // define the path where the vfs container file will be located
         // path = c.getExternalFilesDir(null).getAbsolutePath() + "/" + "text" + ".db";
