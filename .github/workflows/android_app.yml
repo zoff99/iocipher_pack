@@ -77,11 +77,12 @@ jobs:
           script: |
             cd 007_example_android/ ; ./gradlew build ; ./gradlew installDebug
             adb shell am start -n com.example.iocipherexampleapp/com.example.iocipherexampleapp.MainActivity  &
-            sleep 50
+            sleep 60
             adb shell screencap -p > ~/android_screen01.png
             ls -al ~/android_screen01.png
-            adb logcat -d |grep 'IOCipher-Example:' &
-            sleep 20
+            adb logcat -d |grep 'IOCipher-Example:'
+            adb logcat -d > ~/adb_log.txt
+            sleep 2
 
       - name: upload screenshots
         uses: actions/upload-artifact@v4
@@ -89,6 +90,13 @@ jobs:
           name: linuxscreen
           path: |
             /home/runner/android_screen*.png
+
+      - name: upload screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: adb_log
+          path: |
+            /home/runner/adb_log.txt
 
       - name: Upload to nightly release
         uses: ncipollo/release-action@v1
