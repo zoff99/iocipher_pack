@@ -12,6 +12,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.sp
 import com.example.iocipherexampleapp.ui.theme.IOCipherExampleAppTheme
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -41,7 +42,8 @@ fun Greeting(modifier: Modifier = Modifier) {
     val txt by messages.collectAsState()
     Text(
         text = "" + txt,
-        modifier = modifier
+        modifier = modifier,
+        style = MaterialTheme.typography.bodyLarge.copy(fontSize = 23.sp, lineHeight = 26.0.sp)
     )
 }
 
