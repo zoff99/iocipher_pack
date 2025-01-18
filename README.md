@@ -43,7 +43,7 @@ are all "native" C code that need to be built.
 Usage in an Android App:
 ------------------------
 
-<img src="https://github.com/zoff99/iocipher_pack/releases/download/nightly/android_screen01.png" height="300"></a>
+<img src="https://github.com/zoff99/iocipher_pack/releases/download/nightly/android_screen01_21.png" height="300"></a><img src="https://github.com/zoff99/iocipher_pack/releases/download/nightly/android_screen01_29.png" height="300"></a><img src="https://github.com/zoff99/iocipher_pack/releases/download/nightly/android_screen01_33.png" height="300"></a><img src="https://github.com/zoff99/iocipher_pack/releases/download/nightly/android_screen01_35.png" height="300"></a>
 <br>
 
 add to your project `build.gradle`<br>
@@ -106,6 +106,11 @@ apt-get install -y --no-install-recommends \
 
 ./compile_win_c.sh
 ```
+
+Python Example
+--------------
+
+<img src="https://github.com/zoff99/iocipher_pack/releases/download/nightly/python_screen.png" width="60%">
 
 License
 -------
