@@ -1,3 +1,4 @@
+//file:noinspection SpellCheckingInspection
 plugins {
     id 'com.android.application'
     id 'org.jetbrains.kotlin.android'
@@ -56,8 +57,9 @@ android {
         }
     }
     compileOptions {
-        // Flag to enable support for new language APIs
+        // we need desugaring here to support APIs down to 21
         coreLibraryDesugaringEnabled true
+        // we need desugaring here to support APIs down to 21
         encoding "UTF-8"
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -89,10 +91,10 @@ android {
 }
 
 dependencies {
-
-    implementation 'net.zetetic:sqlcipher-android:4.6.1@aar'
+    // we need desugaring here to support APIs down to 21
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
-    implementation 'androidx.sqlite:sqlite:2.2.0'
+    // we need desugaring here to support APIs down to 21
+    // implementation 'androidx.sqlite:sqlite:2.2.0'
     // add IOCipher module here -------------
     implementation 'com.github.zoff99:pkgs_guardianprojectIOCipher:1.0.4'
     // add IOCipher module here -------------

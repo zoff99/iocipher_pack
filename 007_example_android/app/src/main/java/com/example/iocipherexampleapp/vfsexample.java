@@ -1,17 +1,11 @@
 package com.example.iocipherexampleapp;
 
 import android.content.Context;
-import android.database.Cursor;
 
 import java.io.IOException;
 
 import info.guardianproject.iocipher.File;
 import info.guardianproject.iocipher.VirtualFileSystem;
-
-import net.zetetic.database.sqlcipher.SQLiteConnection;
-import net.zetetic.database.sqlcipher.SQLiteDatabase;
-import net.zetetic.database.sqlcipher.SQLiteDatabaseHook;
-import net.zetetic.database.sqlcipher.SQLiteStatement;
 
 @SuppressWarnings("ALL")
 public class vfsexample
@@ -123,9 +117,6 @@ public class vfsexample
             }
         }
 
-
-
-
         // unmount the vfs container file
         if (vfs.isMounted()) {
             vfs.unmount();
@@ -136,65 +127,6 @@ public class vfsexample
         // all finished
         System.out.println(TAG + "finished.");
         ret = ret + "\n" + "finished";
-
-
-        System.loadLibrary("sqlcipher");
-        final String pz = "/data/data/com.example.iocipherexampleapp/files/" + "demo.db";
-        java.io.File databaseFile = new java.io.File(pz);
-
-        SQLiteDatabaseHook hook = new SQLiteDatabaseHook() {
-            public void preKey(SQLiteConnection connection) {}
-            public void postKey(SQLiteConnection connection) {}
-        };
-
-        SQLiteDatabase.deleteDatabase(databaseFile);
-        SQLiteDatabase database = SQLiteDatabase.openOrCreateDatabase(databaseFile, goodPassword, null, null, hook);
-        database.enableWriteAheadLogging();
-        try
-        {
-            database.execSQL("create table t1(a, b)");
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        try
-        {
-            database.execSQL("insert into t1(a, b) values(?, ?)", new Object[]{"row 1 column 1", "row 1 column 2"});
-            database.execSQL("insert into t1(a, b) values(?, ?)", new Object[]{"row 2 column 1", "row 2 column 2"});
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
-
-        SQLiteStatement st;
-        String res1;
-
-        st = database.compileStatement("SELECT sqlite_version()");
-        res1 = st.simpleQueryForString();
-        ret = ret + "\n" + "sqlite_version: " + res1;
-
-        st = database.compileStatement("SELECT * FROM t1");
-        res1 = st.simpleQueryForString();
-        ret = ret + "\n" + "" + res1;
-
-
-        Cursor cursor = database.rawQuery("SELECT * FROM pragma_compile_options;", null);
-        cursor.moveToFirst();
-        do {
-            // ret = ret + "\n" + "ds " + cursor.getString(0);
-        } while(cursor.moveToNext());
-        cursor.close();
-
-        database.close();
-
-        long time_end = System.currentTimeMillis();
-
-        // all finished
-        System.out.println(TAG + "finished (" + (long)((time_end - time_start) / 1000) + " s)");
-        ret = ret + "\n" + "finished (" + (long)((time_end - time_start) / 1000) + " s)";
 
         return ret;
     }
