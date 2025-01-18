@@ -1,6 +1,7 @@
 package com.example.iocipherexampleapp;
 
 import android.content.Context;
+import android.os.Build;
 
 import java.io.IOException;
 
@@ -27,6 +28,9 @@ public class vfsexample
 
             System.out.println(TAG + "git hash:" + BuildConfig.GIT_HASH);
             ret = ret + "\n" + "git hash:" + BuildConfig.GIT_HASH;
+
+            System.out.println(TAG + "Android API:" + Build.VERSION.SDK_INT);
+            ret = ret + "\n" + "Android API:" + Build.VERSION.SDK_INT;
         }
         catch(Exception e)
         {
