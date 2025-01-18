@@ -48,7 +48,7 @@ jobs:
     - name: make image of python console output
       run: |
         cd 006_example_python/
-        cat out.txt | convert TEXT:- ../python_screen.png
+        cat out.txt | convert -background black -fill green -pointsize 18 TEXT:- ../python_screen.png
 
     - name: Upload to nightly release
       uses: ncipollo/release-action@v1
