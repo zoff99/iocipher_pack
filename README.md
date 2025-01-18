@@ -110,7 +110,7 @@ apt-get install -y --no-install-recommends \
 Python Example
 --------------
 
-<img src="https://github.com/zoff99/iocipher_pack/releases/download/nightly/python_screen.png" width="70%">
+<img src="https://github.com/zoff99/iocipher_pack/releases/download/nightly/python_screen.png" width="60%">
 
 License
 -------
