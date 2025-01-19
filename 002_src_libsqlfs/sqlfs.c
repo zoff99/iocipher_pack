@@ -1434,9 +1434,6 @@ static int get_value(sqlfs_t *sqlfs, const char *key, key_value *value, size_t b
 }
 
 
-#undef INDEX
-#define INDEX 26
-
 /* 'begin' and 'end' are the positions in bytes relative to the file
  * to start and finish writing to. */
 static int set_value(sqlfs_t *sqlfs, const char *key, const key_value *value, size_t begin, size_t end)
@@ -1450,7 +1447,11 @@ static int set_value(sqlfs_t *sqlfs, const char *key, const key_value *value, si
     static const char *updatesize_cmd = "update meta_data set size = :size where key =  :key  ; ";
 
     /* get the size of the file if it already exists */
-    r = sqlite3_prepare(get_sqlfs(sqlfs)->db, selectsize, -1, &stmt, &tail);
+
+#undef INDEX
+#define INDEX 32
+
+    SQLITE3_PREPARE(get_sqlfs(sqlfs)->db, selectsize, -1, &stmt, &tail);
     if (r != SQLITE_OK)
     {
         show_msg(stderr, "%s\n", sqlite3_errmsg(get_sqlfs(sqlfs)->db));
@@ -1471,11 +1472,17 @@ static int set_value(sqlfs_t *sqlfs, const char *key, const key_value *value, si
         }
     }
     else
+    {
         current_file_size = sqlite3_column_int64(stmt, 0);
+    }
     sqlite3_reset(stmt);
 
 
     begin_transaction(get_sqlfs(sqlfs));
+
+#undef INDEX
+#define INDEX 26
+
     SQLITE3_PREPARE(get_sqlfs(sqlfs)->db, createfile_cmd, -1, &stmt,  &tail);
     if (r != SQLITE_OK)
     {
@@ -2301,6 +2308,9 @@ static int rename_dir_children(sqlfs_t *sqlfs, const char *old, const char *new)
     rpath = strdup(new);
     remove_tail_slash(rpath);
     snprintf(tmp, sizeof(tmp), "%s/*", lpath);
+
+#undef INDEX
+#define INDEX 33
 
     SQLITE3_PREPARE(get_sqlfs(sqlfs)->db, cmd, -1, &stmt,  &tail);
     if (r != SQLITE_OK)
@@ -3420,17 +3430,28 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
 
 static void sqlfs_t_finalize(void *arg)
 {
-    // printf("sqlfs_t_init:sqlfs_t_finalize\n");
+    printf("sqlfs_t_init:sqlfs_t_finalize\n");
     sqlfs_t *sql_fs = (sqlfs_t *) arg;
     if (sql_fs)
     {
         int i;
         for (i = 0; i < (int)(sizeof(sql_fs->stmts) / sizeof(sql_fs->stmts[0])); i++)
+        {
             if (sql_fs->stmts[i])
-                sqlite3_finalize(sql_fs->stmts[i]);
+            {
+                // printf("sqlfs_t_init:sqlite3_finalize:%d\n", i);
+                int finalize_res = sqlite3_finalize(sql_fs->stmts[i]);
+                // printf("sqlfs_t_init:sqlite3_finalize:%d res=%d\n", i, finalize_res);
+            }
+        }
 
-        // printf("sqlfs_t_init:sqlite3_close ######################## %p\n", sql_fs->db);
-        sqlite3_close(sql_fs->db);
+        printf("sqlfs_t_init:sqlite3_close ######################## %p\n", sql_fs->db);
+        int close_res = sqlite3_close(sql_fs->db);
+        printf("sqlfs_t_init:sqlite3_close res %d\n", close_res);
+        if (close_res != SQLITE_OK) {
+            printf("sqlfs_t_init:sqlite3_close PROBLEM (but the database will still be ok)\n");
+        }
+
         free(sql_fs);
         if (instance_count > 0)
         {
@@ -3743,7 +3764,9 @@ int sqlfs_destroy()
 {
     int err = pthread_key_delete(pthread_key);
     if (err == EINVAL)
+    {
         show_msg(stderr, "Invalid pthread key in sqlfs_destroy()!\n");
+    }
     /* zero out password in memory */
     memset(cached_password, 0, MAX_PASSWORD_LENGTH);
     return err;
