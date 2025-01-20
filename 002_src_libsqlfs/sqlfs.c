@@ -3445,7 +3445,7 @@ static void sqlfs_t_finalize(void *arg)
             }
         }
 
-        printf("sqlfs_t_init:sqlite3_close ######################## %p\n", sql_fs->db);
+        printf("sqlfs_t_init:sqlite3_close ## %p\n", (void *)sql_fs->db);
         int close_res = sqlite3_close(sql_fs->db);
         printf("sqlfs_t_init:sqlite3_close res %d\n", close_res);
         if (close_res != SQLITE_OK) {
