@@ -25,8 +25,18 @@ echo "build iocipher for windows"
 ./compile_win_c.sh >> "$logfile" 2>&1 || exit 1
 
 cd "$_HOME_""/"
+cd ./004_example_jvm/ || exit 1
+echo "build jvm filemanager example"
+./do_compile_and_run.sh
+
+cd "$_HOME_""/"
 cd ./005_example_c/ || exit 1
-echo "build libsqlfs for C"
+echo "build libsqlfs for C (linux)"
+./do_compile_and_run.sh  >> "$logfile" 2>&1 || exit 1
+
+cd "$_HOME_""/"
+cd ./005_example_c_win64/ || exit 1
+echo "build libsqlfs for C (windows)"
 ./do_compile_and_run.sh  >> "$logfile" 2>&1 || exit 1
 
 cd "$_HOME_""/"
