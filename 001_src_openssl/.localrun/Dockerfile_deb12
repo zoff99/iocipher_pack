@@ -33,6 +33,6 @@ RUN ls -al /opt/android-sdk/ || echo "NO ERR"
 RUN ls -al /opt/android-sdk/ndk/ || echo "NO ERR"
 
 # RUN wget https://github.com/openssl/openssl/releases/download/openssl-3.3.2/openssl-3.3.2.tar.gz -O /openssl-3.3.2.tar.gz
-COPY openssl-3.3.2.tar.gz /openssl-3.3.2.tar.gz
-RUN chmod a+r /openssl-3.3.2.tar.gz
+COPY openssl-3.4.0.tar.gz /openssl-3.4.0.tar.gz
+RUN chmod a+r /openssl-3.4.0.tar.gz
 RUN id -a;pwd

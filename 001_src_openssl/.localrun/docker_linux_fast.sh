@@ -9,8 +9,8 @@ echo "$_HOME_"
 cd "$_HOME_" || exit
 
 if [ "$1""x" == "buildx" ]; then
-    cp ../../000_deps/openssl-3.3.2.tar.gz . && docker build -f Dockerfile_deb12 -t openssl_android_deb12_001 .
-    rm -f openssl-3.3.2.tar.gz
+    cp ../../000_deps/openssl-3.4.0.tar.gz . && docker build -f Dockerfile_deb12 -t openssl_android_deb12_001 .
+    rm -f openssl-3.4.0.tar.gz
     exit 0
 fi
 
@@ -54,11 +54,29 @@ PATH=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin:$ANDROID_NDK_RO
 archs="android-arm64 android-x86_64 android-x86 android-arm"
 
 for i in $archs; do
-    rm -Rf openssl-3.3.2/
-    tar -xf /openssl-3.3.2.tar.gz
-    cd openssl-3.3.2/
+    rm -Rf openssl-3.4.0/
+    tar -xf /openssl-3.4.0.tar.gz
+    cd openssl-3.4.0/
+
+    git init
+    git init
+    git add .
+    git commit -a -m 'x'
+
     # patch openSSL see: https://github.com/sfackler/rust-openssl/issues/2154 and https://github.com/android/ndk/issues/1992
     sed -E -i '"'"''"'"' -e '"'"'/[.]hidden.*OPENSSL_armcap_P/d'"'"' -e '"'"'/[.]extern.*OPENSSL_armcap_P/ {p; s/extern/hidden/; }'"'"' crypto/*arm*pl crypto/*/asm/*arm*pl
+
+    # show if the patch still works
+    echo "########################"
+    echo "########################"
+    echo "###### PATCH     #######"
+    git diff
+    echo "###### PATCH END #######"
+    echo "########################"
+    echo "########################"
+    echo "########################"
+
+
     ./Configure no-apps no-docs no-dso no-dgram "$i" -D__ANDROID_API__=21
     make -j $(nproc) || exit 1
     ls -al libcrypto.a libssl.a || exit 1
@@ -74,9 +92,9 @@ done
 i=linux_debian12_x86_64
 export ANDROID_NDK_ROOT=
 PATH=$OLDPATH
-rm -Rf openssl-3.3.2/
-tar -xf /openssl-3.3.2.tar.gz
-cd openssl-3.3.2/
+rm -Rf openssl-3.4.0/
+tar -xf /openssl-3.4.0.tar.gz
+cd openssl-3.4.0/
 ./Configure no-apps no-docs no-dso no-dgram --prefix=/opt/openssl --openssldir=/usr/local/ssl
 make -j $(nproc) || exit 1
 ##### make test
