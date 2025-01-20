@@ -21,6 +21,11 @@ jar=$(ls -1 iocipher_linux-1.*.jar 2>/dev/null)
 # (export ASAN_OPTIONS="halt_on_error=true:detect_leaks=0:handle_segv=0" ; \
 # LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libasan.so.6.0.0 java -classpath ".:$jar" FileManager "$@" )
 
-# regular run
-javac -classpath ".:$jar" FileManager.java FileDrop.java && \
-java -classpath ".:$jar" FileManager "$@"
+if [ "$1""x" == "only_compile""x" ]; then
+  # compile only
+  javac -classpath ".:$jar" FileManager.java FileDrop.java
+else
+  # regular run
+  javac -classpath ".:$jar" FileManager.java FileDrop.java && \
+  java -classpath ".:$jar" FileManager "$@"
+fi
