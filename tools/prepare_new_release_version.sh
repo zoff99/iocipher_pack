@@ -28,6 +28,9 @@ f3="003_src_iocipher/libiocipher2-c/build.gradle"
 #        versionCode 10002
 #        versionName "1.0.2"
 
+f4="007_example_android/app/build.gradle"
+f5="README.md"
+
 cur_p_version=$(cat "$f3" | grep 'versionCode ' | head -1 | \
 	sed -e 's#^.*versionCode ##' )
 cur_m_version=$(cat "$f3" | grep 'versionName "' | head -1 | \
@@ -50,6 +53,9 @@ sed -i -e 's#versionName ".*#versionName "'"$next_m_version"'"#g' "$f3"
 sed -i -e 's#public static String IOCIPHER_JNI_VERSION = ".*$#public static String IOCIPHER_JNI_VERSION = "'"$next_m_version"'";#g' "$f1"
 sed -i -e 's#public static String IOCIPHER_JNI_VERSION = ".*$#public static String IOCIPHER_JNI_VERSION = "'"$next_m_version"'";#g' "$f2"
 
+sed -i -e 's#com.github.zoff99:pkgs_guardianprojectIOCipher:.*#com.github.zoff99:pkgs_guardianprojectIOCipher:'"$next_m_version""'"'#g' "$f4"
+
+sed -i -e 's#'"'"'com.github.zoff99:pkgs_guardianprojectIOCipher:.*'"'"'#'"'"'com.github.zoff99:pkgs_guardianprojectIOCipher:'"$next_m_version""'"'#g' "$f5"
 
 commit_message="new version ""$next_m_version"
 tag_name="v""$next_m_version"
