@@ -1,7 +1,7 @@
 #
 #
 #  IOCipher Linux python3 example
-#  (C) Zoff in 2024
+#  (C) Zoff in 2024 - 2025
 #
 #
 
@@ -24,6 +24,9 @@ def setup_vfs():
     c_lib = ctypes.CDLL(libname)
     print("C library loaded")
 
+    # print sqlfs version to stdout
+    c_lib.py_sqlfs_version()
+
     global sqlfs
     sqlfs = ctypes.POINTER(ctypes.c_void_p)
 
@@ -34,7 +37,7 @@ def setup_vfs():
     database_filename = "./vfs.db"
     database_password = "" ## empty string means "no password set" !!
 
-    print("Creating VFS %s...", database_filename);
+    print("Creating VFS: ", database_filename);
     c_lib.sqlfs_open_password.argtypes = (ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(ctypes.c_void_p))
 
     rc = c_lib.sqlfs_open_password(

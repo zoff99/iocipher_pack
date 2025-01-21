@@ -34,6 +34,7 @@ gcc -g -O3 -fPIC -fstack-protector-all -D_FORTIFY_SOURCE=2 \
 ./tmp/*.o \
 ./openssl_libs/libcrypto.a \
 ./openssl_libs/libssl.a \
+sqlfs_python_helper.c \
 -lm \
 -shared \
 -Wl,-soname,libiocipher2_python.so -o libiocipher2_python.so || exit 1
