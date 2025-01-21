@@ -25,6 +25,9 @@ RUN apt-get update && \
         yasm \
         sdkmanager
 
+#        google-android-cmdline-tools-13.0-installer
+#        sdkmanager
+
 RUN yes | sdkmanager --licenses || echo "NO ERR"
 RUN echo y | sdkmanager "ndk;25.1.8937393"
 RUN yes | sdkmanager --licenses || echo "NO ERR"
