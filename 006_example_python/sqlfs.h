@@ -32,7 +32,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 extern "C" {
 #endif
 
-#define SQLFS_VERSION   "2.0.1"
+#define SQLFS_VERSION   "2.0.2"
 
 
 #ifdef HAVE_LIBFUSE
