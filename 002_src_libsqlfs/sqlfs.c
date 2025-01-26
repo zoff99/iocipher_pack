@@ -101,6 +101,8 @@ struct sqlfs_t
 
 static const size_t BLOCK_SIZE = 8192;
 
+static const int VACUUM_FREE_PAGES_THRESHOLD = 25600; // HINT: (100*1024*1024)/4096 equals ~100MByte at 4k page size
+
 static pthread_key_t pthread_key;
 
 static int instance_count = 0;
@@ -116,6 +118,29 @@ static int max_inode = 0;
 
 static void * sqlfs_t_init(const char *db_file, const char *db_key);
 static void sqlfs_t_finalize(void *arg);
+
+static void prepstmtcount(sqlite3 *db)
+{
+    int count = 0;
+    if (db)
+    {
+        sqlite3_stmt *stmt = sqlite3_next_stmt(db, NULL);
+        if (stmt)
+        {
+            count++;
+            while (stmt)
+            {
+                stmt = sqlite3_next_stmt(db, stmt);
+                if (stmt)
+                {
+                    count++;
+                }
+            }
+        }
+    }
+    setvbuf(stdout, NULL, _IOLBF, 0);
+    printf("prepstmtcount=%d\n", count);
+}
 
 static __inline__ int sql_step(sqlite3_stmt *stmt)
 {
@@ -355,6 +380,39 @@ static int break_transaction(sqlfs_t *sqlfs, int r0)
     }
 
     return r;
+}
+
+static __inline__ int get_current_free_pages(sqlfs_t *sqlfs)
+{
+    if (!sqlfs) {
+        return -1;
+    }
+    sqlite3_stmt *stmt = NULL;
+    static const char *cmd = "PRAGMA freelist_count;";
+    int r = 0;
+    int result = -1;
+
+    r = sqlite3_prepare_v2((get_sqlfs(sqlfs)->db), (cmd), (-1), (&stmt), 0);
+    if (r != SQLITE_OK)
+    {
+        show_msg(stderr, "%s\n", sqlite3_errmsg(get_sqlfs(sqlfs)->db));
+        return -1;
+    }
+
+    r = sql_step(stmt);
+    if (r != SQLITE_ROW)
+    {
+        if (r != SQLITE_DONE)
+        {
+            show_msg(stderr, "%s\n", sqlite3_errmsg(get_sqlfs(sqlfs)->db));
+        }
+    }
+    else
+    {
+        result = sqlite3_column_int(stmt, 0);
+    }
+    sqlite3_finalize(stmt);
+    return result;
 }
 
 
@@ -3327,9 +3385,10 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
     if (db_file && db_file[0] == 0)
         show_msg(stderr, "WARNING: blank db file name! Creating temporary database.\n");
     r = sqlite3_open(db_file, &(sql_fs->db));
-    // printf("sqlfs_t_init:sqlite3_open ************************* %p\n", sql_fs->db);
+    // printf("sqlfs_t_init:sqlite3_open res %d\n", r);
     if (r != SQLITE_OK)
     {
+        printf("sqlfs_t_init:sqlite3_open PROBLEM\n");
         show_msg(stderr, "Cannot open the database file %s\n", db_file);
         if (sql_fs)
         {
@@ -3430,26 +3489,61 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
 
 static void sqlfs_t_finalize(void *arg)
 {
-    printf("sqlfs_t_init:sqlfs_t_finalize\n");
+    printf("sqlfs_t_finalize:start ...\n");
     sqlfs_t *sql_fs = (sqlfs_t *) arg;
     if (sql_fs)
     {
+        prepstmtcount(sql_fs->db);
         int i;
         for (i = 0; i < (int)(sizeof(sql_fs->stmts) / sizeof(sql_fs->stmts[0])); i++)
         {
             if (sql_fs->stmts[i])
             {
-                // printf("sqlfs_t_init:sqlite3_finalize:%d\n", i);
+                printf("sqlfs_t_finalize:sqlite3_finalize:%d\n", i);
                 int finalize_res = sqlite3_finalize(sql_fs->stmts[i]);
-                // printf("sqlfs_t_init:sqlite3_finalize:%d res=%d\n", i, finalize_res);
+                printf("sqlfs_t_finalize:sqlite3_finalize:%d res=%d\n", i, finalize_res);
             }
         }
 
-        printf("sqlfs_t_init:sqlite3_close ## %p\n", (void *)sql_fs->db);
+        prepstmtcount(sql_fs->db);
+        printf("sqlfs_t_finalize:sqlite3_close trying to checkpoint WAL\n");
+        int wal_checkpoint_res = sqlite3_exec(sql_fs->db, "PRAGMA wal_checkpoint(TRUNCATE);", NULL, NULL, NULL);
+        printf("sqlfs_t_finalize:sqlite3_close checkpoint WAL res %d\n", wal_checkpoint_res);
+
+        int free_pages = get_current_free_pages(sql_fs);
+        printf("sqlfs_t_finalize:free_pages=%d\n", free_pages);
+        if (free_pages > VACUUM_FREE_PAGES_THRESHOLD)
+        {
+#if 0
+            // WARNING: this is experimental and also much slower
+            //          but it will keep your db file smaller after deleting large virtual files
+            //          !! USE AT YOUR OWN RISK !!
+            printf("sqlfs_t_finalize:sqlite3_close trying to vacuum\n");
+            int inc_vac_res = sqlite3_exec(sql_fs->db, "VACUUM;", NULL, NULL, NULL);
+            printf("sqlfs_t_finalize:sqlite3_close vacuum res %d\n", inc_vac_res);
+#endif
+        }
+
+        prepstmtcount(sql_fs->db);
+        printf("sqlfs_t_finalize:sqlite3_close ## %p\n", (void *)sql_fs->db);
         int close_res = sqlite3_close(sql_fs->db);
-        printf("sqlfs_t_init:sqlite3_close res %d\n", close_res);
+        printf("sqlfs_t_finalize:sqlite3_close res %d\n", close_res);
+
+        const int retry_loops = 2;
+        const int retry_wait_ms = 30;
+        for (int w=0;w<retry_loops;w++) {
+            if (close_res == SQLITE_BUSY) {
+                usleep(retry_wait_ms * 1000); // HINT: wait some milliseconds and then try again
+                printf("sqlfs_t_finalize:sqlite3_close ## %p\n", (void *)sql_fs->db);
+                close_res = sqlite3_close(sql_fs->db);
+                printf("sqlfs_t_finalize:sqlite3_close res %d\n", close_res);
+            } else {
+                break;
+            }
+        }
+
         if (close_res != SQLITE_OK) {
-            printf("sqlfs_t_init:sqlite3_close PROBLEM (but the database will still be ok)\n");
+            printf("sqlfs_t_finalize:sqlite3_close PROBLEM (but the database will still be ok)\n");
         }
 
         free(sql_fs);
@@ -3458,6 +3552,7 @@ static void sqlfs_t_finalize(void *arg)
             instance_count--;
         }
     }
+    printf("sqlfs_t_finalize:finished\n");
 }
 
 
