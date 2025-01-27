@@ -48,7 +48,9 @@ jobs:
     - name: make image of python console output
       run: |
         cd 006_example_python/
-        cat out.txt | convert -trim -border 20 -bordercolor black +repage -background black -fill '#00cc00' -pointsize 16 TEXT:- ../python_screen.png
+        date > out_with_date.txt
+        cat out.txt >> out_with_date.txt
+        cat out_with_date.txt | convert -trim -border 20 -bordercolor black +repage -background black -fill '#00cc00' -pointsize 16 TEXT:- ../python_screen.png
 
     - name: check image generation
       run: |
