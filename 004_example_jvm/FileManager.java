@@ -78,6 +78,11 @@ class FileManager {
     /** Title of the application */
     public static final String APP_TITLE = "VFS Manager";
     private static final String VERSION = "1.0.1";
+
+    public static String sqlfsVersion = "";
+    public static String iocipherVersion = "";
+    public static String iocipherJNIVersion = "";
+
     /** Used to open/edit/print files. */
     private Desktop desktop;
     /** Provides nice icons and names for files. */
@@ -1808,7 +1813,7 @@ class FileManager {
         JFrame f = (JFrame) gui.getTopLevelAncestor();
         if (f != null) {
             f.setTitle(
-                    APP_TITLE +
+                    APP_TITLE + " " + iocipherJNIVersion + "-" + iocipherVersion + "-" + sqlfsVersion +
                             " :: " +
                             getFilename_without_path(file.getName()));
         }
@@ -1879,7 +1884,13 @@ class FileManager {
         System.out.println("setup db ...");
         setUp();
         System.out.println("setup db ... OK");
-        System.out.println("sqlfs version: " + vfs.sqlfsVersion());
+        sqlfsVersion = vfs.sqlfsVersion();
+        iocipherVersion = vfs.iocipherVersion();
+        iocipherJNIVersion = vfs.iocipherJNIVersion();
+        System.out.println("sqlfs version: " + sqlfsVersion);
+        System.out.println("iocipher version: " + iocipherVersion);
+        System.out.println("iocipherJNI version: " + iocipherJNIVersion);
+
         if (showcase_mode)
         {
             create_dummies();
@@ -1892,7 +1903,7 @@ class FileManager {
                     UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
                 } catch (Exception weTried) {
                 }
-                JFrame f = new JFrame(APP_TITLE);
+                JFrame f = new JFrame(APP_TITLE + " " + iocipherJNIVersion + "-" + iocipherVersion + "-" + sqlfsVersion);
                 f.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
                 WindowListener listener = new WindowAdapter() {
 
