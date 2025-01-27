@@ -50,6 +50,13 @@ jobs:
         cd 006_example_python/
         cat out.txt | convert -trim -border 20 -bordercolor black +repage -background black -fill '#00cc00' -pointsize 18 TEXT:- ../python_screen.png
 
+    - name: check image generation
+      run: |
+        cd 006_example_python/
+        ls -al
+        echo "============"
+        ls -al ../
+
     - name: Upload to nightly release
       uses: ncipollo/release-action@v1
       if: github.ref == 'refs/heads/master'
