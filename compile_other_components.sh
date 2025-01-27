@@ -27,7 +27,9 @@ echo "build iocipher for windows"
 cd "$_HOME_""/"
 cd ./004_example_jvm/ || exit 1
 echo "build jvm filemanager example"
-./do_compile_and_run.sh only_compile
+./do_compile_and_run.sh only_compile 2>&1 || exit 1
+echo "build jvm mini example example"
+./do_miniexample_compile_and_run.sh 2>&1 || exit 1
 
 cd "$_HOME_""/"
 cd ./005_example_c/ || exit 1
