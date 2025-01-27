@@ -138,7 +138,7 @@ static void prepstmtcount(sqlite3 *db)
             }
         }
     }
-    setvbuf(stdout, NULL, _IOLBF, 0);
+    // HINT: dont set buffering here // setvbuf(stdout, NULL, _IOLBF, 0);
     printf("prepstmtcount=%d\n", count);
 }
 
