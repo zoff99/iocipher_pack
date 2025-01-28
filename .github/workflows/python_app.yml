@@ -50,7 +50,7 @@ jobs:
         cd 006_example_python/
         date > out_with_date.txt
         cat out.txt >> out_with_date.txt
-        cat out_with_date.txt | convert -trim -border 20 -bordercolor black +repage -background black -fill '#00cc00' -pointsize 14 TEXT:- ../python_screen.png
+        cat out_with_date.txt | convert -trim -border 20 -bordercolor black +repage -background black -fill '#00cc00' -pointsize 13 TEXT:- ../python_screen.png
 
     - name: check image generation
       run: |
