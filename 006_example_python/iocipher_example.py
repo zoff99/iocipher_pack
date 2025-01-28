@@ -27,6 +27,15 @@ def setup_vfs():
     # print sqlfs version to stdout
     c_lib.py_sqlfs_version()
 
+    # get sqlite version (of sqlcipher)
+    c_lib.sqlite3_libversion.restype = ctypes.c_char_p
+    sql_libversion_str = c_lib.sqlite3_libversion()
+    print("sqlite version as string: ", sql_libversion_str.decode('utf-8'))
+
+    # get sqlite version (of sqlcipher)
+    sql_libversion = c_lib.sqlite3_libversion_number()
+    print("sqlite version as int: ", sql_libversion)
+
     global sqlfs
     sqlfs = ctypes.POINTER(ctypes.c_void_p)
 
