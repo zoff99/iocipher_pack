@@ -9,8 +9,8 @@ echo "$_HOME_"
 cd "$_HOME_" || exit
 
 if [ "$1""x" == "buildx" ]; then
-    cp ../../000_deps/openssl-3.4.0.tar.gz . && docker build -f Dockerfile_deb12 -t openssl_android_deb12_001 .
-    rm -f openssl-3.4.0.tar.gz
+    cp ../../000_deps/openssl-3.4.1.tar.gz . && docker build -f Dockerfile_deb12 -t openssl_android_deb12_001 .
+    rm -f openssl-3.4.1.tar.gz
     exit 0
 fi
 
@@ -54,9 +54,9 @@ PATH=$ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/linux-x86_64/bin:$ANDROID_NDK_RO
 archs="android-arm64 android-x86_64 android-x86 android-arm"
 
 for i in $archs; do
-    rm -Rf openssl-3.4.0/
-    tar -xf /openssl-3.4.0.tar.gz
-    cd openssl-3.4.0/
+    rm -Rf openssl-3.4.1/
+    tar -xf /openssl-3.4.1.tar.gz
+    cd openssl-3.4.1/
 
     git init
     git init
@@ -92,9 +92,9 @@ done
 i=linux_debian12_x86_64
 export ANDROID_NDK_ROOT=
 PATH=$OLDPATH
-rm -Rf openssl-3.4.0/
-tar -xf /openssl-3.4.0.tar.gz
-cd openssl-3.4.0/
+rm -Rf openssl-3.4.1/
+tar -xf /openssl-3.4.1.tar.gz
+cd openssl-3.4.1/
 ./Configure no-apps no-docs no-dso no-dgram --prefix=/opt/openssl --openssldir=/usr/local/ssl
 make -j $(nproc) || exit 1
 ##### make test
