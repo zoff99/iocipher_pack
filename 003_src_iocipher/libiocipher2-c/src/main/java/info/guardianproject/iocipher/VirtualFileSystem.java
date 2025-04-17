@@ -14,7 +14,7 @@ import javax.crypto.SecretKey;
  */
 public class VirtualFileSystem {
 
-    final public static String IOCIPHER_JNI_VERSION = "1.0.8";
+    final public static String IOCIPHER_JNI_VERSION = "1.0.9";
 
     /**
      * Empty dbFile results in an in memory database
