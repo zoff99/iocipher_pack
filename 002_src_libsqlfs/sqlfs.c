@@ -62,6 +62,8 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
 
 #include "sqlite3.h"
 
+extern char* sqlcipher_version(void);
+
 struct sqlfs_t
 {
     sqlite3 *db;
@@ -3469,6 +3471,15 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
     sql_fs->default_mode = 0700; /* allows the creation of children under / , default user at initialization is 0 (root)*/
 
     create_db_table(sql_fs);
+
+    // HINT: debug: show sqlcipher version actually compiled in
+    char* sqlcipher_v_str = sqlcipher_version();
+    if (sqlcipher_v_str) {
+        show_msg(stderr, "INFO: sqlcipher version: %s\n", sqlcipher_v_str);
+        printf("sqlfs_t_init: sqlcipher version: %s\n", sqlcipher_v_str);
+        sqlite3_free(sqlcipher_v_str);
+    }
+    // HINT: debug: show sqlcipher version actually compiled in
 
     if (max_inode == 0)
         max_inode = get_current_max_inode(sql_fs);
