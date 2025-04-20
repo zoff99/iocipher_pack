@@ -3,9 +3,17 @@ package com.example.iocipherexampleapp;
 import android.content.Context;
 import android.os.Build;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
+import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import info.guardianproject.iocipher.File;
+import info.guardianproject.iocipher.FileReader;
+import info.guardianproject.iocipher.FileWriter;
 import info.guardianproject.iocipher.VirtualFileSystem;
 
 @SuppressWarnings("ALL")
@@ -14,8 +22,77 @@ public class vfsexample
     private VirtualFileSystem vfs = null;
     private String path;
     private final String goodPassword = "this is the right password !?%";
-    private final String TAG = "IOCipher-Example:";
+    private static final String TAG = "IOCipher-Example:";
     private static String ret = "";
+
+    private static final String FILE_NAME = "/testfile.txt";
+    private static final int THREAD_COUNT = 10;
+    private static final int WRITE_DATA_MULTIPLIER = 5;
+    private static final String data = "powkrwerjijwefj09jf09j09a09w3j09fdj09ewjfjefjiyjdäsaqwie2qieiqeip2qiepiü9qeiüqwieiqüeriq2eiü0peq";
+
+    static class FileTask implements Runnable {
+        private final Random random = new Random();
+
+        @Override
+        public void run() {
+            try {
+                //if (random.nextBoolean()) {
+                //    writeFile();
+                //} else {
+                    readFile();
+                //}
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+        private void readFile() throws IOException {
+            try (BufferedReader reader = new BufferedReader(new FileReader(FILE_NAME))) {
+                while (reader.readLine() != null) {
+                    // Reading file
+                }
+                System.out.println(TAG + "reading from thread: " + Thread.currentThread().getName());
+            }
+        }
+    }
+
+    private void writeFile() {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(FILE_NAME, true))) {
+            for (int i = 0; i < WRITE_DATA_MULTIPLIER; i++)
+            {
+                writer.write(data + "\n");
+            }
+            // System.out.println(TAG + "Writing from thread: " + Thread.currentThread().getName());
+        }
+        catch(Exception e)
+        {
+            e.printStackTrace();
+        }
+    }
+
+    private void heavy_load_test(VirtualFileSystem vfs)
+    {
+        long startTime = System.currentTimeMillis();
+
+        File fw = new File(FILE_NAME);
+        fw.delete();
+        writeFile();
+
+        ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
+        for (int i = 0; i < THREAD_COUNT; i++) {
+            executor.execute(new FileTask());
+        }
+        executor.shutdown();
+        try {
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
+        long endTime = System.currentTimeMillis();
+        System.out.println(TAG + "Elapsed time: " + (endTime - startTime) + " ms");
+        ret = ret + "\n" + "Elapsed time: " + (endTime - startTime) + " ms";
+    }
 
     String testme(Context c)
     {
@@ -120,6 +197,10 @@ public class vfsexample
                 ret = ret + "\n" + "File: " + f;
             }
         }
+
+
+        // now try to do a heavy load test (mutlithreaded)
+        heavy_load_test(vfs);
 
         // unmount the vfs container file
         if (vfs.isMounted()) {
