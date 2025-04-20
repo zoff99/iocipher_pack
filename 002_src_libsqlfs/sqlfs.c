@@ -3472,6 +3472,8 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
 
     create_db_table(sql_fs);
 
+    // TODO: find a better place to put this --------------
+#if 0
     // HINT: debug: show sqlcipher version actually compiled in
     char* sqlcipher_v_str = sqlcipher_version();
     if (sqlcipher_v_str) {
@@ -3480,8 +3482,10 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
         sqlite3_free(sqlcipher_v_str);
     }
     // HINT: debug: show sqlcipher version actually compiled in
+#endif
+    // TODO: find a better place to put this --------------
 
-    if (max_inode == 0)
+if (max_inode == 0)
         max_inode = get_current_max_inode(sql_fs);
 
     r = ensure_existence(sql_fs, "/", TYPE_DIR);
