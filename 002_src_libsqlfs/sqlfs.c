@@ -3485,8 +3485,10 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
 #endif
     // TODO: find a better place to put this --------------
 
-if (max_inode == 0)
+    if (max_inode == 0)
+    {
         max_inode = get_current_max_inode(sql_fs);
+    }
 
     r = ensure_existence(sql_fs, "/", TYPE_DIR);
     if (!r)
