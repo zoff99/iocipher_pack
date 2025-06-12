@@ -77,7 +77,7 @@ for i in $archs; do
     echo "########################"
 
 
-    ./Configure no-apps no-docs no-dso no-dgram "$i" -D__ANDROID_API__=21
+    ./Configure no-apps no-docs no-dso no-dgram "$i" -D__ANDROID_API__=21 -Wl,-z,max-page-size=16384
     make -j $(nproc) || exit 1
     ls -al libcrypto.a libssl.a || exit 1
     file libcrypto.a libssl.a

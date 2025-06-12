@@ -26,7 +26,7 @@ ASANCFLAGS = -fsanitize=address -fno-omit-frame-pointer -static-libasan
 TSANCFLAGS = -fsanitize=thread -fno-omit-frame-pointer -static-libasan
 UBSANCFLAGS = -fno-sanitize-recover=all -fsanitize=undefined,float-divide-by-zero
 
-CFLAGS += -g -O3 -fPIC -Wall -Wextra -pedantic -Wdouble-promotion -Wno-unknown-warning-option -std=c99 -pedantic -pthread -I./
+CFLAGS += -g -O3 -fPIC -Wall -Wextra -pedantic -Wdouble-promotion -Wno-unknown-warning-option -std=c99 -Wl,-z,max-page-size=16384 -pedantic -pthread -I./
 
 ifdef ENCRYPT_CS
 CFLAGS += -DSQLITE_HAS_CODEC -DHAVE_LIBSQLCIPHER -Isqlcipher/ -Iopenssl_includes

@@ -3,8 +3,8 @@ project(libiocipher2-c)
 
 include_directories(libsqlfs)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_LIBSQLCIPHER -fPIC -g -fstack-protector-all")
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_LIBSQLCIPHER -std=c99 -fPIC -g -fstack-protector-all")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DHAVE_LIBSQLCIPHER -fPIC -g -fstack-protector-all -Wl,-z,max-page-size=16384")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DHAVE_LIBSQLCIPHER -std=c99 -fPIC -g -fstack-protector-all -Wl,-z,max-page-size=16384")
 
 # JniException.cpp
 
