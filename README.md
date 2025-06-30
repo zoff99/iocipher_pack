@@ -16,7 +16,9 @@ The 2 Main Components
 <br><br>
 <b>IOCipher</b> is a bunch of [JNI code](https://github.com/zoff99/iocipher_pack/tree/master/003_src_iocipher/libiocipher2-c/src/main/cpp) and [Java classes](https://github.com/zoff99/iocipher_pack/tree/master/003_src_iocipher/libiocipher2-c/src/main/java/info/guardianproject) to almost transparently emulate `java.io.*` classes with
 `info.guardianproject.iocipher.*` classes of the same name.
-<br><br>
+
+<img src="https://raw.githubusercontent.com/zoff99/iocipher_pack/refs/heads/master/iocipher_coms.png" width="300">
+
 
 Build Status
 ------------
