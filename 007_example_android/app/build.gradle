@@ -96,7 +96,7 @@ dependencies {
     // we need desugaring here to support APIs down to 21
     // implementation 'androidx.sqlite:sqlite:2.2.0'
     // add IOCipher module here -------------
-    implementation 'com.github.zoff99:pkgs_guardianprojectIOCipher:1.0.14'
+    implementation 'com.github.zoff99:pkgs_guardianprojectIOCipher:1.0.15'
     // add IOCipher module here -------------
     implementation 'androidx.core:core-ktx:1.8.0'
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.3.1'
