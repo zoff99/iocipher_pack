@@ -63,7 +63,7 @@ allprojects {
 
 add to your module `build.gradle`<br>
 ```
-implementation 'com.github.zoff99:pkgs_guardianprojectIOCipher:1.0.16'
+implementation 'com.github.zoff99:pkgs_guardianprojectIOCipher:1.0.17'
 ```
 
 then see
