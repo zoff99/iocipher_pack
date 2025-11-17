@@ -102,6 +102,20 @@ jobs:
       run: |
         cd 003_src_iocipher/linux_jni/c_src && ./compile_linux_c.sh || (cat compile.log; exit 1)
 
+    - name: show beginning of the DB file
+      run: |
+        cd 003_src_iocipher/linux_jni/c_src/
+        cat test.db|hexdump -C|head -24
+
+    - name: check if DB is really encrypted
+      run: |
+        cd 003_src_iocipher/linux_jni/c_src/
+        err=$(cat test.db|hexdump -C|head -24|grep "SQLite"||echo "")
+        if [ "$err""x" != "x" ]; then
+          echo "Database may not be encrypted !"
+          exit 1
+        fi
+
     - name: install mingw cross compiler
       run: |
            sudo apt-get update
@@ -156,6 +170,20 @@ jobs:
     - name: raw speed test on linux
       run: |
         cd 003_src_iocipher/linux_jni/c_src && ./speedtest_linux_c.sh || exit 1
+
+    - name: show beginning of the DB file
+      run: |
+        cd 003_src_iocipher/linux_jni/c_src/
+        cat speedtest.db|hexdump -C|head -24
+
+    - name: check if DB is really encrypted
+      run: |
+        cd 003_src_iocipher/linux_jni/c_src/
+        err=$(cat speedtest.db|hexdump -C|head -24|grep "SQLite"||echo "")
+        if [ "$err""x" != "x" ]; then
+          echo "Database may not be encrypted !"
+          exit 1
+        fi
 
     - name: check that all java classes are for java 1.8
       run: |
