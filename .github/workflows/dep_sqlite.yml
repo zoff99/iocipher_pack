@@ -1,0 +1,40 @@
+name: Auto update sqlite
+
+on:
+  schedule:
+    # runs Tue at 12:00 am
+    - cron: '0 0 * * 2'
+  push:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: dummy
+        default: dummy
+
+
+jobs:
+  auto-update-dependencies:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v6
+
+    - name: Run auto dependency check
+      run: ./tools/check_sqlite.sh
+
+    - name: Run auto dependency update
+      run: ./tools/download_sqlite_amalgamation.sh
+
+    - name: check for changes
+      run:  git diff || echo "no changes"
+
+    - name: Create Pull Request
+      uses: peter-evans/create-pull-request@v7
+      with:
+        commit-message: update sqlite
+        branch: create-pull-request/sqlite
+        delete-branch: true
+        title: 'update sqlite'
