@@ -147,7 +147,7 @@ jobs:
            cp -av /tmp/package-screenshot-linux-deb.png package-screenshot-linux-deb.png
 
     - name: upload-screenshots
-      uses: actions/upload-artifact@v5
+      uses: actions/upload-artifact@v6
       with:
         name: screenshot-linux
         path: /tmp/package-screenshot-linux-deb.png
