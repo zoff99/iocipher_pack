@@ -182,7 +182,7 @@ public class iocipherspeedtest
             final long one_gb = 1024 * one_mb;
             // --------------------------------------
             final int bytes = (int)(8 * one_kb * 120);
-            final long full_filesize = one_gb * 3;
+            final long full_filesize = one_gb * 1;
             // --------------------------------------
             final int loops = (int)(full_filesize / (long)bytes);
             info.guardianproject.iocipher.File f = new info.guardianproject.iocipher.File(filename);
