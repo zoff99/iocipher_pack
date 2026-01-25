@@ -28,6 +28,9 @@ ar x ../openssl_libs/libssl.a || exit 1
 cd ../
 
 
+# clean
+rm -v libiocipher2_python.so
+
 # compile
 gcc -g -O3 -fPIC -fstack-protector-all -D_FORTIFY_SOURCE=2 \
 -D_FILE_OFFSET_BITS=64 -D__USE_GNU=1 \
