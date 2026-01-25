@@ -5,8 +5,8 @@ c_perf
 c_perf_key
 c_thread_api
 c_thread_api_key
-libsqlfs.a
+# libsqlfs.a
 sqlfs.o
-sqlite3.a
+# sqlite3.a
 sqlite3.o
 c_*
