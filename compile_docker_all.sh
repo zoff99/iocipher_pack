@@ -1,5 +1,12 @@
 #! /bin/bash
 
+echo "***************"
+echo ""
+echo "set java and javac to version 17 before running this script!"
+echo ""
+echo "***************"
+
+
 _HOME2_=$(dirname "$0")
 export _HOME2_
 _HOME_=$(cd "$_HOME2_" || exit;pwd)
