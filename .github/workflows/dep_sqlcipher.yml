@@ -5,6 +5,10 @@ on:
     # runs Tue at 12:00 am
     - cron: '0 0 * * 2'
   push:
+    branches:
+      - "**"
+    tags:
+      - "!**"
   workflow_dispatch:
     inputs:
       version:
