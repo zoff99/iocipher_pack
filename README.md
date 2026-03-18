@@ -27,6 +27,7 @@ Build Status
 [![Last release](https://img.shields.io/github/v/release/zoff99/iocipher_pack)](https://github.com/zoff99/iocipher_pack/releases/latest)
 [![Release](https://jitpack.io/v/zoff99/pkgs_guardianprojectIOCipher.svg)](https://jitpack.io/#zoff99/pkgs_guardianprojectIOCipher)
 [![Liberapay](https://img.shields.io/liberapay/goal/zoff.svg?logo=liberapay)](https://liberapay.com/zoff/donate)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/zoff99/iocipher_pack)
 
 the Android lib is published on jitpack.io:<br>
 https://jitpack.io/#zoff99/pkgs_guardianprojectIOCipher
