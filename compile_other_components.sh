@@ -46,3 +46,4 @@ cd ./006_example_python/ || exit 1
 echo "build iocipher for python"
 ./do_compile_and_run.sh  >> "$logfile" 2>&1 || exit 1
 
+echo "====== other components: OK ======"
