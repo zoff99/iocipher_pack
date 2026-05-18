@@ -63,6 +63,7 @@ if [ "$build_sqlfs""x" == "1x" ]; then
     cd "$_HOME_""/"
     cd ./002_src_libsqlfs/ || exit 1
     echo "build sqlfs and sqlcipher for linux"
+    make clean > "$logfile" 2>&1
     make -j2 >> "$logfile" 2>&1 || exit 1
 
     if [ "$RUNTESTS""x" == "1x" ]; then
