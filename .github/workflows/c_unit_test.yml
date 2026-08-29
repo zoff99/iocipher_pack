@@ -1,0 +1,54 @@
+name: c unit test
+on:
+  push:
+    paths-ignore:
+     - 'README.md'
+  pull_request:
+    paths-ignore:
+     - 'README.md'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: dummy
+        default: dummy
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+    - uses: actions/checkout@v7
+
+    - uses: actions/setup-java@v5
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: run unit tests
+      run: |
+        pwd
+        cd 002_src_libsqlfs/unit_test
+        make
+
+    - name: run asan unit tests
+      run: |
+        pwd
+        cd 002_src_libsqlfs/unit_test
+        make clean
+        make asan_all
+
+    - name: run tsan unit tests
+      run: |
+        pwd
+        cd 002_src_libsqlfs/unit_test
+        make clean
+        make tsan_all
+
+    - name: run ubsan unit tests
+      run: |
+        pwd
+        cd 002_src_libsqlfs/unit_test
+        make clean
+        make ubsan_all
+
