@@ -9,8 +9,8 @@ compile_test:
 
 run: compile_test
 	@echo ">> Running IOCipher Unit Tests..."
-	# Ensure JNI library paths are available if needed, though IOCipher usually bundles them
-	java -cp ".:$(IOCIPHER_JAR)" IOCipherUnitTest
+	# Enable assertions (-ea) and increase heap size (-Xmx512m) for stress tests
+	java -ea -Xmx512m -cp ".:$(IOCIPHER_JAR)" IOCipherUnitTest
 
 clean:
 	@echo ">> Cleaning up..."

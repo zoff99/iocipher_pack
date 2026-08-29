@@ -51,6 +51,19 @@ public class IOCipherUnitTest {
         TestSpecialCharactersInPaths.run();
         TestLargeFileReadWrite.run();
 
+        // =============================================
+        // Security and Threading Tests
+        // =============================================
+        TestPathTraversal.run();
+        TestNullByteInjection.run();
+        TestLongPathNames.run();
+        TestConcurrentReadWrite.run();
+        TestConcurrentCreateDelete.run();
+        TestOpenFileDeleteParent.run();
+        TestThreadBombing.run();
+
+        // Shutdown and cleanup
+
         // Shutdown and cleanup
         try {
             if (vfs != null && vfs.isMounted()) {
