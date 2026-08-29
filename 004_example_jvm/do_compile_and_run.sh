@@ -23,9 +23,9 @@ jar=$(ls -1 iocipher_linux-1.*.jar 2>/dev/null)
 
 if [ "$1""x" == "only_compile""x" ]; then
   # compile only
-  javac -classpath ".:$jar" FileManager.java FileDrop.java
+  javac -classpath ".:$jar:flatlaf-3.7.2.jar" FileManager.java
 else
   # regular run
-  javac -classpath ".:$jar" FileManager.java FileDrop.java && \
-  java -classpath ".:$jar" FileManager "$@"
+  javac -classpath ".:$jar:flatlaf-3.7.2.jar" FileManager.java && \
+  java -classpath ".:$jar:flatlaf-3.7.2.jar" FileManager "$@"
 fi
