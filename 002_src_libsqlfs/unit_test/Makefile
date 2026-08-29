@@ -160,7 +160,7 @@ $(BIN_DIR)/test_metadata: test_metadata.c objs | $(BIN_DIR)
 # ============================================================
 build_all: $(ALL_BINS)
 	@echo ""
-	@echo "=== All 5 test binaries built successfully ==="
+	@echo "=== All test binaries built successfully ==="
 
 # ============================================================
 #  Individual run targets
