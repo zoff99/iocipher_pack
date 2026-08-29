@@ -1,0 +1,226 @@
+#
+# unit_test/Makefile
+# ==================
+# Builds unit tests directly against ../sqlfs.c (the real code).
+# No fragile extraction — tests always run against current source.
+#
+# When the source changes, simply re-run 'make test_all' and all
+# tests automatically exercise the updated code.
+#
+# Build errors stop immediately. Test failures do NOT stop other tests.
+#
+# Usage:
+#   make test_all          - build and run all tests
+#   make test_open_close   - open/close lifecycle tests
+#   make test_directory    - directory operation tests
+#   make test_file_io      - file read/write tests
+#   make test_transaction  - transaction tests
+#   make test_attributes   - attribute/metadata tests
+#   make asan_all          - all tests with AddressSanitizer
+#   make tsan_all          - all tests with ThreadSanitizer
+#   make ubsan_all         - all tests with UBSanitizer
+#   make clean             - remove generated files
+#
+
+SHELL      := /bin/bash
+BUILD_DIR  := ./_build
+BIN_DIR    := ./_bin
+
+CC     ?= gcc
+AR     ?= ar
+
+# ── Paths ─────────────────────────────────────────────────────────
+# SQLFS_C    : the code under test
+# SQLITE_C   : the SQLite amalgamation (plain or sqlcipher)
+SQLFS_C    := ../sqlfs.c
+SQLFS_H    := ../sqlfs.h
+SQLITE_C   := ../sqlite/sqlite3.c
+
+# ── Compiler flags ────────────────────────────────────────────────
+# -I..   resolves #include "sqlfs.h" / "sqlfs_internal.h"
+# -I../sqlite resolves #include "sqlite3.h"
+CFLAGS := -std=c99 -Wall -Wextra -Wno-unused-function -Wno-unused-parameter \
+          -Wno-unused-variable -g -O0 -pthread \
+          -I.. -I../sqlite -I. -D_GNU_SOURCE=1
+
+# Extra flags injected by sanitizer builds (empty by default)
+CFLAGS_EXTRA ?=
+
+# Link flags: sqlfs needs pthreads and math.
+# If you compiled with SQLCipher (HAVE_LIBSQLCIPHER), add OpenSSL:
+#   LDLIBS += ../openssl_libs/libcrypto.a ../openssl_libs/libssl.a
+LDLIBS := -lm -lpthread
+
+# ── SQLite compile flags ─────────────────────────────────────────
+SQLITE_CFLAGS := -DSQLITE_THREADSAFE=1 -DSQLITE_TEMP_STORE=2 \
+                 -Wno-unused-parameter -Wno-implicit-fallthrough \
+                 -Wno-pointer-arith -Wno-sign-compare -Wno-double-promotion
+
+# ── All test binaries ─────────────────────────────────────────────
+ALL_BINS := $(BIN_DIR)/test_open_close \
+            $(BIN_DIR)/test_directory \
+            $(BIN_DIR)/test_file_io \
+            $(BIN_DIR)/test_transaction \
+            $(BIN_DIR)/test_attributes
+
+.PHONY: all test_all test_open_close test_directory test_file_io \
+        test_transaction test_attributes \
+        asan_all tsan_all ubsan_all clean build_all objs
+
+all: test_all
+
+# ============================================================
+#  Directory creation
+# ============================================================
+$(BUILD_DIR):
+	mkdir -p $(BUILD_DIR)
+
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+
+# ============================================================
+#  Compile shared objects (done once, reused by all tests)
+# ============================================================
+objs: $(BUILD_DIR) $(BUILD_DIR)/sqlite3.o $(BUILD_DIR)/sqlfs.o
+
+$(BUILD_DIR)/sqlite3.o: $(SQLITE_C) | $(BUILD_DIR)
+	@echo "=== Compiling SQLite3 ==="
+	$(CC) -c $(CFLAGS) $(CFLAGS_EXTRA) $(SQLITE_CFLAGS) $(SQLITE_C) -o $@
+
+$(BUILD_DIR)/sqlfs.o: $(SQLFS_C) $(SQLFS_H) | $(BUILD_DIR)
+	@echo "=== Compiling sqlfs.c ==="
+	$(CC) -c $(CFLAGS) $(CFLAGS_EXTRA) $(SQLFS_C) -o $@
+
+# ============================================================
+#  Build test binaries
+# ============================================================
+
+$(BIN_DIR)/test_open_close: test_open_close.c objs | $(BIN_DIR)
+	@echo "=== Building test_open_close ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+$(BIN_DIR)/test_directory: test_directory.c objs | $(BIN_DIR)
+	@echo "=== Building test_directory ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+$(BIN_DIR)/test_file_io: test_file_io.c objs | $(BIN_DIR)
+	@echo "=== Building test_file_io ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+$(BIN_DIR)/test_transaction: test_transaction.c objs | $(BIN_DIR)
+	@echo "=== Building test_transaction ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+$(BIN_DIR)/test_attributes: test_attributes.c objs | $(BIN_DIR)
+	@echo "=== Building test_attributes ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< \
+		$(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o \
+		-o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+# ============================================================
+#  Build ALL binaries (fails fast on compile errors)
+# ============================================================
+build_all: $(ALL_BINS)
+	@echo ""
+	@echo "=== All 5 test binaries built successfully ==="
+
+# ============================================================
+#  Individual run targets
+# ============================================================
+
+test_open_close: $(BIN_DIR)/test_open_close
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Open / Close Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_open_close
+
+test_directory: $(BIN_DIR)/test_directory
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Directory Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_directory
+
+test_file_io: $(BIN_DIR)/test_file_io
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: File I/O Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_file_io
+
+test_transaction: $(BIN_DIR)/test_transaction
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Transaction Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_transaction
+
+test_attributes: $(BIN_DIR)/test_attributes
+	@echo ""
+	@echo "============================================================"
+	@echo "  Running: Attribute Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_attributes
+
+# ============================================================
+#  Run ALL tests
+#  Phase 1: build (stops on compile error)
+#  Phase 2: run   (test failures don't stop other suites)
+# ============================================================
+test_all: build_all
+	@echo ""
+	@echo "============================================================"
+	@echo "  RUNNING ALL SQLFS TEST SUITES"
+	@echo "============================================================"
+	@FAILURES=0; \
+	./$(BIN_DIR)/test_open_close   || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_directory    || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_file_io      || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_transaction  || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_attributes   || FAILURES=$$((FAILURES+1)); \
+	echo ""; \
+	echo "============================================================"; \
+	if [ $$FAILURES -eq 0 ]; then \
+		echo "  ✓  ALL 5 TEST SUITES PASSED"; \
+	else \
+		echo "  ✗  $$FAILURES TEST SUITE(S) FAILED"; \
+	fi; \
+	echo "============================================================"; \
+	exit $$FAILURES
+
+# ============================================================
+#  Sanitizer builds
+# ============================================================
+asan_all: clean
+	@echo "=== ASAN BUILD ==="
+	$(MAKE) CFLAGS_EXTRA="-fsanitize=address -fno-omit-frame-pointer" test_all
+
+tsan_all: clean
+	@echo "=== TSAN BUILD ==="
+	$(MAKE) CFLAGS_EXTRA="-fsanitize=thread -fno-omit-frame-pointer" test_all
+
+ubsan_all: clean
+	@echo "=== UBSAN BUILD ==="
+	$(MAKE) CFLAGS_EXTRA="-fsanitize=undefined,float-divide-by-zero -fno-sanitize-recover=all" test_all
+
+# ============================================================
+#  Clean
+# ============================================================
+clean:
+	rm -rf $(BUILD_DIR) $(BIN_DIR)
+	rm -f *.db *.db-journal *.db-wal *.db-shm _test_*.db*
+	@echo "Cleaned."
