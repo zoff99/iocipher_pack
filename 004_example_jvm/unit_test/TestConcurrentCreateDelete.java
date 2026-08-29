@@ -20,10 +20,18 @@ public class TestConcurrentCreateDelete {
 
         Thread accessor = new Thread(() -> {
             try {
+                // Target the parent directory for listFiles(), not the file itself
+                File parentDir = new File("/");
+                
                 while (running.get()) {
                     File f = new File(filePath);
                     try {
-                        f.exists(); f.length(); f.listFiles();
+                        f.exists(); 
+                        f.length(); 
+                        
+                        // Call listFiles on the DIRECTORY. 
+                        // This safely tests SQLite's concurrent directory iteration.
+                        parentDir.listFiles(); 
                     } catch (Exception e) {}
                     Thread.sleep(2);
                 }
