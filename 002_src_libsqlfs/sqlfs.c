@@ -3416,7 +3416,9 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
         sqlite3_exec(sql_fs->db, "PRAGMA cipher_page_size = 8192;", NULL, NULL, NULL);
     }
     else
+    {
         show_msg(stderr, "WARNING: No password set!\n");
+    }
 #endif
     /* WAL mode improves the performance of write operations (page data must only be
      * written to disk one time) and improves concurrency by reducing blocking between
