@@ -57,12 +57,11 @@ public class IOCipherUnitTest {
         TestPathTraversal.run();
         TestNullByteInjection.run();
         TestLongPathNames.run();
+
         TestConcurrentReadWrite.run();
         TestConcurrentCreateDelete.run();
         TestOpenFileDeleteParent.run();
         TestThreadBombing.run();
-
-        // Shutdown and cleanup
 
         // Shutdown and cleanup
         try {
