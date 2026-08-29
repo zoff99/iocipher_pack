@@ -3506,29 +3506,29 @@ static void * sqlfs_t_init(const char *db_file, const char *password)
 
 static void sqlfs_t_finalize(void *arg)
 {
-    printf("sqlfs_t_finalize:start ...\n");
+    //*DEBUG*// printf("sqlfs_t_finalize:start ...\n");
     sqlfs_t *sql_fs = (sqlfs_t *) arg;
     if (sql_fs)
     {
-        prepstmtcount(sql_fs->db);
+        //*DEBUG*// prepstmtcount(sql_fs->db);
         int i;
         for (i = 0; i < (int)(sizeof(sql_fs->stmts) / sizeof(sql_fs->stmts[0])); i++)
         {
             if (sql_fs->stmts[i])
             {
-                printf("sqlfs_t_finalize:sqlite3_finalize:%d\n", i);
+                // printf("sqlfs_t_finalize:sqlite3_finalize:%d\n", i);
                 int finalize_res = sqlite3_finalize(sql_fs->stmts[i]);
-                printf("sqlfs_t_finalize:sqlite3_finalize:%d res=%d\n", i, finalize_res);
+                // printf("sqlfs_t_finalize:sqlite3_finalize:%d res=%d\n", i, finalize_res);
             }
         }
 
-        prepstmtcount(sql_fs->db);
-        printf("sqlfs_t_finalize:sqlite3_close trying to checkpoint WAL\n");
+        //*DEBUG*// prepstmtcount(sql_fs->db);
+        // printf("sqlfs_t_finalize:sqlite3_close trying to checkpoint WAL\n");
         int wal_checkpoint_res = sqlite3_exec(sql_fs->db, "PRAGMA wal_checkpoint(TRUNCATE);", NULL, NULL, NULL);
-        printf("sqlfs_t_finalize:sqlite3_close checkpoint WAL res %d\n", wal_checkpoint_res);
+        //*DEBUG*// printf("sqlfs_t_finalize:sqlite3_close checkpoint WAL res %d\n", wal_checkpoint_res);
 
         int free_pages = get_current_free_pages(sql_fs);
-        printf("sqlfs_t_finalize:free_pages=%d\n", free_pages);
+        // printf("sqlfs_t_finalize:free_pages=%d\n", free_pages);
         if (free_pages > VACUUM_FREE_PAGES_THRESHOLD)
         {
 #if 0
@@ -3541,17 +3541,17 @@ static void sqlfs_t_finalize(void *arg)
 #endif
         }
 
-        prepstmtcount(sql_fs->db);
-        printf("sqlfs_t_finalize:sqlite3_close ## %p\n", (void *)sql_fs->db);
+        //*DEBUG*// prepstmtcount(sql_fs->db);
+        // printf("sqlfs_t_finalize:sqlite3_close ## %p\n", (void *)sql_fs->db);
         int close_res = sqlite3_close(sql_fs->db);
-        printf("sqlfs_t_finalize:sqlite3_close res %d\n", close_res);
+        //*DEBUG*// printf("sqlfs_t_finalize:sqlite3_close res %d\n", close_res);
 
         const int retry_loops = 2;
         const int retry_wait_ms = 30;
         for (int w=0;w<retry_loops;w++) {
             if (close_res == SQLITE_BUSY) {
                 usleep(retry_wait_ms * 1000); // HINT: wait some milliseconds and then try again
-                printf("sqlfs_t_finalize:sqlite3_close ## %p\n", (void *)sql_fs->db);
+                // printf("sqlfs_t_finalize:sqlite3_close ## %p\n", (void *)sql_fs->db);
                 close_res = sqlite3_close(sql_fs->db);
                 printf("sqlfs_t_finalize:sqlite3_close res %d\n", close_res);
             } else {
@@ -3569,7 +3569,7 @@ static void sqlfs_t_finalize(void *arg)
             instance_count--;
         }
     }
-    printf("sqlfs_t_finalize:finished\n");
+    //*DEBUG*// printf("sqlfs_t_finalize:finished\n");
 }
 
 
