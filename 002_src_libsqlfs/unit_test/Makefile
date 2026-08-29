@@ -61,10 +61,15 @@ ALL_BINS := $(BIN_DIR)/test_open_close \
             $(BIN_DIR)/test_directory \
             $(BIN_DIR)/test_file_io \
             $(BIN_DIR)/test_transaction \
-            $(BIN_DIR)/test_attributes
+            $(BIN_DIR)/test_attributes \
+            $(BIN_DIR)/test_rename \
+            $(BIN_DIR)/test_readdir \
+            $(BIN_DIR)/test_symlink \
+            $(BIN_DIR)/test_metadata
 
 .PHONY: all test_all test_open_close test_directory test_file_io \
-        test_transaction test_attributes \
+        test_transaction test_attributes test_rename test_readdir \
+        test_symlink test_metadata \
         asan_all tsan_all ubsan_all clean build_all objs
 
 all: test_all
@@ -130,6 +135,26 @@ $(BIN_DIR)/test_attributes: test_attributes.c objs | $(BIN_DIR)
 		-o $@ $(LDLIBS)
 	@echo "  -> $@"
 
+$(BIN_DIR)/test_rename: test_rename.c objs | $(BIN_DIR)
+	@echo "=== Building test_rename ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< $(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o -o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+$(BIN_DIR)/test_readdir: test_readdir.c objs | $(BIN_DIR)
+	@echo "=== Building test_readdir ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< $(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o -o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+$(BIN_DIR)/test_symlink: test_symlink.c objs | $(BIN_DIR)
+	@echo "=== Building test_symlink ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< $(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o -o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+$(BIN_DIR)/test_metadata: test_metadata.c objs | $(BIN_DIR)
+	@echo "=== Building test_metadata ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< $(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o -o $@ $(LDLIBS)
+	@echo "  -> $@"
+
 # ============================================================
 #  Build ALL binaries (fails fast on compile errors)
 # ============================================================
@@ -176,6 +201,30 @@ test_attributes: $(BIN_DIR)/test_attributes
 	@echo "============================================================"
 	./$(BIN_DIR)/test_attributes
 
+test_rename: $(BIN_DIR)/test_rename
+	@echo ""; echo "============================================================"
+	@echo "  Running: Rename / Move Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_rename
+
+test_readdir: $(BIN_DIR)/test_readdir
+	@echo ""; echo "============================================================"
+	@echo "  Running: Readdir Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_readdir
+
+test_symlink: $(BIN_DIR)/test_symlink
+	@echo ""; echo "============================================================"
+	@echo "  Running: Symlink Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_symlink
+
+test_metadata: $(BIN_DIR)/test_metadata
+	@echo ""; echo "============================================================"
+	@echo "  Running: Metadata Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_metadata
+
 # ============================================================
 #  Run ALL tests
 #  Phase 1: build (stops on compile error)
@@ -192,10 +241,14 @@ test_all: build_all
 	./$(BIN_DIR)/test_file_io      || FAILURES=$$((FAILURES+1)); \
 	./$(BIN_DIR)/test_transaction  || FAILURES=$$((FAILURES+1)); \
 	./$(BIN_DIR)/test_attributes   || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_rename       || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_readdir      || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_symlink      || FAILURES=$$((FAILURES+1)); \
+	./$(BIN_DIR)/test_metadata     || FAILURES=$$((FAILURES+1)); \
 	echo ""; \
 	echo "============================================================"; \
 	if [ $$FAILURES -eq 0 ]; then \
-		echo "  ✓  ALL 5 TEST SUITES PASSED"; \
+		echo "  ✓  ALL 9 TEST SUITES PASSED"; \
 	else \
 		echo "  ✗  $$FAILURES TEST SUITE(S) FAILED"; \
 	fi; \
