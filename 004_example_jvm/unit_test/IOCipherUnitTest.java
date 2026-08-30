@@ -50,6 +50,13 @@ public class IOCipherUnitTest {
         TestListFiles.run();
         TestSpecialCharactersInPaths.run();
         TestLargeFileReadWrite.run();
+        TestFileAttributes.run();
+        TestFilePathMethods.run();
+        TestFileFilters.run();
+        TestFileAppending.run();
+        TestCreateTempFile.run();
+        TestDiskSpaceAPIs.run();
+        TestInvalidOperations.run();
 
         // =============================================
         // Security and Threading Tests
