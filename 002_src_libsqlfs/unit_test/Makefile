@@ -227,33 +227,66 @@ test_metadata: $(BIN_DIR)/test_metadata
 
 # ============================================================
 #  Run ALL tests
-#  Phase 1: build (stops on compile error)
-#  Phase 2: run   (test failures don't stop other suites)
+#
+#  PHASE 1 (build_all): Builds every test binary. If ANY
+#  compilation or link error occurs, make STOPS immediately.
+#  Build errors are never swallowed.
+#
+#  PHASE 2 (run): Runs every test binary. Test FAILURES
+#  (exit code 1) do NOT stop other tests — all suites run
+#  and a summary is printed at the end.
+#
+#  PHASE 3 (aggregate): Parses the per-binary test_summary()
+#  output and prints a GRAND TOTAL of individual tests across
+#  all suites. Each binary already prints its own summary;
+#  this adds a combined total at the very end.
 # ============================================================
 test_all: build_all
 	@echo ""
 	@echo "============================================================"
-	@echo "  RUNNING ALL SQLFS TEST SUITES"
+	@echo "  RUNNING ALL TEST SUITES"
 	@echo "============================================================"
-	@FAILURES=0; \
-	./$(BIN_DIR)/test_open_close   || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_directory    || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_file_io      || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_transaction  || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_attributes   || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_rename       || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_readdir      || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_symlink      || FAILURES=$$((FAILURES+1)); \
-	./$(BIN_DIR)/test_metadata     || FAILURES=$$((FAILURES+1)); \
+	@OUTFILE=$$(mktemp); \
+	TOTAL_TESTS=0; \
+	TOTAL_PASSED=0; \
+	TOTAL_FAILED=0; \
+	SUITES_RUN=0; \
+	SUITES_FAILED=0; \
+	for BIN in $(ALL_BINS); do \
+		./$$BIN > $$OUTFILE 2>&1; \
+		RC=$$?; \
+		cat $$OUTFILE; \
+		SUITES_RUN=$$((SUITES_RUN+1)); \
+		if [ $$RC -ne 0 ]; then \
+			SUITES_FAILED=$$((SUITES_FAILED+1)); \
+		fi; \
+		CLEAN=$$(sed "s/$$'\033'\\[[0-9;]*[a-zA-Z]//g" $$OUTFILE); \
+		T=$$(echo "$$CLEAN" | grep 'Total:' | tail -n1 | awk '{print $$NF}'); \
+		P=$$(echo "$$CLEAN" | grep 'Passed:' | tail -n1 | awk '{print $$NF}'); \
+		F=$$(echo "$$CLEAN" | grep 'Failed:' | tail -n1 | awk '{print $$NF}'); \
+		T=$${T:-0}; P=$${P:-0}; F=$${F:-0}; \
+		TOTAL_TESTS=$$((TOTAL_TESTS + T)); \
+		TOTAL_PASSED=$$((TOTAL_PASSED + P)); \
+		TOTAL_FAILED=$$((TOTAL_FAILED + F)); \
+	done; \
+	rm -f $$OUTFILE; \
 	echo ""; \
 	echo "============================================================"; \
-	if [ $$FAILURES -eq 0 ]; then \
-		echo "  ✓  ALL 9 TEST SUITES PASSED"; \
+	echo "  GRAND TOTAL (all individual tests across all suites)"; \
+	echo "============================================================"; \
+	echo "    Total:   $$TOTAL_TESTS"; \
+	echo "    Passed:  $$TOTAL_PASSED"; \
+	echo "    Failed:  $$TOTAL_FAILED"; \
+	echo "    Suites:  $$SUITES_RUN run, $$SUITES_FAILED with failures"; \
+	echo "============================================================"; \
+	if [ $$TOTAL_FAILED -eq 0 ]; then \
+		echo "    >>> ALL $$TOTAL_TESTS TESTS PASSED <<<"; \
 	else \
-		echo "  ✗  $$FAILURES TEST SUITE(S) FAILED"; \
+		echo "    >>> $$TOTAL_FAILED TEST(S) FAILED <<<"; \
 	fi; \
 	echo "============================================================"; \
-	exit $$FAILURES
+	echo ""; \
+	exit $$TOTAL_FAILED
 
 # ============================================================
 #  Sanitizer builds

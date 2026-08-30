@@ -132,6 +132,12 @@ static inline int test_summary(const char *label)
     }
     printf(C_BOLD "  ────────────────────────────────────────────────────────────\n" C_RESET);
     printf("\n");
+
+    /* Print machine-parseable summary for Makefile aggregation */
+    printf("  Total:   %d\n", _tests_run);
+    printf("  Passed:  %d\n", _tests_passed);
+    printf("  Failed:  %d\n", _tests_failed);
+
     return (_tests_failed > 0) ? 1 : 0;
 }
 
