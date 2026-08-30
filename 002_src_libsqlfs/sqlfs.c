@@ -2455,6 +2455,11 @@ static int rename_dir_children(sqlfs_t *sqlfs, const char *old, const char *new)
 
 int sqlfs_proc_rename(sqlfs_t *sqlfs, const char *from, const char *to)
 {
+    /* FIX: Prevent renaming the root directory */
+    if (strcmp(from, "/") == 0) {
+        return -EINVAL;
+    }
+
     int i, r = SQLITE_OK, result = 0;
     begin_transaction(get_sqlfs(sqlfs));
     CHECK_PARENT_WRITE(from);
