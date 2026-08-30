@@ -10,16 +10,24 @@
 # Build errors stop immediately. Test failures do NOT stop other tests.
 #
 # Usage:
-#   make test_all          - build and run all tests
-#   make test_open_close   - open/close lifecycle tests
-#   make test_directory    - directory operation tests
-#   make test_file_io      - file read/write tests
-#   make test_transaction  - transaction tests
-#   make test_attributes   - attribute/metadata tests
-#   make asan_all          - all tests with AddressSanitizer
-#   make tsan_all          - all tests with ThreadSanitizer
-#   make ubsan_all         - all tests with UBSanitizer
-#   make clean             - remove generated files
+#   make test_all              - build and run all tests
+#   make test_open_close       - open/close lifecycle tests
+#   make test_directory        - directory operation tests
+#   make test_file_io          - file read/write tests
+#   make test_transaction      - transaction tests
+#   make test_attributes       - attribute/metadata tests
+#   make test_rename           - rename/move tests
+#   make test_readdir          - directory listing tests
+#   make test_symlink          - symlink/readlink tests
+#   make test_metadata         - chmod/chown/utime metadata tests
+#   make test_open_flags       - advanced open flag tests
+#   make test_large_files      - large file and block boundary tests
+#   make test_path_resolution  - path resolution and edge case tests
+#   make test_threading        - threading/concurrency tests
+#   make asan_all              - all tests with AddressSanitizer
+#   make tsan_all              - all tests with ThreadSanitizer
+#   make ubsan_all             - all tests with UBSanitizer
+#   make clean                 - remove generated files
 #
 
 SHELL      := /bin/bash
@@ -65,11 +73,16 @@ ALL_BINS := $(BIN_DIR)/test_open_close \
             $(BIN_DIR)/test_rename \
             $(BIN_DIR)/test_readdir \
             $(BIN_DIR)/test_symlink \
-            $(BIN_DIR)/test_metadata
+            $(BIN_DIR)/test_metadata \
+            $(BIN_DIR)/test_open_flags \
+            $(BIN_DIR)/test_large_files \
+            $(BIN_DIR)/test_path_resolution \
+            $(BIN_DIR)/test_threading
 
 .PHONY: all test_all test_open_close test_directory test_file_io \
         test_transaction test_attributes test_rename test_readdir \
-        test_symlink test_metadata \
+        test_symlink test_metadata test_open_flags test_large_files \
+        test_path_resolution test_threading \
         asan_all tsan_all ubsan_all clean build_all objs
 
 all: test_all
@@ -155,6 +168,26 @@ $(BIN_DIR)/test_metadata: test_metadata.c objs | $(BIN_DIR)
 	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< $(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o -o $@ $(LDLIBS)
 	@echo "  -> $@"
 
+$(BIN_DIR)/test_open_flags: test_open_flags.c objs | $(BIN_DIR)
+	@echo "=== Building test_open_flags ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< $(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o -o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+$(BIN_DIR)/test_large_files: test_large_files.c objs | $(BIN_DIR)
+	@echo "=== Building test_large_files ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< $(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o -o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+$(BIN_DIR)/test_path_resolution: test_path_resolution.c objs | $(BIN_DIR)
+	@echo "=== Building test_path_resolution ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< $(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o -o $@ $(LDLIBS)
+	@echo "  -> $@"
+
+$(BIN_DIR)/test_threading: test_threading.c objs | $(BIN_DIR)
+	@echo "=== Building test_threading ==="
+	$(CC) $(CFLAGS) $(CFLAGS_EXTRA) $< $(BUILD_DIR)/sqlfs.o $(BUILD_DIR)/sqlite3.o -o $@ $(LDLIBS)
+	@echo "  -> $@"
+
 # ============================================================
 #  Build ALL binaries (fails fast on compile errors)
 # ============================================================
@@ -224,6 +257,30 @@ test_metadata: $(BIN_DIR)/test_metadata
 	@echo "  Running: Metadata Tests"
 	@echo "============================================================"
 	./$(BIN_DIR)/test_metadata
+
+test_open_flags: $(BIN_DIR)/test_open_flags
+	@echo ""; echo "============================================================"
+	@echo "  Running: Open Flags Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_open_flags
+
+test_large_files: $(BIN_DIR)/test_large_files
+	@echo ""; echo "============================================================"
+	@echo "  Running: Large File Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_large_files
+
+test_path_resolution: $(BIN_DIR)/test_path_resolution
+	@echo ""; echo "============================================================"
+	@echo "  Running: Path Resolution Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_path_resolution
+
+test_threading: $(BIN_DIR)/test_threading
+	@echo ""; echo "============================================================"
+	@echo "  Running: Threading Tests"
+	@echo "============================================================"
+	./$(BIN_DIR)/test_threading
 
 # ============================================================
 #  Run ALL tests
