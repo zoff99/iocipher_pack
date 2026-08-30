@@ -54,7 +54,7 @@ jobs:
         rm -f ./iocipher_linux-1.*.jar
         cp -v ../003_src_iocipher/linux_jni/c_src/iocipher_linux-1.*.jar ./
         jar=$(ls -1 iocipher_linux-1.*.jar 2>/dev/null)
-        javac -classpath ".:$jar" FileManager.java FileDrop.java
+        javac -classpath ".:$jar:flatlaf-3.7.2.jar" FileManager.java
 
     - name: install deps
       run: |
