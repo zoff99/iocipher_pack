@@ -74,7 +74,7 @@ jobs:
         run: |
           pwd
           cd 002_src_libsqlfs/unit_test/
-          make 2>&1 | tail -15 | tee out.txt || true
+          make 2>&1 | tail -12 | tee out.txt || true
 
       - name: make image of console output
         run: |

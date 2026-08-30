@@ -53,7 +53,7 @@ jobs:
         run: |
           pwd
           cd 004_example_jvm/unit_test/
-          make 2>&1 | tail -15 | tee out.txt || true
+          make 2>&1 | tail -14 | tee out.txt || true
 
       - name: make image of console output
         run: |
