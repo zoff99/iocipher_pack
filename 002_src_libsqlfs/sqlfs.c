@@ -2065,7 +2065,13 @@ int sqlfs_proc_readlink(sqlfs_t *sqlfs, const char *path, char *buf, size_t size
                 if (attr.size > size)
                     show_msg(stderr,
                              "warning: readlink provided buffer too small\n");
-                strncpy(buf, value.data, size);
+                /* FIX: Removed strncpy(buf, value.data, size).
+                 * Since value.data was set to buf above, get_value already
+                 * wrote the symlink target directly into buf. The strncpy
+                 * was copying buf to itself (overlapping memory), which is
+                 * undefined behavior detected by ASAN. We only need to
+                 * guarantee null-termination per FUSE readlink contract. */
+                buf[size - 1] = '\0';
             }
         }
         else
