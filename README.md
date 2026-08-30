@@ -20,6 +20,23 @@ The 2 Main Components
 <img src="https://raw.githubusercontent.com/zoff99/iocipher_pack/refs/heads/master/iocipher_coms.png" width="300">
 
 
+⚠️ Critical Quirks & Divergences from `java.io.File`
+------------
+
+Because IOCipher is backed by a SQLite database (`sqlcipher`) rather than a native OS file system,
+it behaves slightly differently than the standard `java.io.File` API. 
+
+If you are migrating existing Java code to use IOCipher, please review these known quirks to avoid unexpected bugs:
+
+| API / Method | Standard `java.io.File` Behavior | Actual IOCipher Behavior | Why it happens |
+| :--- | :--- | :--- | :--- |
+| **`setLastModified(long)`** | Returns `true` and updates the file's timestamp. | Returns `false`. The timestamp remains unchanged. | The underlying SQLite backend does not support manual overrides of file modification timestamps. |
+| **`setReadOnly()`**<br>**`canWrite()`** | Locks the file. `canWrite()` returns `false`. | `setReadOnly()` returns `true` (no-op), but `canWrite()` continues to return `true`. | SQLite databases do not have per-file Unix/Windows permission bits. The VFS does not enforce or track these states. |
+| **`getCanonicalPath()`** | Resolves `.` and `..` and returns the absolute canonical path. | Throws `java.io.IOException: No such file or directory` **even for files that exist**. | The native C implementation (`realpath`) requires the literal path string to exist in the DB and fails to normalize relative dot-paths textually before querying the VFS. |
+| **`list(FilenameFilter)`**<br>**`listFiles(FileFilter)`** | Filters files using `java.io.FilenameFilter`. | **Silent Failure:** If you use `java.io.*` filters, it queries the **host OS** instead of the VFS. | Due to class inheritance, the compiler routes standard `java.io` interfaces to the host OS. You **must** import and use `info.guardianproject.iocipher.FilenameFilter` and `info.guardianproject.iocipher.FileFilter`. |
+| **`getTotalSpace()`**<br>**`getFreeSpace()`** | Returns exact partition capacity. Free space is always `<` Total space. | `getFreeSpace()` can mathematically exceed `getTotalSpace()`. Non-existent paths return `> 0`. | IOCipher maps these to the host partition's stats. The SQLite container grows dynamically, so "free" host space often exceeds the current "total" container size. |
+| **`deleteOnExit()`** | Schedules the file for deletion when the JVM terminates. | Throws `UnsupportedOperationException`. | Mobile/Android app lifecycles do not guarantee standard JVM shutdown hooks, making this method unreliable for encrypted containers. |
+
 Build Status
 ------------
 
