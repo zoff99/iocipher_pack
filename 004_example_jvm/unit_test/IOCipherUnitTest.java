@@ -97,12 +97,26 @@ public class IOCipherUnitTest {
     // =========================================================================
     // HELPER: Simple assertion without external libraries
     // =========================================================================
-    public static void assertCondition(String testName, boolean condition) {
+    public static void assertConditionNoColor(String testName, boolean condition) {
         if (condition) {
             System.out.println("[PASS] " + testName);
             passed++;
         } else {
             System.out.println("[FAIL] " + testName);
+            failed++;
+        }
+    }
+
+    // =========================================================================
+    // HELPER: Simple assertion without external libraries
+    // Prints [PASS] in green or [FAIL] in red and increments global counters.
+    // =========================================================================
+    public static void assertCondition(String testName, boolean condition) {
+        if (condition) {
+            System.out.println("\u001B[32m[PASS]\u001B[0m " + testName);
+            passed++;
+        } else {
+            System.out.println("\u001B[31m[FAIL]\u001B[0m " + testName);
             failed++;
         }
     }
