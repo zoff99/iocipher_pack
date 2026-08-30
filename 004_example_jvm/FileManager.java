@@ -1530,8 +1530,8 @@ public class FileManager {
             // Start with a much larger main window.
             // The old size was 1100x700.
             // Width is much larger, and height is at least 60% larger: 700 * 1.6 = 1120.
-            int startupWidth = 1900;
-            int startupHeight = 1120;
+            int startupWidth = 1500;
+            int startupHeight = 950;
 
             // Keep the startup window inside the usable screen bounds.
             java.awt.Rectangle usableBounds = java.awt.GraphicsEnvironment
