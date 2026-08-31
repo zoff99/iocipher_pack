@@ -34,8 +34,8 @@ android {
                 abiFilters 'x86', 'x86_64', 'armeabi-v7a', 'arm64-v8a'
             }
         }
-        versionCode 10033
-        versionName "1.0.33"
+        versionCode 10034
+        versionName "1.0.34"
     }
 
     lintOptions {
