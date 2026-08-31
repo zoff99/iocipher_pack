@@ -1,5 +1,5 @@
 # Path to the IOCipher JNI jar located in the parent directory
-IOCIPHER_JAR = ../iocipher_linux-1.0.33.jar
+IOCIPHER_JAR = ../iocipher_linux-1.0.34.jar
 
 all: run
 
