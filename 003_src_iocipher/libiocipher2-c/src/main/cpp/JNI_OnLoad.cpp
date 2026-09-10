@@ -23,31 +23,74 @@
 
 /* each class file includes its own register function */
 int registerJniHelp(JNIEnv* env);
+void unregisterJniHelp(JNIEnv* env);
 int register_info_guardianproject_iocipher_File(JNIEnv *env);
 int register_info_guardianproject_iocipher_VirtualFileSystem(JNIEnv *env);
 int register_info_guardianproject_libcore_io_Memory(JNIEnv *env);
 int register_info_guardianproject_libcore_io_OsConstants(JNIEnv *env);
 int register_info_guardianproject_libcore_io_Posix(JNIEnv *env);
 
-extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) 
-{ 
-	LOGI("JNI_OnLoad called");
+extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved)
+{
+    LOGI("JNI_OnLoad called");
     JNIEnv* env;
+    int res;
+
     if (vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6) != JNI_OK) {
         LOGE("Failed to get the environment using GetEnv()");
-        return -1;
-	}
+        return JNI_ERR;
+    }
 
     LOGI("JNI_OnLoad init cached classes in JniConstants:");
     JniConstants::init(env);
 
     LOGI("JNI_OnLoad register methods:");
-    registerJniHelp(env);
-    register_info_guardianproject_iocipher_File(env);
-    register_info_guardianproject_iocipher_VirtualFileSystem(env);
-    register_info_guardianproject_libcore_io_Memory(env);
-    register_info_guardianproject_libcore_io_OsConstants(env);
-    register_info_guardianproject_libcore_io_Posix(env);
+    res = registerJniHelp(env);
+    LOGI("registerJniHelp:res=%d", res);
+    if (res != 0) {
+        LOGE("registerJniHelp failed");
+        return JNI_ERR;
+    }
+
+    res = register_info_guardianproject_iocipher_File(env);
+    LOGI("register_info_guardianproject_iocipher_File:res=%d", res);
+    if (res != 0) {
+        LOGE("register_info_guardianproject_iocipher_File failed");
+        unregisterJniHelp(env);
+        return JNI_ERR;
+    }
+
+    res = register_info_guardianproject_iocipher_VirtualFileSystem(env);
+    LOGI("register_info_guardianproject_iocipher_VirtualFileSystem:res=%d", res);
+    if (res != 0) {
+        LOGE("register_info_guardianproject_iocipher_VirtualFileSystem failed");
+        unregisterJniHelp(env);
+        return JNI_ERR;
+    }
+
+    res = register_info_guardianproject_libcore_io_Memory(env);
+    LOGI("register_info_guardianproject_libcore_io_Memory:res=%d", res);
+    if (res != 0) {
+        LOGE("register_info_guardianproject_libcore_io_Memory failed");
+        unregisterJniHelp(env);
+        return JNI_ERR;
+    }
+
+    res = register_info_guardianproject_libcore_io_OsConstants(env);
+    LOGI("register_info_guardianproject_libcore_io_OsConstants:res=%d", res);
+    if (res != 0) {
+        LOGE("register_info_guardianproject_libcore_io_OsConstants failed");
+        unregisterJniHelp(env);
+        return JNI_ERR;
+    }
+
+    res = register_info_guardianproject_libcore_io_Posix(env);
+    LOGI("register_info_guardianproject_libcore_io_Posix:res=%d", res);
+    if (res != 0) {
+        LOGE("register_info_guardianproject_libcore_io_Posix failed");
+        unregisterJniHelp(env);
+        return JNI_ERR;
+    }
 
     LOGI("JNI_OnLoad done");
 
