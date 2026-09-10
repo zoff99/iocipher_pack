@@ -289,33 +289,55 @@ static struct CachedFields {
     jfieldID invalidField;
 } gCachedFields;
 
+void unregisterJniHelp(JNIEnv* env) {
+    if (gCachedFields.fileDescriptorClass != NULL) {
+        env->DeleteGlobalRef(gCachedFields.fileDescriptorClass);
+        gCachedFields.fileDescriptorClass = NULL;
+    }
+    gCachedFields.fileDescriptorCtor = NULL;
+    gCachedFields.pathField = NULL;
+    gCachedFields.invalidField = NULL;
+}
+
 int registerJniHelp(JNIEnv* env) {
-    gCachedFields.fileDescriptorClass =
-            reinterpret_cast<jclass>(env->NewGlobalRef(env->FindClass("info/guardianproject/iocipher/FileDescriptor")));
-    if (gCachedFields.fileDescriptorClass == NULL) {
+    jclass localFileDescriptorClass =
+            env->FindClass("info/guardianproject/iocipher/FileDescriptor");
+    if (localFileDescriptorClass == NULL) {
         return -1;
     }
 
-    gCachedFields.fileDescriptorCtor =
-            env->GetMethodID(gCachedFields.fileDescriptorClass, "<init>", "()V");
-    if (gCachedFields.fileDescriptorCtor == NULL) {
+    jmethodID fileDescriptorCtor =
+            env->GetMethodID(localFileDescriptorClass, "<init>", "()V");
+    if (fileDescriptorCtor == NULL) {
+        env->DeleteLocalRef(localFileDescriptorClass);
         return -1;
     }
 
-    gCachedFields.pathField =
-        env->GetFieldID(gCachedFields.fileDescriptorClass,
-                        "path", "Ljava/lang/String;");
-    if (gCachedFields.pathField == NULL) {
+    jfieldID pathField =
+            env->GetFieldID(localFileDescriptorClass, "path", "Ljava/lang/String;");
+    if (pathField == NULL) {
+        env->DeleteLocalRef(localFileDescriptorClass);
         return -1;
     }
 
-    gCachedFields.invalidField =
-        env->GetFieldID(gCachedFields.fileDescriptorClass,
-                        "invalid", "Ljava/lang/String;");
-    if (gCachedFields.invalidField == NULL) {
+    jfieldID invalidField =
+            env->GetFieldID(localFileDescriptorClass, "invalid", "Ljava/lang/String;");
+    if (invalidField == NULL) {
+        env->DeleteLocalRef(localFileDescriptorClass);
         return -1;
     }
 
+    jclass globalFileDescriptorClass =
+            reinterpret_cast<jclass>(env->NewGlobalRef(localFileDescriptorClass));
+    env->DeleteLocalRef(localFileDescriptorClass);
+    if (globalFileDescriptorClass == NULL) {
+        return -1;
+    }
+
+    gCachedFields.fileDescriptorClass = globalFileDescriptorClass;
+    gCachedFields.fileDescriptorCtor = fileDescriptorCtor;
+    gCachedFields.pathField = pathField;
+    gCachedFields.invalidField = invalidField;
     return 0;
 }
 
