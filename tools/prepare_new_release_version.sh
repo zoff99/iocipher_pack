@@ -58,7 +58,7 @@ sed -i -e 's#com.github.zoff99:pkgs_guardianprojectIOCipher:.*#com.github.zoff99
 
 sed -i -e 's#'"'"'com.github.zoff99:pkgs_guardianprojectIOCipher:.*'"'"'#'"'"'com.github.zoff99:pkgs_guardianprojectIOCipher:'"$next_m_version""'"'#g' "$f5"
 
-sed -i -e 's#iocipher_linux-1.0.32.jar#iocipher_linux-'"$next_m_version"'.jar#g' "$f6"
+sed -i -e 's#iocipher_linux-.*.jar#iocipher_linux-'"$next_m_version"'.jar#g' "$f6"
 
 commit_message="new version ""$next_m_version"
 tag_name="v""$next_m_version"
